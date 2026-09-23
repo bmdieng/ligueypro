@@ -17,119 +17,23 @@ class ProfessionalPage extends StatefulWidget {
 class _ProfessionalPageState extends State<ProfessionalPage> {
   final TextEditingController _reviewController = TextEditingController();
   double _selectedRating = 0;
-  double _averageRating = 4.8;
-  int _reviewsCount = 127;
+  double _averageRating = 0;
+  int _reviewsCount = 0;
   String _professionalName = '';
-  String _location = 'Sacré-Cœur, Dakar';
-  String _price = 'À partir de 5 000 FCFA';
-  String _phone = '+221 77 123 45 67';
-  String _service = 'Service';
-  String _responseTime = 'Répond en 10 min';
-  int _completedJobs = 124;
-  bool _verified = true;
-  bool _availableNow = true;
+  String _location = 'Localisation non renseignée';
+  String _price = 'Tarif à confirmer';
+  String _phone = '';
+  String _service = 'Service non renseigné';
+  String _responseTime = 'Temps de réponse non renseigné';
+  int _completedJobs = 0;
+  bool _verified = false;
+  bool _availableNow = false;
   bool _subscribed = false;
   String _subscriptionPlan = 'none';
+  List<_ProfessionalReview> _recentReviews = const [];
   DatabaseReference? _professionalRef;
   bool _isLoading = true;
-
-  static const Map<String, Map<String, Object>> _fallbackProfessionals = {
-    'fallback_pro_1': {
-      'name': 'Mamadou Diop',
-      'service': 'Climatisation',
-      'location': 'Yoff, Dakar',
-      'price': '18 000 FCFA',
-      'phone': '+221 77 000 00 01',
-      'responseTime': 'Répond en 10 min',
-      'completedJobs': 148,
-      'verified': true,
-      'availableNow': true,
-      'subscribed': true,
-      'subscriptionPlan': 'pro',
-      'ratingAverage': 4.8,
-      'reviewsCount': 127,
-    },
-    'fallback_pro_2': {
-      'name': 'Aliou Ba',
-      'service': 'Plomberie',
-      'location': 'Sacré-Cœur, Dakar',
-      'price': '16 500 FCFA',
-      'phone': '+221 77 000 00 02',
-      'responseTime': 'Répond en 15 min',
-      'completedJobs': 96,
-      'verified': true,
-      'availableNow': true,
-      'subscribed': true,
-      'subscriptionPlan': 'starter',
-      'ratingAverage': 4.6,
-      'reviewsCount': 83,
-    },
-    'fallback_pro_3': {
-      'name': 'Yacine Fall',
-      'service': 'Climatisation',
-      'location': 'Mermoz, Dakar',
-      'price': '19 500 FCFA',
-      'phone': '+221 77 000 00 03',
-      'responseTime': 'Répond en 8 min',
-      'completedJobs': 172,
-      'verified': true,
-      'availableNow': true,
-      'subscribed': true,
-      'subscriptionPlan': 'business',
-      'ratingAverage': 4.9,
-      'reviewsCount': 201,
-    },
-    'fallback_pro_4': {
-      'name': 'Saliou Ndiaye',
-      'service': 'Plomberie',
-      'location': 'Sacré-Cœur, Dakar',
-      'price': '12 000 FCFA',
-      'phone': '+221 77 000 00 04',
-      'responseTime': 'Répond en 12 min',
-      'completedJobs': 134,
-      'verified': true,
-      'availableNow': true,
-      'subscribed': true,
-      'subscriptionPlan': 'pro',
-      'ratingAverage': 4.7,
-      'reviewsCount': 109,
-    },
-  };
-
-  void _applyFallbackProfessional(String targetId) {
-    final data = _fallbackProfessionals[targetId];
-    if (data == null) {
-      setState(() {
-        _professionalName = targetId;
-        _isLoading = false;
-      });
-      return;
-    }
-
-    setState(() {
-      _professionalName = data['name']?.toString() ?? targetId;
-      _location = data['location']?.toString() ?? _location;
-      _price = data['price']?.toString() ?? _price;
-      _phone = data['phone']?.toString() ?? _phone;
-      _service = data['service']?.toString() ?? _service;
-      _responseTime = data['responseTime']?.toString() ?? _responseTime;
-      _completedJobs = data['completedJobs'] is int
-          ? data['completedJobs'] as int
-          : _completedJobs;
-      _verified = data['verified'] == true;
-      _availableNow = data['availableNow'] != false;
-      _subscribed = data['subscribed'] == true;
-      _subscriptionPlan =
-          data['subscriptionPlan']?.toString() ?? _subscriptionPlan;
-      _averageRating = data['ratingAverage'] is num
-          ? (data['ratingAverage'] as num).toDouble()
-          : _averageRating;
-      _reviewsCount = data['reviewsCount'] is int
-          ? data['reviewsCount'] as int
-          : _reviewsCount;
-      _isLoading = false;
-    });
-  }
+  bool _notFound = false;
 
   @override
   void initState() {
@@ -141,7 +45,11 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
     final targetId = Uri.decodeComponent(widget.id);
 
     if (!FirebaseBootstrap.isReady) {
-      _applyFallbackProfessional(targetId);
+      setState(() {
+        _professionalName = targetId;
+        _notFound = true;
+        _isLoading = false;
+      });
       return;
     }
 
@@ -164,24 +72,34 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
               if (map is Map && (matchesId || matchesName)) {
                 final ratingAverage = map['ratingAverage'] is num
                     ? (map['ratingAverage'] as num).toDouble()
-                    : 4.5;
+                    : _parseStoredRating(map['rating']?.toString());
                 final count = map['reviewsCount'] is num
                     ? (map['reviewsCount'] as num).toInt()
-                    : 127;
+                    : 0;
+                final reviews = _reviewsFromSnapshot(map['reviews']);
 
                 if (!mounted) return;
                 setState(() {
                   _professionalName = map['name']?.toString() ?? targetId;
                   _location =
-                      map['location']?.toString() ?? 'Sacré-Cœur, Dakar';
-                  _price = map['price']?.toString() ?? 'À partir de 5 000 FCFA';
-                  _phone = map['phone']?.toString() ?? '+221 77 123 45 67';
-                  _service = categoryEntry.key.toString();
+                      map['location']?.toString().trim().isNotEmpty == true
+                          ? map['location'].toString()
+                          : 'Localisation non renseignée';
+                  _price = map['price']?.toString().trim().isNotEmpty == true
+                      ? map['price'].toString()
+                      : 'Tarif à confirmer';
+                  _phone = map['phone']?.toString().trim() ?? '';
+                  _service =
+                      map['service']?.toString().trim().isNotEmpty == true
+                          ? map['service'].toString()
+                          : categoryEntry.key.toString();
                   _responseTime =
-                      map['responseTime']?.toString() ?? 'Répond en 10 min';
+                      map['responseTime']?.toString().trim().isNotEmpty == true
+                          ? map['responseTime'].toString()
+                          : 'Temps de réponse non renseigné';
                   _completedJobs = map['completedJobs'] is num
                       ? (map['completedJobs'] as num).toInt()
-                      : 124;
+                      : 0;
                   _verified = map['verified'] == true;
                   _availableNow = map['availableNow'] != false;
                   _subscribed = map['subscribed'] == true;
@@ -189,6 +107,7 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
                       map['subscriptionPlan']?.toString() ?? 'none';
                   _averageRating = ratingAverage;
                   _reviewsCount = count;
+                  _recentReviews = reviews;
                   _isLoading = false;
                   _professionalRef = FirebaseDatabase.instance.ref(
                       'professionals/${categoryEntry.key}/${professionalEntry.key}');
@@ -201,14 +120,25 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
       }
 
       if (!mounted) return;
-      _applyFallbackProfessional(targetId);
+      setState(() {
+        _professionalName = targetId;
+        _notFound = true;
+        _isLoading = false;
+      });
     } catch (_) {
       if (!mounted) return;
-      _applyFallbackProfessional(targetId);
+      setState(() {
+        _professionalName = targetId;
+        _notFound = true;
+        _isLoading = false;
+      });
     }
   }
 
   Future<void> _launchPhone() async {
+    if (_phone.trim().isEmpty) {
+      return;
+    }
     final uri = Uri(scheme: 'tel', path: _phone);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
@@ -217,10 +147,97 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
 
   Future<void> _launchWhatsApp() async {
     final digits = _phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) {
+      return;
+    }
     final uri = Uri.parse('https://wa.me/$digits');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
+  }
+
+  static double _parseStoredRating(String? ratingText) {
+    if (ratingText == null || ratingText.isEmpty) {
+      return 0;
+    }
+
+    final match = RegExp(r'\d+(?:[.,]\d+)?').firstMatch(ratingText);
+    if (match == null) {
+      return 0;
+    }
+
+    return double.tryParse(match.group(0)!.replaceAll(',', '.')) ?? 0;
+  }
+
+  List<_ProfessionalReview> _reviewsFromSnapshot(Object? snapshotValue) {
+    final reviews = <_ProfessionalReview>[];
+    if (snapshotValue is! Map) {
+      return reviews;
+    }
+
+    for (final entry in snapshotValue.entries) {
+      final value = entry.value;
+      if (value is! Map) {
+        continue;
+      }
+
+      final rating = value['rating'];
+      final comment = value['comment']?.toString().trim();
+      final createdAt = value['createdAt'];
+      final ratingValue = rating is num ? rating.toDouble() : null;
+      final createdAtValue = createdAt is num
+          ? DateTime.fromMillisecondsSinceEpoch(createdAt.toInt())
+          : null;
+
+      if (ratingValue == null) {
+        continue;
+      }
+
+      reviews.add(
+        _ProfessionalReview(
+          id: entry.key.toString(),
+          rating: ratingValue,
+          comment: (comment == null || comment.isEmpty)
+              ? 'Sans commentaire'
+              : comment,
+          createdAt: createdAtValue,
+        ),
+      );
+    }
+
+    reviews.sort((a, b) {
+      final left = a.createdAt?.millisecondsSinceEpoch ?? 0;
+      final right = b.createdAt?.millisecondsSinceEpoch ?? 0;
+      return right.compareTo(left);
+    });
+
+    return reviews.take(3).toList();
+  }
+
+  String _formatRatingSummary() {
+    if (_reviewsCount == 0) {
+      return 'Aucun avis pour le moment';
+    }
+    return '⭐ ${_averageRating.toStringAsFixed(1)} ($_reviewsCount avis)';
+  }
+
+  String? _formatReviewDate(DateTime? createdAt) {
+    if (createdAt == null) {
+      return null;
+    }
+
+    final now = DateTime.now();
+    final difference = now.difference(createdAt);
+    if (difference.inMinutes < 1) {
+      return 'à l’instant';
+    }
+    if (difference.inHours < 1) {
+      return 'il y a ${difference.inMinutes} min';
+    }
+    if (difference.inDays < 1) {
+      return 'il y a ${difference.inHours} h';
+    }
+    return 'il y a ${difference.inDays} j';
   }
 
   Widget _buildTrustItem(IconData icon, String title, String subtitle) {
@@ -273,9 +290,10 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
     }
 
     try {
+      final submittedRating = _selectedRating;
       final reviewRef = professionalRef.child('reviews').push();
       await reviewRef.set({
-        'rating': _selectedRating,
+        'rating': submittedRating,
         'comment': review.isEmpty ? 'Sans commentaire' : review,
         'createdAt': ServerValue.timestamp,
       });
@@ -310,15 +328,16 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
       setState(() {
         _averageRating = nextAverage;
         _reviewsCount = nextCount;
+        _recentReviews = _reviewsFromSnapshot(reviews);
+        _selectedRating = 0;
       });
 
       _reviewController.clear();
-      setState(() => _selectedRating = 0);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text(
-                'Merci pour votre note de ${_selectedRating == 0 ? nextAverage.toStringAsFixed(1) : _selectedRating.toStringAsFixed(0)}/5.')),
+                'Merci pour votre note de ${submittedRating.toStringAsFixed(0)}/5.')),
       );
     } catch (_) {
       if (!mounted) return;
@@ -354,6 +373,39 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          if (_notFound && !_isLoading)
+            Container(
+              margin: const EdgeInsets.only(bottom: 20),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                ),
+              ),
+              child: const Column(
+                children: [
+                  Icon(
+                    Icons.person_search_outlined,
+                    color: AppColors.navy,
+                    size: 36,
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    'Profil introuvable',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Ce professionnel n’est pas présent dans Firebase ou n’est plus disponible.',
+                    style: TextStyle(color: AppColors.muted, height: 1.4),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
           const CircleAvatar(radius: 46, child: Icon(Icons.person, size: 45)),
           const SizedBox(height: 12),
           Text(
@@ -365,9 +417,7 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
           ),
           const SizedBox(height: 6),
           Text(
-            _isLoading
-                ? 'Chargement...'
-                : '⭐ ${_averageRating.toStringAsFixed(1)} ($_reviewsCount avis)',
+            _isLoading ? 'Chargement...' : _formatRatingSummary(),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
@@ -436,12 +486,14 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
           ListTile(
             leading: const Icon(Icons.payments_outlined),
             title: Text(_price),
+            subtitle: const Text('Indication tarifaire'),
           ),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: _launchPhone,
+                  onPressed:
+                      _notFound || _phone.trim().isEmpty ? null : _launchPhone,
                   icon: const Icon(Icons.phone_outlined),
                   label: const Text('Appeler'),
                 ),
@@ -449,7 +501,9 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: FilledButton.icon(
-                  onPressed: _launchWhatsApp,
+                  onPressed: _notFound || _phone.trim().isEmpty
+                      ? null
+                      : _launchWhatsApp,
                   style: FilledButton.styleFrom(
                       backgroundColor: AppColors.success),
                   icon: const Icon(Icons.chat_outlined),
@@ -462,12 +516,55 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
           const Text('Avis récents',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
           const SizedBox(height: 10),
-          const Card(
-            child: ListTile(
-              title: Text('⭐ 5.0 — Très professionnel'),
-              subtitle: Text('Intervention rapide et travail propre.'),
+          if (_recentReviews.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                ),
+              ),
+              child: const Text(
+                'Aucun avis récent disponible pour ce professionnel.',
+                style: TextStyle(color: AppColors.muted, height: 1.4),
+              ),
+            )
+          else
+            Column(
+              children: [
+                for (final review in _recentReviews)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Card(
+                      child: ListTile(
+                        title: Text(
+                          '⭐ ${review.rating.toStringAsFixed(1)}',
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 4),
+                            Text(review.comment),
+                            if (_formatReviewDate(review.createdAt) !=
+                                null) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                _formatReviewDate(review.createdAt)!,
+                                style: const TextStyle(
+                                  color: AppColors.muted,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
-          ),
           const SizedBox(height: 20),
           const Text('Noter ce professionnel',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
@@ -499,7 +596,7 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
           ),
           const SizedBox(height: 12),
           FilledButton(
-            onPressed: _submitRating,
+            onPressed: _notFound ? null : _submitRating,
             style: FilledButton.styleFrom(
                 backgroundColor: AppColors.navy,
                 padding: const EdgeInsets.all(14)),
@@ -509,6 +606,20 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
       ),
     );
   }
+}
+
+class _ProfessionalReview {
+  const _ProfessionalReview({
+    required this.id,
+    required this.rating,
+    required this.comment,
+    required this.createdAt,
+  });
+
+  final String id;
+  final double rating;
+  final String comment;
+  final DateTime? createdAt;
 }
 
 class _ProBadge extends StatelessWidget {

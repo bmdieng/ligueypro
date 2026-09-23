@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 
 class _ProfessionalSummary {
   const _ProfessionalSummary({
+    required this.id,
     required this.name,
     required this.service,
     required this.location,
@@ -17,6 +18,7 @@ class _ProfessionalSummary {
     required this.availableNow,
   });
 
+  final String id;
   final String name;
   final String service;
   final String location;
@@ -29,39 +31,6 @@ class _ProfessionalSummary {
 
 class AllProfessionalsPage extends StatelessWidget {
   const AllProfessionalsPage({super.key});
-
-  static const List<_ProfessionalSummary> _fallbackProfessionals = [
-    _ProfessionalSummary(
-      name: 'Mamadou Diop',
-      service: 'Plombier',
-      location: 'Sacré-Cœur, Dakar',
-      price: 'À partir de 5 000 FCFA',
-      ratingAverage: 4.8,
-      reviewsCount: 127,
-      verified: true,
-      availableNow: true,
-    ),
-    _ProfessionalSummary(
-      name: 'Aliou Ba',
-      service: 'Électricien',
-      location: 'Mermoz, Dakar',
-      price: 'À partir de 6 000 FCFA',
-      ratingAverage: 4.6,
-      reviewsCount: 88,
-      verified: true,
-      availableNow: false,
-    ),
-    _ProfessionalSummary(
-      name: 'Yacine Fall',
-      service: 'Climatisation',
-      location: 'Yoff, Dakar',
-      price: 'À partir de 7 000 FCFA',
-      ratingAverage: 4.9,
-      reviewsCount: 142,
-      verified: false,
-      availableNow: true,
-    ),
-  ];
 
   static List<_ProfessionalSummary> _fromSnapshot(Object? snapshotValue) {
     final professionals = <_ProfessionalSummary>[];
@@ -87,6 +56,7 @@ class AllProfessionalsPage extends StatelessWidget {
 
               professionals.add(
                 _ProfessionalSummary(
+                  id: professionalEntry.key.toString(),
                   name: name,
                   service: value['service']?.toString() ??
                       categoryEntry.key.toString(),
@@ -104,7 +74,7 @@ class AllProfessionalsPage extends StatelessWidget {
       }
     }
 
-    return professionals.isNotEmpty ? professionals : _fallbackProfessionals;
+    return professionals;
   }
 
   static double _parseRating(String? ratingText) {
@@ -125,7 +95,7 @@ class AllProfessionalsPage extends StatelessWidget {
                 stream: FirebaseDatabase.instance.ref('professionals').onValue,
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    return _buildList(_fallbackProfessionals);
+                    return _buildList(const []);
                   }
 
                   final professionals =
@@ -133,12 +103,46 @@ class AllProfessionalsPage extends StatelessWidget {
                   return _buildList(professionals);
                 },
               )
-            : _buildList(_fallbackProfessionals),
+            : _buildList(const []),
       ),
     );
   }
 
   Widget _buildList(List<_ProfessionalSummary> professionals) {
+    if (professionals.isEmpty) {
+      return ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border:
+                  Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
+            ),
+            child: const Column(
+              children: [
+                Icon(Icons.groups_outlined, size: 42, color: AppColors.primary),
+                SizedBox(height: 12),
+                Text(
+                  'Aucun professionnel disponible',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'La liste sera remplie dès que des professionnels seront publiés dans Firebase.',
+                  style: TextStyle(color: AppColors.muted, height: 1.4),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
     final sortedProfessionals = [...professionals]
       ..sort((a, b) => b.ratingAverage.compareTo(a.ratingAverage));
 
@@ -203,7 +207,7 @@ class AllProfessionalsPage extends StatelessWidget {
                 const SizedBox(height: 8),
                 FilledButton(
                   onPressed: () => context.push(
-                      '/professional/${Uri.encodeComponent(professional.name)}'),
+                      '/professional/${Uri.encodeComponent(professional.id)}'),
                   style:
                       FilledButton.styleFrom(backgroundColor: AppColors.navy),
                   child: const Text('Voir'),

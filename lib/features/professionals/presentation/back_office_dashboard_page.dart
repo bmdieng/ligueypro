@@ -132,17 +132,17 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
               stream: FirebaseDatabase.instance.ref().onValue,
               builder: (context, snapshot) {
                 final root = snapshot.data?.snapshot.value;
-                return _buildContent(root);
+                return _buildContent(context, root);
               },
             )
-          : _buildContent(null),
+          : _buildContent(context, null),
     );
   }
 
-  Widget _buildContent(Object? root) {
+  Widget _buildContent(BuildContext context, Object? root) {
     final requests = root is Map
         ? OfferMarketplaceService.requestsFromSnapshot(root['requests'])
-        : OfferMarketplaceService.fallbackRequests;
+      : const <MarketplaceRequestItem>[];
     final currentProfessionalOffers =
         OfferMarketplaceService.sentOffersFromRoot(
       root,
@@ -163,286 +163,303 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
         currentProfessionalOffers.where((offer) => offer.isAccepted).length;
     final leaderboard = _buildLeaderboard(allOffers);
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.navy, Color(0xFF154972), AppColors.primary],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.navy.withValues(alpha: 0.16),
-                blurRadius: 26,
-                offset: const Offset(0, 14),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1240),
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    AppColors.navy,
+                    Color(0xFF154972),
+                    AppColors.primary
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.navy.withValues(alpha: 0.16),
+                    blurRadius: 26,
+                    offset: const Offset(0, 14),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Cockpit opérationnel',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            const Text(
+                              'Pilotez votre BO LigueyPro',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 28,
+                                fontWeight: FontWeight.w900,
+                                height: 1.1,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              _currentProfessional == null
+                                  ? 'Sélectionnez un professionnel abonné pour suivre les demandes et la performance des offres.'
+                                  : '${_currentProfessional!.name} est actif sur ${_currentProfessional!.service} avec le plan ${_currentProfessional!.planLabel.toUpperCase()}.',
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                height: 1.45,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.14),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: const Icon(
+                          Icons.dashboard_customize_outlined,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => context.go('/pro-leads'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            side: const BorderSide(color: Colors.white38),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          icon: const Icon(Icons.campaign_outlined),
+                          label: const Text('Demandes'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: () => context.go('/pro-sent-offers'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: AppColors.navy,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          icon: const Icon(Icons.inventory_2_outlined),
+                          label: const Text('Mes offres'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: MediaQuery.sizeOf(context).width > 1200
+                  ? 3
+                  : MediaQuery.sizeOf(context).width > 800
+                      ? 2
+                      : 1,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio:
+                  MediaQuery.sizeOf(context).width > 1200 ? 1.35 : 1.2,
+              children: [
+                _MetricCard(
+                  title: 'Demandes visibles',
+                  value: '$leadsForCurrentPro',
+                  accent: AppColors.navy,
+                  icon: Icons.waves_outlined,
+                ),
+                _MetricCard(
+                  title: 'Demandes attribuées',
+                  value: '${stats.lockedRequests}',
+                  accent: AppColors.success,
+                  icon: Icons.verified_outlined,
+                ),
+                _MetricCard(
+                  title: 'Offres envoyées',
+                  value: '${currentProfessionalOffers.length}',
+                  accent: AppColors.primary,
+                  icon: Icons.local_offer_outlined,
+                ),
+                _MetricCard(
+                  title: 'Offres retenues',
+                  value: '$currentProfessionalAcceptedOffers',
+                  accent: AppColors.success,
+                  icon: Icons.workspace_premium_outlined,
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            _SectionCard(
+              title: 'Performance commerciale',
+              subtitle:
+                  'Lecture rapide de la conversion du marketplace et de la capacité des pros à répondre.',
+              icon: Icons.insights_outlined,
+              content: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _KpiStrip(
+                          label: 'Taux de conversion',
+                          value: '${stats.conversionRate.toStringAsFixed(0)}%',
+                          helper: '${stats.acceptedOffers} offre(s) retenue(s)',
+                          accent: AppColors.success,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _KpiStrip(
+                          label: 'Couverture',
+                          value: '${stats.coverageRate.toStringAsFixed(0)}%',
+                          helper:
+                              '${stats.requestsWithOffers}/${requests.length} demandes couvertes',
+                          accent: AppColors.navy,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _KpiStrip(
+                          label: 'Offres / demande',
+                          value:
+                              stats.averageOffersPerRequest.toStringAsFixed(1),
+                          helper: 'Intensité moyenne',
+                          accent: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _KpiStrip(
+                          label: 'Activité 24h',
+                          value: '${stats.last24hOffers}',
+                          helper: 'Offres récentes',
+                          accent: AppColors.navy,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  _FunnelBar(
+                    openRequests: stats.openRequests,
+                    coveredRequests: stats.requestsWithOffers,
+                    lockedRequests: stats.lockedRequests,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            _SectionCard(
+              title: 'Professionnel actif',
+              subtitle: _currentProfessional == null
+                  ? 'Aucun professionnel sélectionné pour le BO.'
+                  : '${_currentProfessional!.name} • ${_currentProfessional!.service} • ${_currentProfessional!.planLabel.toUpperCase()}',
+              icon: Icons.badge_outlined,
+              actionLabel: _currentProfessional == null
+                  ? 'Ajouter un pro'
+                  : 'Gérer les demandes',
+              onTap: () => context.go(
+                _currentProfessional == null
+                    ? '/add-professional'
+                    : '/pro-leads',
+              ),
+            ),
+            const SizedBox(height: 12),
+            _SectionCard(
+              title: 'Top professionnels',
+              subtitle: leaderboard.isEmpty
+                  ? 'Aucune donnée d’offre disponible pour le moment.'
+                  : 'Classement par offres retenues, puis par volume d’offres envoyées.',
+              icon: Icons.emoji_events_outlined,
+              content: leaderboard.isEmpty
+                  ? const Text(
+                      'Les performances apparaîtront dès que les professionnels commenceront à répondre aux demandes.',
+                      style: TextStyle(color: AppColors.muted, height: 1.4),
+                    )
+                  : Column(
                       children: [
-                        const Text(
-                          'Cockpit opérationnel',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.2,
+                        for (var index = 0; index < leaderboard.length; index++)
+                          Padding(
+                            padding: EdgeInsets.only(
+                              bottom: index == leaderboard.length - 1 ? 0 : 10,
+                            ),
+                            child: _LeaderboardTile(
+                              rank: index + 1,
+                              performance: leaderboard[index],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          'Pilotez votre BO LigueyPro',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                            height: 1.1,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          _currentProfessional == null
-                              ? 'Sélectionnez un professionnel abonné pour suivre les demandes et la performance des offres.'
-                              : '${_currentProfessional!.name} est actif sur ${_currentProfessional!.service} avec le plan ${_currentProfessional!.planLabel.toUpperCase()}.',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            height: 1.45,
-                          ),
-                        ),
                       ],
                     ),
-                  ),
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.14),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: const Icon(
-                      Icons.dashboard_customize_outlined,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
-              Row(
+            ),
+            const SizedBox(height: 12),
+            _SectionCard(
+              title: 'Actions rapides',
+              subtitle:
+                  'Ouvrez vos écrans clés pour traiter plus vite les demandes et les offres.',
+              icon: Icons.flash_on_outlined,
+              content: Wrap(
+                spacing: 10,
+                runSpacing: 10,
                 children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => context.go('/pro-leads'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.white38),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      icon: const Icon(Icons.campaign_outlined),
-                      label: const Text('Demandes'),
-                    ),
+                  _ActionPill(
+                    label: 'Demandes ouvertes',
+                    icon: Icons.campaign_outlined,
+                    onTap: () => context.go('/pro-leads'),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: () => context.go('/pro-sent-offers'),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: AppColors.navy,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      icon: const Icon(Icons.inventory_2_outlined),
-                      label: const Text('Mes offres'),
-                    ),
+                  _ActionPill(
+                    label: 'Offres envoyées',
+                    icon: Icons.inventory_2_outlined,
+                    onTap: () => context.go('/pro-sent-offers'),
+                  ),
+                  _ActionPill(
+                    label: 'Abonnement Pro',
+                    icon: Icons.workspace_premium_outlined,
+                    onTap: () => context.go('/pro-subscription'),
+                  ),
+                  _ActionPill(
+                    label: 'Ajouter un pro',
+                    icon: Icons.person_add_alt_1_outlined,
+                    onTap: () => context.go('/add-professional'),
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 18),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 1.2,
-          children: [
-            _MetricCard(
-              title: 'Demandes visibles',
-              value: '$leadsForCurrentPro',
-              accent: AppColors.navy,
-              icon: Icons.waves_outlined,
-            ),
-            _MetricCard(
-              title: 'Demandes attribuées',
-              value: '${stats.lockedRequests}',
-              accent: AppColors.success,
-              icon: Icons.verified_outlined,
-            ),
-            _MetricCard(
-              title: 'Offres envoyées',
-              value: '${currentProfessionalOffers.length}',
-              accent: AppColors.primary,
-              icon: Icons.local_offer_outlined,
-            ),
-            _MetricCard(
-              title: 'Offres retenues',
-              value: '$currentProfessionalAcceptedOffers',
-              accent: AppColors.success,
-              icon: Icons.workspace_premium_outlined,
             ),
           ],
         ),
-        const SizedBox(height: 18),
-        _SectionCard(
-          title: 'Performance commerciale',
-          subtitle:
-              'Lecture rapide de la conversion du marketplace et de la capacité des pros à répondre.',
-          icon: Icons.insights_outlined,
-          content: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: _KpiStrip(
-                      label: 'Taux de conversion',
-                      value: '${stats.conversionRate.toStringAsFixed(0)}%',
-                      helper: '${stats.acceptedOffers} offre(s) retenue(s)',
-                      accent: AppColors.success,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _KpiStrip(
-                      label: 'Couverture',
-                      value: '${stats.coverageRate.toStringAsFixed(0)}%',
-                      helper:
-                          '${stats.requestsWithOffers}/${requests.length} demandes couvertes',
-                      accent: AppColors.navy,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: _KpiStrip(
-                      label: 'Offres / demande',
-                      value: stats.averageOffersPerRequest.toStringAsFixed(1),
-                      helper: 'Intensité moyenne',
-                      accent: AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _KpiStrip(
-                      label: 'Activité 24h',
-                      value: '${stats.last24hOffers}',
-                      helper: 'Offres récentes',
-                      accent: AppColors.navy,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              _FunnelBar(
-                openRequests: stats.openRequests,
-                coveredRequests: stats.requestsWithOffers,
-                lockedRequests: stats.lockedRequests,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        _SectionCard(
-          title: 'Professionnel actif',
-          subtitle: _currentProfessional == null
-              ? 'Aucun professionnel sélectionné pour le BO.'
-              : '${_currentProfessional!.name} • ${_currentProfessional!.service} • ${_currentProfessional!.planLabel.toUpperCase()}',
-          icon: Icons.badge_outlined,
-          actionLabel: _currentProfessional == null
-              ? 'Ajouter un pro'
-              : 'Gérer les demandes',
-          onTap: () => context.go(
-            _currentProfessional == null ? '/add-professional' : '/pro-leads',
-          ),
-        ),
-        const SizedBox(height: 12),
-        _SectionCard(
-          title: 'Top professionnels',
-          subtitle: leaderboard.isEmpty
-              ? 'Aucune donnée d’offre disponible pour le moment.'
-              : 'Classement par offres retenues, puis par volume d’offres envoyées.',
-          icon: Icons.emoji_events_outlined,
-          content: leaderboard.isEmpty
-              ? const Text(
-                  'Les performances apparaîtront dès que les professionnels commenceront à répondre aux demandes.',
-                  style: TextStyle(color: AppColors.muted, height: 1.4),
-                )
-              : Column(
-                  children: [
-                    for (var index = 0; index < leaderboard.length; index++)
-                      Padding(
-                        padding: EdgeInsets.only(
-                          bottom: index == leaderboard.length - 1 ? 0 : 10,
-                        ),
-                        child: _LeaderboardTile(
-                          rank: index + 1,
-                          performance: leaderboard[index],
-                        ),
-                      ),
-                  ],
-                ),
-        ),
-        const SizedBox(height: 12),
-        _SectionCard(
-          title: 'Actions rapides',
-          subtitle:
-              'Ouvrez vos écrans clés pour traiter plus vite les demandes et les offres.',
-          icon: Icons.flash_on_outlined,
-          content: Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              _ActionPill(
-                label: 'Demandes ouvertes',
-                icon: Icons.campaign_outlined,
-                onTap: () => context.go('/pro-leads'),
-              ),
-              _ActionPill(
-                label: 'Offres envoyées',
-                icon: Icons.inventory_2_outlined,
-                onTap: () => context.go('/pro-sent-offers'),
-              ),
-              _ActionPill(
-                label: 'Abonnement Pro',
-                icon: Icons.workspace_premium_outlined,
-                onTap: () => context.go('/pro-subscription'),
-              ),
-              _ActionPill(
-                label: 'Ajouter un pro',
-                icon: Icons.person_add_alt_1_outlined,
-                onTap: () => context.go('/add-professional'),
-              ),
-            ],
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

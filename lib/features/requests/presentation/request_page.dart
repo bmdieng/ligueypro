@@ -13,16 +13,7 @@ class RequestPage extends StatefulWidget {
 }
 
 class _RequestPageState extends State<RequestPage> {
-  static const List<String> _fallbackServiceOptions = [
-    'Plombier',
-    'Électricien',
-    'Ménage',
-    'Climatisation',
-    'Jardinage',
-    'Autre',
-  ];
-
-  List<String> _serviceOptions = _fallbackServiceOptions;
+  List<String> _serviceOptions = const [];
 
   static const List<String> _urgencyOptions = [
     'Standard',
@@ -36,7 +27,7 @@ class _RequestPageState extends State<RequestPage> {
   );
   final TextEditingController _phoneController = TextEditingController();
 
-  String _selectedService = _fallbackServiceOptions.first;
+  String? _selectedService;
   String _selectedUrgency = _urgencyOptions.first;
   bool _isSending = false;
   bool _photoAdded = false;
@@ -50,8 +41,8 @@ class _RequestPageState extends State<RequestPage> {
   Future<void> _loadServiceOptions() async {
     if (!FirebaseBootstrap.isReady) {
       setState(() {
-        _serviceOptions = _fallbackServiceOptions;
-        _selectedService = _serviceOptions.first;
+        _serviceOptions = const [];
+        _selectedService = null;
       });
       return;
     }
@@ -59,13 +50,19 @@ class _RequestPageState extends State<RequestPage> {
     try {
       final snapshot =
           await FirebaseDatabase.instance.ref('home/categories').get();
-      final labels = <String>[];
+      final services = <_ServiceOption>[];
+      var fallbackOrder = 0;
 
       void collect(dynamic value) {
         if (value is Map) {
           final label = value['label']?.toString();
           if (label != null && label.trim().isNotEmpty) {
-            labels.add(label);
+            final rawOrder = value['order'];
+            final order = rawOrder is num
+                ? rawOrder.toInt()
+                : int.tryParse(rawOrder?.toString() ?? '') ?? fallbackOrder;
+            services.add(_ServiceOption(label: label, order: order));
+            fallbackOrder++;
             return;
           }
           for (final item in value.values) {
@@ -80,20 +77,33 @@ class _RequestPageState extends State<RequestPage> {
 
       collect(snapshot.value);
 
-      final loadedOptions =
-          labels.isNotEmpty ? labels : _fallbackServiceOptions;
+      services.sort((a, b) {
+        if (a.order != b.order) {
+          return a.order.compareTo(b.order);
+        }
+        return a.label.toLowerCase().compareTo(b.label.toLowerCase());
+      });
+
+      final seenLabels = <String>{};
+      final loadedOptions = services
+          .where((service) => seenLabels.add(service.label.toLowerCase()))
+          .map((service) => service.label)
+          .toList();
       if (!mounted) return;
       setState(() {
         _serviceOptions = loadedOptions;
-        if (!_serviceOptions.contains(_selectedService)) {
+        if (_serviceOptions.isEmpty) {
+          _selectedService = null;
+        } else if (_selectedService == null ||
+            !_serviceOptions.contains(_selectedService)) {
           _selectedService = _serviceOptions.first;
         }
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _serviceOptions = _fallbackServiceOptions;
-        _selectedService = _serviceOptions.first;
+        _serviceOptions = const [];
+        _selectedService = null;
       });
     }
   }
@@ -118,11 +128,20 @@ class _RequestPageState extends State<RequestPage> {
       return;
     }
 
+    if (_selectedService == null || _selectedService!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Aucun service n’est disponible pour le moment.'),
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSending = true);
 
     try {
       final draft = ServiceRequestDraft(
-        service: _selectedService,
+        service: _selectedService!,
         urgency: _selectedUrgency,
         description: requestText,
         location:
@@ -154,9 +173,8 @@ class _RequestPageState extends State<RequestPage> {
       _phoneController.clear();
       _locationController.text = 'Dakar, Sénégal';
       setState(() {
-        _selectedService = _serviceOptions.isEmpty
-            ? _fallbackServiceOptions.first
-            : _serviceOptions.first;
+        _selectedService =
+            _serviceOptions.isEmpty ? null : _serviceOptions.first;
         _selectedUrgency = _urgencyOptions.first;
         _photoAdded = false;
       });
@@ -201,28 +219,36 @@ class _RequestPageState extends State<RequestPage> {
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButtonFormField<String>(
-                    initialValue: _selectedService,
-                    decoration: const InputDecoration(
-                      labelText: 'Type de service',
-                      border: InputBorder.none,
-                    ),
-                    items: _serviceOptions
-                        .map(
-                          (service) => DropdownMenuItem(
-                            value: service,
-                            child: Text(service),
+                child: _serviceOptions.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 18),
+                        child: Text(
+                          'Aucun service disponible dans Firebase.',
+                          style: TextStyle(color: AppColors.muted),
+                        ),
+                      )
+                    : DropdownButtonHideUnderline(
+                        child: DropdownButtonFormField<String>(
+                          initialValue: _selectedService,
+                          decoration: const InputDecoration(
+                            labelText: 'Type de service',
+                            border: InputBorder.none,
                           ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() => _selectedService = value);
-                      }
-                    },
-                  ),
-                ),
+                          items: _serviceOptions
+                              .map(
+                                (service) => DropdownMenuItem(
+                                  value: service,
+                                  child: Text(service),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() => _selectedService = value);
+                            }
+                          },
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 18),
@@ -243,7 +269,7 @@ class _RequestPageState extends State<RequestPage> {
                     style: TextStyle(fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 8),
-                  Text('Service : $_selectedService'),
+                  Text('Service : ${_selectedService ?? 'Non disponible'}'),
                   const SizedBox(height: 4),
                   Text('Urgence : $_selectedUrgency'),
                   const SizedBox(height: 4),
@@ -330,7 +356,9 @@ class _RequestPageState extends State<RequestPage> {
             ),
             const SizedBox(height: 20),
             FilledButton(
-              onPressed: _isSending ? null : _submitRequest,
+              onPressed: _isSending || _selectedService == null
+                  ? null
+                  : _submitRequest,
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.navy,
                 padding: const EdgeInsets.all(16),
@@ -351,4 +379,11 @@ class _RequestPageState extends State<RequestPage> {
       ),
     );
   }
+}
+
+class _ServiceOption {
+  const _ServiceOption({required this.label, required this.order});
+
+  final String label;
+  final int order;
 }

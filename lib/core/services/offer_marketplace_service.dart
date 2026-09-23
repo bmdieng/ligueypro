@@ -136,122 +136,6 @@ class ProSentOfferItem {
 class OfferMarketplaceService {
   OfferMarketplaceService._();
 
-  static final Map<String, String> _acceptedFallbackOffers = {
-    'fallback_request_2': 'fallback_offer_4',
-  };
-
-  static final fallbackRequests = [
-    MarketplaceRequestItem(
-      id: 'fallback_request_1',
-      service: 'Climatisation',
-      urgency: 'Très urgent',
-      description: 'Mon climatiseur ne refroidit plus depuis ce matin.',
-      location: 'Yoff, Dakar',
-      phone: '+221 77 123 45 67',
-      status: 'awaiting_offers',
-      offersStatus: 'open',
-      offersCount: 3,
-      createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-    ),
-    MarketplaceRequestItem(
-      id: 'fallback_request_2',
-      service: 'Plomberie',
-      urgency: 'Urgent',
-      description:
-          'Fuite sous l’évier de la cuisine, besoin d’intervention rapide.',
-      location: 'Sacré-Cœur, Dakar',
-      phone: '+221 70 987 65 43',
-      status: 'in_progress',
-      offersStatus: 'accepted',
-      offersCount: 2,
-      createdAt: DateTime.now().subtract(const Duration(hours: 5)),
-      acceptedProfessionalId: 'fallback_pro_4',
-      acceptedProfessionalName: 'Saliou Ndiaye',
-      acceptedOfferPrice: '12 000 FCFA',
-      acceptedOfferEta: 'Intervention prévue à 16h',
-    ),
-    MarketplaceRequestItem(
-      id: 'fallback_request_3',
-      service: 'Électricité',
-      urgency: 'Standard',
-      description: 'Prise cassée dans la chambre principale.',
-      location: 'Mermoz, Dakar',
-      phone: '+221 76 345 12 98',
-      status: 'pending',
-      offersStatus: 'open',
-      offersCount: 0,
-      createdAt: DateTime.now().subtract(const Duration(days: 1)),
-    ),
-  ];
-
-  static List<MarketplaceOfferItem> fallbackOffersForRequest(String requestId) {
-    switch (requestId) {
-      case 'fallback_request_1':
-        return [
-          MarketplaceOfferItem(
-            id: 'fallback_offer_1',
-            professionalId: 'fallback_pro_1',
-            professionalName: 'Mamadou Diop',
-            planLabel: 'Pro',
-            price: '18 000 FCFA',
-            eta: 'Disponible dans 35 min',
-            message: 'Je peux intervenir rapidement avec diagnostic sur place.',
-            phone: '+221 77 000 00 01',
-            createdAt: DateTime.now().subtract(const Duration(minutes: 42)),
-            isAccepted:
-                _acceptedFallbackOffers[requestId] == 'fallback_offer_1',
-            highlighted: true,
-          ),
-          MarketplaceOfferItem(
-            id: 'fallback_offer_2',
-            professionalId: 'fallback_pro_2',
-            professionalName: 'Aliou Ba',
-            planLabel: 'Starter',
-            price: '16 500 FCFA',
-            eta: 'Passage dans la journée',
-            message: 'Intervention possible après 14h avec pièces standards.',
-            phone: '+221 77 000 00 02',
-            createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
-            isAccepted:
-                _acceptedFallbackOffers[requestId] == 'fallback_offer_2',
-          ),
-          MarketplaceOfferItem(
-            id: 'fallback_offer_3',
-            professionalId: 'fallback_pro_3',
-            professionalName: 'Yacine Fall',
-            planLabel: 'Business',
-            price: '19 500 FCFA',
-            eta: 'Disponible dans 20 min',
-            message: 'Équipe mobile disponible immédiatement.',
-            phone: '+221 77 000 00 03',
-            createdAt: DateTime.now().subtract(const Duration(minutes: 18)),
-            isAccepted:
-                _acceptedFallbackOffers[requestId] == 'fallback_offer_3',
-          ),
-        ];
-      case 'fallback_request_2':
-        return [
-          MarketplaceOfferItem(
-            id: 'fallback_offer_4',
-            professionalId: 'fallback_pro_4',
-            professionalName: 'Saliou Ndiaye',
-            planLabel: 'Pro',
-            price: '12 000 FCFA',
-            eta: 'Intervention prévue à 16h',
-            message:
-                'Déplacement confirmé, intervention avec remplacement si besoin.',
-            phone: '+221 77 000 00 04',
-            createdAt: DateTime.now().subtract(const Duration(hours: 3)),
-            isAccepted:
-                _acceptedFallbackOffers[requestId] == 'fallback_offer_4',
-            highlighted: true,
-          ),
-        ];
-      default:
-        return const [];
-    }
-  }
-
   static List<MarketplaceRequestItem> requestsFromSnapshot(
       Object? snapshotValue) {
     final requests = <MarketplaceRequestItem>[];
@@ -291,7 +175,8 @@ class OfferMarketplaceService {
       }
     }
 
-    return requests.isEmpty ? fallbackRequests : requests;
+    requests.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return requests;
   }
 
   static List<MarketplaceOfferItem> offersFromSnapshot(Object? snapshotValue) {
@@ -369,13 +254,10 @@ class OfferMarketplaceService {
       );
     }
 
-    final fallbackOffers = fallbackOffersForRequest(requestId);
-    final acceptedOfferId = _acceptedFallbackOffers[requestId];
     return MarketplaceRequestDetails(
-      offers: fallbackOffers,
-      status: acceptedOfferId == null ? 'awaiting_offers' : 'accepted',
-      offersStatus: acceptedOfferId == null ? 'open' : 'accepted',
-      acceptedOfferId: acceptedOfferId,
+      offers: const [],
+      status: 'awaiting_offers',
+      offersStatus: 'open',
     );
   }
 
@@ -412,24 +294,7 @@ class OfferMarketplaceService {
       }
     }
 
-    return professionals.isEmpty
-        ? const [
-            SubscribedProfessionalItem(
-              id: 'fallback_pro_1',
-              name: 'Mamadou Diop',
-              phone: '+221 77 000 00 01',
-              service: 'Climatisation',
-              planLabel: 'pro',
-            ),
-            SubscribedProfessionalItem(
-              id: 'fallback_pro_2',
-              name: 'Aliou Ba',
-              phone: '+221 77 000 00 02',
-              service: 'Plomberie',
-              planLabel: 'starter',
-            ),
-          ]
-        : professionals;
+    return professionals;
   }
 
   static bool isRequestLocked(MarketplaceRequestItem request) {
@@ -445,40 +310,7 @@ class OfferMarketplaceService {
   }) {
     final offers = <ProSentOfferItem>[];
 
-    void addFallbackOffers() {
-      for (final request in fallbackRequests) {
-        for (final offer in fallbackOffersForRequest(request.id)) {
-          if (professionalId != null &&
-              professionalId.isNotEmpty &&
-              offer.professionalId != professionalId) {
-            continue;
-          }
-          offers.add(
-            ProSentOfferItem(
-              offerId: offer.id,
-              requestId: request.id,
-              professionalId: offer.professionalId,
-              requestService: request.service,
-              requestLocation: request.location,
-              requestUrgency: request.urgency,
-              clientPhone: request.phone,
-              professionalName: offer.professionalName,
-              planLabel: offer.planLabel,
-              price: offer.price,
-              eta: offer.eta,
-              message: offer.message,
-              createdAt: offer.createdAt,
-              requestStatus: request.status,
-              requestOffersStatus: request.offersStatus,
-              isAccepted: offer.isAccepted,
-            ),
-          );
-        }
-      }
-    }
-
     if (rootSnapshot is! Map) {
-      addFallbackOffers();
       return offers
         ..sort((a, b) {
           if (a.isAccepted != b.isAccepted) {
@@ -552,10 +384,6 @@ class OfferMarketplaceService {
       }
     }
 
-    if (offers.isEmpty) {
-      addFallbackOffers();
-    }
-
     offers.sort((a, b) {
       if (a.isAccepted != b.isAccepted) {
         return a.isAccepted ? -1 : 1;
@@ -569,14 +397,6 @@ class OfferMarketplaceService {
     required String requestId,
     required MarketplaceOfferItem offer,
   }) async {
-    if (requestId.startsWith('fallback_')) {
-      if (_acceptedFallbackOffers.containsKey(requestId)) {
-        throw StateError('Cette demande a deja une offre acceptee.');
-      }
-      await Future<void>.delayed(const Duration(milliseconds: 500));
-      return;
-    }
-
     if (!FirebaseBootstrap.isReady) {
       await Future<void>.delayed(const Duration(milliseconds: 500));
       return;
@@ -637,17 +457,7 @@ class OfferMarketplaceService {
     required String requestId,
     required MarketplaceOfferItem offer,
   }) async {
-    if (requestId.startsWith('fallback_') || !FirebaseBootstrap.isReady) {
-      _acceptedFallbackOffers[requestId] = offer.id;
-      await AppPreferencesService.updateRecentRequestStatus(
-        requestId: requestId,
-        status: 'accepted',
-        offersStatus: 'accepted',
-        acceptedProfessionalId: offer.professionalId,
-        acceptedProfessionalName: offer.professionalName,
-        acceptedOfferPrice: offer.price,
-        acceptedOfferEta: offer.eta,
-      );
+    if (!FirebaseBootstrap.isReady) {
       return;
     }
 

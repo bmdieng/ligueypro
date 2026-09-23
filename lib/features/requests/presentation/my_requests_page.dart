@@ -48,50 +48,6 @@ class MyRequestsPage extends StatelessWidget {
     'Standard': 1,
   };
 
-  static final List<_RequestItem> _fallbackRequests = [
-    _RequestItem(
-      id: 'fallback_request_1',
-      service: 'Climatisation',
-      description: 'Mon climatiseur ne refroidit plus depuis ce matin.',
-      urgency: 'Très urgent',
-      location: 'Yoff, Dakar',
-      phone: '+221 77 123 45 67',
-      status: 'awaiting_offers',
-      offersStatus: 'open',
-      offersCount: 3,
-      createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-    ),
-    _RequestItem(
-      id: 'fallback_request_2',
-      service: 'Plomberie',
-      description:
-          'Fuite sous l’évier de la cuisine, besoin d’intervention rapide.',
-      urgency: 'Urgent',
-      location: 'Sacré-Cœur, Dakar',
-      phone: '+221 70 987 65 43',
-      status: 'in_progress',
-      offersStatus: 'accepted',
-      offersCount: 2,
-      createdAt: DateTime.now().subtract(const Duration(hours: 5)),
-      acceptedProfessionalId: 'fallback_pro_4',
-      acceptedProfessionalName: 'Saliou Ndiaye',
-      acceptedOfferPrice: '12 000 FCFA',
-      acceptedOfferEta: 'Intervention prévue à 16h',
-    ),
-    _RequestItem(
-      id: 'fallback_request_3',
-      service: 'Électricité',
-      description: 'Prise cassée dans la chambre principale.',
-      urgency: 'Standard',
-      location: 'Mermoz, Dakar',
-      phone: '+221 76 345 12 98',
-      status: 'pending',
-      offersStatus: 'open',
-      offersCount: 0,
-      createdAt: DateTime.now().subtract(const Duration(days: 1)),
-    ),
-  ];
-
   static List<_RequestItem> _requestsFromSnapshot(Object? snapshotValue) {
     final requests = <_RequestItem>[];
 
@@ -145,10 +101,6 @@ class MyRequestsPage extends StatelessWidget {
       for (final entry in snapshotValue.entries) {
         collectFrom(entry.value, entry.key.toString());
       }
-    }
-
-    if (requests.isEmpty) {
-      return _fallbackRequests;
     }
 
     requests.sort(
@@ -464,7 +416,7 @@ class MyRequestsPage extends StatelessWidget {
                 stream: FirebaseDatabase.instance.ref('requests').onValue,
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    return _buildList(_fallbackRequests);
+                    return _buildList(const []);
                   }
 
                   final requests =
@@ -472,7 +424,7 @@ class MyRequestsPage extends StatelessWidget {
                   return _buildList(requests);
                 },
               )
-            : _buildList(_fallbackRequests),
+            : _buildList(const []),
       ),
     );
   }

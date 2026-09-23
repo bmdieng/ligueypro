@@ -9,8 +9,13 @@ import '../features/requests/presentation/request_page.dart';
 import '../features/professionals/presentation/add_professional_page.dart';
 import '../features/professionals/presentation/all_professionals_page.dart';
 import '../features/professionals/presentation/back_office_access_page.dart';
+import '../features/professionals/presentation/category_admin_page.dart';
 import '../features/professionals/presentation/back_office_dashboard_page.dart';
+import '../features/professionals/presentation/professionals_admin_page.dart';
 import '../features/professionals/presentation/pro_leads_page.dart';
+import '../features/professionals/presentation/pro_marketing_page.dart';
+import '../features/professionals/presentation/pro_lead_capture_page.dart';
+import '../features/professionals/presentation/pro_leads_admin_page.dart';
 import '../features/professionals/presentation/pro_sent_offers_page.dart';
 import '../features/professionals/presentation/pro_subscription_page.dart';
 import '../features/profile/presentation/app_settings_page.dart';
@@ -46,8 +51,12 @@ final appRouter = GoRouter(
         if (extra is! Map) {
           return const MyRequestsPage();
         }
+        final requestId = extra['requestId']?.toString();
+        if (requestId == null || requestId.isEmpty) {
+          return const MyRequestsPage();
+        }
         return RequestOffersPage(
-          requestId: extra['requestId']?.toString() ?? 'fallback_request_1',
+          requestId: requestId,
           service: extra['service']?.toString() ?? 'Service',
           location: extra['location']?.toString() ?? 'Dakar',
           urgency: extra['urgency']?.toString() ?? 'Standard',
@@ -66,6 +75,34 @@ final appRouter = GoRouter(
     GoRoute(
         path: '/pro-subscription',
         builder: (_, __) => const ProSubscriptionPage()),
+    GoRoute(path: '/for-pros', builder: (_, __) => const ProMarketingPage()),
+    GoRoute(
+        path: '/for-pros/apply',
+        builder: (_, __) => const ProLeadCapturePage()),
+    GoRoute(
+      path: '/admin-pro-leads',
+      builder: (_, __) => const SecureBackOfficeRoute(
+        targetRoute: '/admin-pro-leads',
+        title: 'Accès sécurisé aux leads pros',
+        child: ProLeadsAdminPage(),
+      ),
+    ),
+    GoRoute(
+      path: '/admin-categories',
+      builder: (_, __) => const SecureBackOfficeRoute(
+        targetRoute: '/admin-categories',
+        title: 'Accès sécurisé aux catégories',
+        child: CategoryAdminPage(),
+      ),
+    ),
+    GoRoute(
+      path: '/admin-professionals',
+      builder: (_, __) => const SecureBackOfficeRoute(
+        targetRoute: '/admin-professionals',
+        title: 'Accès sécurisé aux professionnels',
+        child: ProfessionalsAdminPage(),
+      ),
+    ),
     GoRoute(
       path: '/back-office',
       builder: (_, __) => const SecureBackOfficeRoute(

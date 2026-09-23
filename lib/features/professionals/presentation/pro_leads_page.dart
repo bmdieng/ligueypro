@@ -530,7 +530,7 @@ class _ProLeadsPageState extends State<ProLeadsPage> {
                 final requests = root is Map
                     ? OfferMarketplaceService.requestsFromSnapshot(
                         root['requests'])
-                    : OfferMarketplaceService.fallbackRequests;
+                  : const <MarketplaceRequestItem>[];
                 final professionals = root is Map
                     ? OfferMarketplaceService
                         .subscribedProfessionalsFromSnapshot(
@@ -618,7 +618,7 @@ class _ProLeadsPageState extends State<ProLeadsPage> {
                           ),
                           Expanded(
                             child: _buildLeads(
-                              OfferMarketplaceService.fallbackRequests,
+                              const <MarketplaceRequestItem>[],
                               currentProfessional,
                             ),
                           ),

@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 
 class _ProfessionalSummary {
   const _ProfessionalSummary({
+    required this.id,
     required this.name,
     required this.service,
     required this.location,
@@ -20,6 +21,7 @@ class _ProfessionalSummary {
     required this.completedJobs,
   });
 
+  final String id;
   final String name;
   final String service;
   final String location;
@@ -43,48 +45,6 @@ class ServiceSearchPage extends StatefulWidget {
 
 class _ServiceSearchPageState extends State<ServiceSearchPage> {
   String _selectedFilter = 'Tous';
-
-  static const List<_ProfessionalSummary> _fallbackProfessionals = [
-    _ProfessionalSummary(
-      name: 'Mamadou Diop',
-      service: 'Plomberie',
-      location: 'Sacré-Cœur, Dakar',
-      rating: '⭐ 4.8',
-      ratingAverage: 4.8,
-      distance: '1.2 km',
-      price: 'À partir de 5 000 FCFA',
-      verified: true,
-      availableNow: true,
-      responseTime: 'Répond en 8 min',
-      completedJobs: 126,
-    ),
-    _ProfessionalSummary(
-      name: 'Aliou Ba',
-      service: 'Électricité',
-      location: 'Mermoz, Dakar',
-      rating: '⭐ 4.6',
-      ratingAverage: 4.6,
-      distance: '2.4 km',
-      price: 'À partir de 6 000 FCFA',
-      verified: true,
-      availableNow: false,
-      responseTime: 'Répond en 18 min',
-      completedJobs: 84,
-    ),
-    _ProfessionalSummary(
-      name: 'Yacine Fall',
-      service: 'Climatisation',
-      location: 'Yoff, Dakar',
-      rating: '⭐ 4.9',
-      ratingAverage: 4.9,
-      distance: '3.1 km',
-      price: 'À partir de 7 000 FCFA',
-      verified: false,
-      availableNow: true,
-      responseTime: 'Répond en 12 min',
-      completedJobs: 59,
-    ),
-  ];
 
   static List<_ProfessionalSummary> _fromSnapshot(Object? snapshotValue,
       {String search = ''}) {
@@ -124,6 +84,7 @@ class _ServiceSearchPageState extends State<ServiceSearchPage> {
           if (matchesSearch) {
             professionals.add(
               _ProfessionalSummary(
+                id: value['id']?.toString() ?? name,
                 name: name,
                 service: value['service']?.toString() ?? serviceKey,
                 location: location,
@@ -157,7 +118,7 @@ class _ServiceSearchPageState extends State<ServiceSearchPage> {
           'Firebase professionals parsed: ${professionals.length} items from $snapshotValue');
     }
 
-    return professionals.isNotEmpty ? professionals : _fallbackProfessionals;
+    return professionals;
   }
 
   static double _parseRating(String ratingText) {
@@ -235,7 +196,7 @@ class _ServiceSearchPageState extends State<ServiceSearchPage> {
               isThreeLine: false,
               trailing: FilledButton(
                 onPressed: () => context.push(
-                    '/professional/${Uri.encodeComponent(professional.name)}'),
+                    '/professional/${Uri.encodeComponent(professional.id)}'),
                 style: FilledButton.styleFrom(backgroundColor: AppColors.navy),
                 child: const Text('Voir'),
               ),
@@ -250,13 +211,6 @@ class _ServiceSearchPageState extends State<ServiceSearchPage> {
     final decodedCategory = Uri.decodeComponent(widget.category);
     final normalizedQuery =
         decodedCategory == 'Recherche' ? '' : decodedCategory;
-    final filteredFallbackProfessionals = normalizedQuery.isEmpty
-        ? _fallbackProfessionals
-        : _fallbackProfessionals.where((professional) {
-            final haystack =
-                '${professional.name} ${professional.price}'.toLowerCase();
-            return haystack.contains(normalizedQuery.toLowerCase());
-          }).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -320,7 +274,7 @@ class _ServiceSearchPageState extends State<ServiceSearchPage> {
           ),
           const SizedBox(height: 12),
           if (!FirebaseBootstrap.isReady)
-            ..._buildPros(context, _applyFilter(filteredFallbackProfessionals))
+            ..._buildEmptyResults()
           else
             StreamBuilder<DatabaseEvent>(
               stream: FirebaseDatabase.instance.ref('professionals').onValue,
@@ -328,20 +282,51 @@ class _ServiceSearchPageState extends State<ServiceSearchPage> {
                 if (snapshot.hasError) {
                   debugPrint(
                       'Firebase professionals error for $decodedCategory: ${snapshot.error}');
-                  return Column(
-                      children: _buildPros(context,
-                          _applyFilter(filteredFallbackProfessionals)));
+                  return Column(children: _buildEmptyResults());
                 }
 
                 final pros = _fromSnapshot(snapshot.data?.snapshot.value,
                     search: normalizedQuery);
-                return Column(
-                    children: _buildPros(context, _applyFilter(pros)));
+                final filtered = _applyFilter(pros);
+                if (filtered.isEmpty) {
+                  return Column(children: _buildEmptyResults());
+                }
+                return Column(children: _buildPros(context, filtered));
               },
             ),
         ],
       ),
     );
+  }
+
+  List<Widget> _buildEmptyResults() {
+    return [
+      Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
+        ),
+        child: const Column(
+          children: [
+            Icon(Icons.search_off_outlined, size: 42, color: AppColors.primary),
+            SizedBox(height: 12),
+            Text(
+              'Aucun professionnel trouvé',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Aucun profil ne correspond à cette recherche dans Firebase pour le moment.',
+              style: TextStyle(color: AppColors.muted, height: 1.4),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    ];
   }
 }
 

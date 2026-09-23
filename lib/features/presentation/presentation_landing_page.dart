@@ -1,213 +1,395 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/firebase_bootstrap.dart';
+import '../../../core/services/offer_marketplace_service.dart';
+import '../../../core/services/professional_admin_service.dart';
 import '../../../core/theme/app_colors.dart';
+
+class _PresentationMetrics {
+  const _PresentationMetrics({
+    required this.servicesCount,
+    required this.professionalsCount,
+    required this.verifiedProfessionalsCount,
+    required this.subscribedProfessionalsCount,
+    required this.requestsCount,
+    required this.offersCount,
+    required this.averageResponseMinutes,
+    required this.averageRating,
+    required this.reviewsCount,
+  });
+
+  final int servicesCount;
+  final int professionalsCount;
+  final int verifiedProfessionalsCount;
+  final int subscribedProfessionalsCount;
+  final int requestsCount;
+  final int offersCount;
+  final double? averageResponseMinutes;
+  final double? averageRating;
+  final int reviewsCount;
+}
 
 class PresentationLandingPage extends StatelessWidget {
   const PresentationLandingPage({super.key});
+
+  static const _emptyMetrics = _PresentationMetrics(
+    servicesCount: 0,
+    professionalsCount: 0,
+    verifiedProfessionalsCount: 0,
+    subscribedProfessionalsCount: 0,
+    requestsCount: 0,
+    offersCount: 0,
+    averageResponseMinutes: null,
+    averageRating: null,
+    reviewsCount: 0,
+  );
+
+  static _PresentationMetrics _metricsFromRoot(Object? root) {
+    final servicesCount =
+        ProfessionalAdminService.serviceOptionsFromRoot(root).length;
+    final professionals = ProfessionalAdminService.professionalsFromRoot(root);
+    final requests = root is Map
+        ? OfferMarketplaceService.requestsFromSnapshot(root['requests'])
+        : const <MarketplaceRequestItem>[];
+    final offers = OfferMarketplaceService.sentOffersFromRoot(root);
+
+    var responseMinutesTotal = 0.0;
+    var responseMinutesCount = 0;
+    var weightedRatingTotal = 0.0;
+    var weightedRatingCount = 0;
+
+    for (final professional in professionals) {
+      final responseMinutes = _parseResponseMinutes(professional.responseTime);
+      if (responseMinutes != null) {
+        responseMinutesTotal += responseMinutes;
+        responseMinutesCount++;
+      }
+
+      if (professional.reviewsCount > 0) {
+        weightedRatingTotal +=
+            professional.ratingAverage * professional.reviewsCount;
+        weightedRatingCount += professional.reviewsCount;
+      }
+    }
+
+    return _PresentationMetrics(
+      servicesCount: servicesCount,
+      professionalsCount: professionals.length,
+      verifiedProfessionalsCount:
+          professionals.where((professional) => professional.verified).length,
+      subscribedProfessionalsCount:
+          professionals.where((professional) => professional.subscribed).length,
+      requestsCount: requests.length,
+      offersCount: offers.length,
+      averageResponseMinutes: responseMinutesCount == 0
+          ? null
+          : responseMinutesTotal / responseMinutesCount,
+      averageRating: weightedRatingCount == 0
+          ? null
+          : weightedRatingTotal / weightedRatingCount,
+      reviewsCount: weightedRatingCount,
+    );
+  }
+
+  static double? _parseResponseMinutes(String responseTimeText) {
+    final normalized = responseTimeText.trim().toLowerCase();
+    if (normalized.isEmpty) {
+      return null;
+    }
+
+    final match = RegExp(r'(\d+(?:[.,]\d+)?)').firstMatch(normalized);
+    if (match == null) {
+      return null;
+    }
+
+    final value = double.tryParse(match.group(0)!.replaceAll(',', '.'));
+    if (value == null) {
+      return null;
+    }
+
+    if (normalized.contains('heure') || normalized.contains('hour')) {
+      return value * 60;
+    }
+    if (normalized.contains('jour')) {
+      return value * 24 * 60;
+    }
+    return value;
+  }
+
+  static String _formatCount(int count) {
+    if (count >= 1000) {
+      return '${(count / 1000).toStringAsFixed(count % 1000 == 0 ? 0 : 1)}k';
+    }
+    return '$count';
+  }
+
+  static String _formatAverageResponse(double? minutes) {
+    if (minutes == null) {
+      return 'N/A';
+    }
+    if (minutes < 60) {
+      return '${minutes.round()} min';
+    }
+
+    final hours = minutes / 60;
+    return '${hours.toStringAsFixed(hours >= 10 ? 0 : 1)} h';
+  }
+
+  static String _formatAverageRating(_PresentationMetrics metrics) {
+    if (metrics.averageRating == null) {
+      return 'N/A';
+    }
+    return '${metrics.averageRating!.toStringAsFixed(1)}/5';
+  }
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     final compact = width < 860;
 
+    if (!FirebaseBootstrap.isReady) {
+      return _buildPage(context, compact, _emptyMetrics);
+    }
+
+    return StreamBuilder<DatabaseEvent>(
+      stream: FirebaseDatabase.instance.ref().onValue,
+      builder: (context, snapshot) {
+        final metrics = _metricsFromRoot(snapshot.data?.snapshot.value);
+        return _buildPage(context, compact, metrics);
+      },
+    );
+  }
+
+  Widget _buildPage(
+    BuildContext context,
+    bool compact,
+    _PresentationMetrics metrics,
+  ) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            _TopBar(compact: compact),
-            const SizedBox(height: 20),
-            compact
-                ? Column(
-                    children: [
-                      _HeroCard(compact: compact),
-                      const SizedBox(height: 16),
-                      const _AccessPanel(),
-                    ],
-                  )
-                : Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Expanded(flex: 3, child: _HeroCard(compact: false)),
-                      SizedBox(width: 16),
-                      Expanded(flex: 2, child: _AccessPanel()),
-                    ],
-                  ),
-            const SizedBox(height: 18),
-            _SectionShell(
-              title: 'Pourquoi LigueyPro',
-              subtitle:
-                  'Une place de marché locale pensée pour accélérer la rencontre entre clients et professionnels abonnés.',
-              child: compact
-                  ? const Column(
-                      children: [
-                        _FeatureCard(
-                          icon: Icons.flash_on_outlined,
-                          title: 'Demande express',
-                          body:
-                              'Le client publie son besoin en quelques secondes avec urgence, zone et téléphone.',
-                        ),
-                        SizedBox(height: 12),
-                        _FeatureCard(
-                          icon: Icons.local_offer_outlined,
-                          title: 'Offres comparables',
-                          body:
-                              'Les pros abonnés répondent avec prix, délai et message personnalisé.',
-                        ),
-                        SizedBox(height: 12),
-                        _FeatureCard(
-                          icon: Icons.admin_panel_settings_outlined,
-                          title: 'BO sécurisé',
-                          body:
-                              'Le back-office permet de piloter les demandes, les offres et la performance commerciale.',
-                        ),
-                      ],
-                    )
-                  : const Row(
-                      children: [
-                        Expanded(
-                          child: _FeatureCard(
-                            icon: Icons.flash_on_outlined,
-                            title: 'Demande express',
-                            body:
-                                'Le client publie son besoin en quelques secondes avec urgence, zone et téléphone.',
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: _FeatureCard(
-                            icon: Icons.local_offer_outlined,
-                            title: 'Offres comparables',
-                            body:
-                                'Les pros abonnés répondent avec prix, délai et message personnalisé.',
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: _FeatureCard(
-                            icon: Icons.admin_panel_settings_outlined,
-                            title: 'BO sécurisé',
-                            body:
-                                'Le back-office permet de piloter les demandes, les offres et la performance commerciale.',
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
-            const SizedBox(height: 18),
-            _SectionShell(
-              title: 'Indicateurs clés',
-              subtitle:
-                  'Un positionnement lisible pour la vitrine web, avec une promesse claire pour les clients et pour les professionnels.',
-              child: compact
-                  ? const Column(
-                      children: [
-                        _MetricTile(label: 'Services couverts', value: '11+'),
-                        SizedBox(height: 10),
-                        _MetricTile(label: 'Parcours client', value: 'Simple'),
-                        SizedBox(height: 10),
-                        _MetricTile(label: 'Monétisation', value: 'Abonnement'),
-                        SizedBox(height: 10),
-                        _MetricTile(label: 'Accès BO', value: 'Sécurisé'),
-                      ],
-                    )
-                  : const Row(
-                      children: [
-                        Expanded(
-                          child: _MetricTile(
-                            label: 'Services couverts',
-                            value: '11+',
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: _MetricTile(
-                            label: 'Parcours client',
-                            value: 'Simple',
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: _MetricTile(
-                            label: 'Monétisation',
-                            value: 'Abonnement',
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: _MetricTile(
-                            label: 'Accès BO',
-                            value: 'Sécurisé',
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
-            const SizedBox(height: 18),
-            Container(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1240),
+            child: ListView(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.navy, Color(0xFF194E79)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+              children: [
+                _TopBar(compact: compact),
+                const SizedBox(height: 20),
+                compact
+                    ? Column(
+                        children: [
+                          _HeroCard(compact: compact, metrics: metrics),
+                          const SizedBox(height: 16),
+                          const _AccessPanel(),
+                        ],
+                      )
+                    : Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: _HeroCard(compact: false, metrics: metrics),
+                          ),
+                          const SizedBox(width: 16),
+                          const Expanded(flex: 2, child: _AccessPanel()),
+                        ],
+                      ),
+                const SizedBox(height: 18),
+                _SectionShell(
+                  title: 'Pourquoi LigueyPro',
+                  subtitle:
+                      'Une place de marché locale pensée pour accélérer la rencontre entre clients et professionnels abonnés.',
+                  child: compact
+                      ? const Column(
+                          children: [
+                            _FeatureCard(
+                              icon: Icons.flash_on_outlined,
+                              title: 'Demande express',
+                              body:
+                                  'Le client publie son besoin en quelques secondes avec urgence, zone et téléphone.',
+                            ),
+                            SizedBox(height: 12),
+                            _FeatureCard(
+                              icon: Icons.local_offer_outlined,
+                              title: 'Offres comparables',
+                              body:
+                                  'Les pros abonnés répondent avec prix, délai et message personnalisé.',
+                            ),
+                            SizedBox(height: 12),
+                            _FeatureCard(
+                              icon: Icons.admin_panel_settings_outlined,
+                              title: 'BO sécurisé',
+                              body:
+                                  'Le back-office permet de piloter les demandes, les offres et la performance commerciale.',
+                            ),
+                          ],
+                        )
+                      : const Row(
+                          children: [
+                            Expanded(
+                              child: _FeatureCard(
+                                icon: Icons.flash_on_outlined,
+                                title: 'Demande express',
+                                body:
+                                    'Le client publie son besoin en quelques secondes avec urgence, zone et téléphone.',
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: _FeatureCard(
+                                icon: Icons.local_offer_outlined,
+                                title: 'Offres comparables',
+                                body:
+                                    'Les pros abonnés répondent avec prix, délai et message personnalisé.',
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: _FeatureCard(
+                                icon: Icons.admin_panel_settings_outlined,
+                                title: 'BO sécurisé',
+                                body:
+                                    'Le back-office permet de piloter les demandes, les offres et la performance commerciale.',
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: compact
-                  ? const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Passez à l’application',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Consultez les services, publiez une demande ou ouvrez votre back-office professionnel sécurisé.',
-                          style: TextStyle(color: Colors.white70, height: 1.4),
-                        ),
-                        SizedBox(height: 16),
-                        _BottomCtas(),
-                      ],
-                    )
-                  : const Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Passez à l’application',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w900,
+                const SizedBox(height: 18),
+                _SectionShell(
+                  title: 'Indicateurs clés',
+                  subtitle:
+                      'Des chiffres réels issus de Firebase pour refléter le volume et la qualité de l’activité LigueyPro.',
+                  child: compact
+                      ? Column(
+                          children: [
+                            _MetricTile(
+                              label: 'Professionnels actifs',
+                              value: _formatCount(metrics.professionalsCount),
+                            ),
+                            const SizedBox(height: 10),
+                            _MetricTile(
+                              label: 'Demandes publiées',
+                              value: _formatCount(metrics.requestsCount),
+                            ),
+                            const SizedBox(height: 10),
+                            _MetricTile(
+                              label: 'Offres envoyées',
+                              value: _formatCount(metrics.offersCount),
+                            ),
+                            const SizedBox(height: 10),
+                            _MetricTile(
+                              label: metrics.reviewsCount == 0
+                                  ? 'Note moyenne'
+                                  : 'Note moyenne (${metrics.reviewsCount} avis)',
+                              value: _formatAverageRating(metrics),
+                            ),
+                          ],
+                        )
+                      : LayoutBuilder(
+                          builder: (context, constraints) {
+                            final columns = constraints.maxWidth > 1000 ? 4 : 2;
+                            return GridView.count(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              crossAxisCount: columns,
+                              mainAxisSpacing: 10,
+                              crossAxisSpacing: 10,
+                              childAspectRatio: 1.35,
+                              children: [
+                                _MetricTile(
+                                  label: 'Professionnels actifs',
+                                  value:
+                                      _formatCount(metrics.professionalsCount),
                                 ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                'Consultez les services, publiez une demande ou ouvrez votre back-office professionnel sécurisé.',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  height: 1.4,
+                                _MetricTile(
+                                  label: 'Demandes publiées',
+                                  value: _formatCount(metrics.requestsCount),
                                 ),
-                              ),
-                            ],
-                          ),
+                                _MetricTile(
+                                  label: 'Offres envoyées',
+                                  value: _formatCount(metrics.offersCount),
+                                ),
+                                _MetricTile(
+                                  label: metrics.reviewsCount == 0
+                                      ? 'Note moyenne'
+                                      : 'Note moyenne (${metrics.reviewsCount} avis)',
+                                  value: _formatAverageRating(metrics),
+                                ),
+                              ],
+                            );
+                          },
                         ),
-                        SizedBox(width: 18),
-                        Expanded(child: _BottomCtas()),
-                      ],
+                ),
+                const SizedBox(height: 18),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.navy, Color(0xFF194E79)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: compact
+                      ? const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Passez à l’application',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Consultez les services, publiez une demande ou ouvrez votre back-office professionnel sécurisé.',
+                              style:
+                                  TextStyle(color: Colors.white70, height: 1.4),
+                            ),
+                            SizedBox(height: 16),
+                            _BottomCtas(),
+                          ],
+                        )
+                      : const Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Passez à l’application',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'Consultez les services, publiez une demande ou ouvrez votre back-office professionnel sécurisé.',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(width: 18),
+                            Expanded(child: _BottomCtas()),
+                          ],
+                        ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -239,6 +421,10 @@ class _TopBar extends StatelessWidget {
                   runSpacing: 10,
                   children: [
                     OutlinedButton(
+                      onPressed: () => context.go('/for-pros'),
+                      child: const Text('Professionnels'),
+                    ),
+                    OutlinedButton(
                       onPressed: () => context.go('/presentation'),
                       child: const Text('Présentation'),
                     ),
@@ -256,6 +442,11 @@ class _TopBar extends StatelessWidget {
           : Row(
               children: [
                 const Expanded(child: _BrandBlock()),
+                OutlinedButton(
+                  onPressed: () => context.go('/for-pros'),
+                  child: const Text('Professionnels'),
+                ),
+                const SizedBox(width: 10),
                 OutlinedButton(
                   onPressed: () => context.go('/presentation'),
                   child: const Text('Présentation'),
@@ -317,9 +508,10 @@ class _BrandBlock extends StatelessWidget {
 }
 
 class _HeroCard extends StatelessWidget {
-  const _HeroCard({required this.compact});
+  const _HeroCard({required this.compact, required this.metrics});
 
   final bool compact;
+  final _PresentationMetrics metrics;
 
   @override
   Widget build(BuildContext context) {
@@ -370,12 +562,14 @@ class _HeroCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          const Text(
-            'LigueyPro connecte les besoins du quotidien aux professionnels abonnés, avec une logique simple : recevoir des demandes qualifiées, répondre avec une offre claire et suivre la conversion.',
-            style: TextStyle(color: Colors.white70, height: 1.5),
+          Text(
+            'LigueyPro connecte les besoins du quotidien à ${PresentationLandingPage._formatCount(metrics.subscribedProfessionalsCount)} professionnel(s) abonné(s), avec ${PresentationLandingPage._formatCount(metrics.offersCount)} offre(s) déjà envoyée(s) et un temps de réponse moyen de ${PresentationLandingPage._formatAverageResponse(metrics.averageResponseMinutes)}.',
+            style: const TextStyle(color: Colors.white70, height: 1.5),
           ),
           const SizedBox(height: 22),
-          compact ? const _HeroHighlightsColumn() : const _HeroHighlightsRow(),
+          compact
+              ? _HeroHighlightsColumn(metrics: metrics)
+              : _HeroHighlightsRow(metrics: metrics),
         ],
       ),
     );
@@ -383,30 +577,36 @@ class _HeroCard extends StatelessWidget {
 }
 
 class _HeroHighlightsRow extends StatelessWidget {
-  const _HeroHighlightsRow();
+  const _HeroHighlightsRow({required this.metrics});
+
+  final _PresentationMetrics metrics;
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
         Expanded(
           child: _HeroHighlight(
-            value: '11+',
+            value: PresentationLandingPage._formatCount(metrics.servicesCount),
             label: 'services couverts',
           ),
         ),
-        SizedBox(width: 12),
+        const SizedBox(width: 12),
         Expanded(
           child: _HeroHighlight(
-            value: '30 min',
-            label: 'session BO sécurisée',
+            value: PresentationLandingPage._formatCount(
+              metrics.verifiedProfessionalsCount,
+            ),
+            label: 'pros vérifiés',
           ),
         ),
-        SizedBox(width: 12),
+        const SizedBox(width: 12),
         Expanded(
           child: _HeroHighlight(
-            value: '100%',
-            label: 'modèle abonnement pro',
+            value: PresentationLandingPage._formatCount(
+              metrics.subscribedProfessionalsCount,
+            ),
+            label: 'pros abonnés',
           ),
         ),
       ],
@@ -415,17 +615,32 @@ class _HeroHighlightsRow extends StatelessWidget {
 }
 
 class _HeroHighlightsColumn extends StatelessWidget {
-  const _HeroHighlightsColumn();
+  const _HeroHighlightsColumn({required this.metrics});
+
+  final _PresentationMetrics metrics;
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       children: [
-        _HeroHighlight(value: '11+', label: 'services couverts'),
-        SizedBox(height: 10),
-        _HeroHighlight(value: '30 min', label: 'session BO sécurisée'),
-        SizedBox(height: 10),
-        _HeroHighlight(value: '100%', label: 'modèle abonnement pro'),
+        _HeroHighlight(
+          value: PresentationLandingPage._formatCount(metrics.servicesCount),
+          label: 'services couverts',
+        ),
+        const SizedBox(height: 10),
+        _HeroHighlight(
+          value: PresentationLandingPage._formatCount(
+            metrics.verifiedProfessionalsCount,
+          ),
+          label: 'pros vérifiés',
+        ),
+        const SizedBox(height: 10),
+        _HeroHighlight(
+          value: PresentationLandingPage._formatCount(
+            metrics.subscribedProfessionalsCount,
+          ),
+          label: 'pros abonnés',
+        ),
       ],
     );
   }
@@ -499,6 +714,14 @@ class _AccessPanel extends StatelessWidget {
             subtitle: 'Découvrir les services et publier une demande.',
             accent: AppColors.navy,
             onTap: () => context.go('/app'),
+          ),
+          const SizedBox(height: 12),
+          _AccessTile(
+            icon: Icons.workspace_premium_outlined,
+            title: 'Devenir professionnel',
+            subtitle: 'Découvrir les abonnements et laisser vos coordonnées.',
+            accent: AppColors.success,
+            onTap: () => context.go('/for-pros'),
           ),
           const SizedBox(height: 12),
           _AccessTile(
