@@ -1,7 +1,10 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/firebase_bootstrap.dart';
 import '../../../core/services/pro_lead_capture_service.dart';
+import '../../../core/services/professional_admin_service.dart';
 import '../../../core/theme/app_colors.dart';
 
 class ProLeadCapturePage extends StatefulWidget {
@@ -12,15 +15,8 @@ class ProLeadCapturePage extends StatefulWidget {
 }
 
 class _ProLeadCapturePageState extends State<ProLeadCapturePage> {
-  static const List<String> _serviceOptions = [
-    'Plombier',
-    'Électricien',
-    'Ménage',
-    'Climatisation',
-    'Jardinage',
-    'Informatique',
-    'Autre',
-  ];
+  List<String> _serviceOptions = const [];
+  bool _isLoadingServices = true;
 
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _businessNameController = TextEditingController();
@@ -28,13 +24,68 @@ class _ProLeadCapturePageState extends State<ProLeadCapturePage> {
   final TextEditingController _cityController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
 
-  String _selectedService = _serviceOptions.first;
+  String _selectedService = '';
   bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadServiceOptions();
+  }
+
+  Future<void> _loadServiceOptions() async {
+    if (!FirebaseBootstrap.isReady) {
+      if (!mounted) return;
+      setState(() {
+        _serviceOptions = const [];
+        _selectedService = '';
+        _isLoadingServices = false;
+      });
+      return;
+    }
+
+    try {
+      final snapshot =
+          await FirebaseDatabase.instance.ref('home/categories').get();
+      final loadedOptions =
+          ProfessionalAdminService.serviceOptionsFromCategories(
+        snapshot.value,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _serviceOptions = loadedOptions;
+        if (_serviceOptions.isEmpty) {
+          _selectedService = '';
+        } else if (_selectedService.isEmpty ||
+            !_serviceOptions.contains(_selectedService)) {
+          _selectedService = _serviceOptions.first;
+        }
+        _isLoadingServices = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _serviceOptions = const [];
+        _selectedService = '';
+        _isLoadingServices = false;
+      });
+    }
+  }
 
   Future<void> _submitLead() async {
     final fullName = _fullNameController.text.trim();
     final phone = _phoneController.text.trim();
     final city = _cityController.text.trim();
+
+    if (_selectedService.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Aucun service disponible pour le moment.'),
+        ),
+      );
+      return;
+    }
 
     if (fullName.isEmpty || phone.isEmpty || city.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -86,7 +137,7 @@ class _ProLeadCapturePageState extends State<ProLeadCapturePage> {
     _cityController.clear();
     _noteController.clear();
     setState(() {
-      _selectedService = _serviceOptions.first;
+      _selectedService = _serviceOptions.isEmpty ? '' : _serviceOptions.first;
     });
   }
 
@@ -253,10 +304,22 @@ class _ProLeadCapturePageState extends State<ProLeadCapturePage> {
           ),
           const SizedBox(height: 14),
           DropdownButtonFormField<String>(
-            initialValue: _selectedService,
-            decoration: const InputDecoration(
+            value: _serviceOptions.contains(_selectedService)
+                ? _selectedService
+                : null,
+            decoration: InputDecoration(
               labelText: 'Métier principal',
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
+              suffixIcon: _isLoadingServices
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : null,
             ),
             items: _serviceOptions
                 .map(
@@ -266,14 +329,16 @@ class _ProLeadCapturePageState extends State<ProLeadCapturePage> {
                   ),
                 )
                 .toList(),
-            onChanged: (value) {
-              if (value == null) {
-                return;
-              }
-              setState(() {
-                _selectedService = value;
-              });
-            },
+            onChanged: _isLoadingServices
+                ? null
+                : (value) {
+                    if (value == null) {
+                      return;
+                    }
+                    setState(() {
+                      _selectedService = value;
+                    });
+                  },
           ),
           const SizedBox(height: 14),
           TextField(

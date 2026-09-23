@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/services/app_preferences_service.dart';
 import '../../../core/network/firebase_bootstrap.dart';
 import '../../../core/services/pro_subscription_service.dart';
+import '../../../core/services/professional_admin_service.dart';
 import '../../../core/theme/app_colors.dart';
 
 class AddProfessionalPage extends StatefulWidget {
@@ -15,14 +16,8 @@ class AddProfessionalPage extends StatefulWidget {
 }
 
 class _AddProfessionalPageState extends State<AddProfessionalPage> {
-  static const List<String> _serviceOptions = [
-    'Plombier',
-    'Électricien',
-    'Ménage',
-    'Climatisation',
-    'Jardinage',
-    'Autre',
-  ];
+  List<String> _serviceOptions = const [];
+  bool _isLoadingServices = true;
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
@@ -32,17 +27,72 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
     text: 'Répond en moins de 15 min',
   );
 
-  String _selectedService = _serviceOptions.first;
+  String _selectedService = '';
   String _selectedPlanId = ProSubscriptionService.plans.first.id;
   bool _availableNow = true;
   bool _isSubscribed = false;
   bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadServiceOptions();
+  }
+
+  Future<void> _loadServiceOptions() async {
+    if (!FirebaseBootstrap.isReady) {
+      if (!mounted) return;
+      setState(() {
+        _serviceOptions = const [];
+        _selectedService = '';
+        _isLoadingServices = false;
+      });
+      return;
+    }
+
+    try {
+      final snapshot =
+          await FirebaseDatabase.instance.ref('home/categories').get();
+      final loadedOptions =
+          ProfessionalAdminService.serviceOptionsFromCategories(
+        snapshot.value,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _serviceOptions = loadedOptions;
+        if (_serviceOptions.isEmpty) {
+          _selectedService = '';
+        } else if (_selectedService.isEmpty ||
+            !_serviceOptions.contains(_selectedService)) {
+          _selectedService = _serviceOptions.first;
+        }
+        _isLoadingServices = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _serviceOptions = const [];
+        _selectedService = '';
+        _isLoadingServices = false;
+      });
+    }
+  }
 
   Future<void> _saveProfessional() async {
     final name = _nameController.text.trim();
     final location = _locationController.text.trim();
     final price = _priceController.text.trim();
     final phone = _phoneController.text.trim();
+
+    if (_selectedService.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Aucun service disponible pour le moment.'),
+        ),
+      );
+      return;
+    }
 
     if (name.isEmpty || location.isEmpty || price.isEmpty || phone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -113,7 +163,8 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
       _locationController.clear();
       _priceController.clear();
       _phoneController.clear();
-      setState(() => _selectedService = _serviceOptions.first);
+      setState(() => _selectedService =
+          _serviceOptions.isEmpty ? '' : _serviceOptions.first);
       Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
@@ -161,20 +212,34 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              initialValue: _selectedService,
-              decoration: const InputDecoration(
+              value: _serviceOptions.contains(_selectedService)
+                  ? _selectedService
+                  : null,
+              decoration: InputDecoration(
                 labelText: 'Service',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
+                suffixIcon: _isLoadingServices
+                    ? const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : null,
               ),
               items: _serviceOptions
                   .map((service) =>
                       DropdownMenuItem(value: service, child: Text(service)))
                   .toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _selectedService = value);
-                }
-              },
+              onChanged: _isLoadingServices
+                  ? null
+                  : (value) {
+                      if (value != null) {
+                        setState(() => _selectedService = value);
+                      }
+                    },
             ),
             const SizedBox(height: 16),
             TextField(

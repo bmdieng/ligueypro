@@ -87,26 +87,33 @@ class ProfessionalAdminService {
     final entries = <_CategoryEntry>[];
     var fallbackOrder = 0;
 
-    if (categoriesRoot is Map) {
-      for (final entry in categoriesRoot.entries) {
-        final value = entry.value;
-        if (value is! Map) {
-          continue;
-        }
-
+    void collect(Object? value) {
+      if (value is Map) {
         final label = value['label']?.toString();
-        if (label == null || label.trim().isEmpty) {
-          continue;
+        if (label != null && label.trim().isNotEmpty) {
+          final rawOrder = value['order'];
+          final order = rawOrder is num
+              ? rawOrder.toInt()
+              : int.tryParse(rawOrder?.toString() ?? '') ?? fallbackOrder;
+          entries.add(_CategoryEntry(label.trim(), order));
+          fallbackOrder++;
+          return;
         }
 
-        final rawOrder = value['order'];
-        final order = rawOrder is num
-            ? rawOrder.toInt()
-            : int.tryParse(rawOrder?.toString() ?? '') ?? fallbackOrder;
-        entries.add(_CategoryEntry(label.trim(), order));
-        fallbackOrder++;
+        for (final item in value.values) {
+          collect(item);
+        }
+        return;
+      }
+
+      if (value is List) {
+        for (final item in value) {
+          collect(item);
+        }
       }
     }
+
+    collect(categoriesRoot);
 
     entries.sort((a, b) {
       if (a.order != b.order) {

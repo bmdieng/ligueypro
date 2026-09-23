@@ -41,6 +41,7 @@ class RequestNotificationService {
     await androidPlugin?.createNotificationChannel(_channel);
 
     try {
+      await FirebaseMessaging.instance.subscribeToTopic('all_devices');
       final settings = await FirebaseMessaging.instance.requestPermission(
         alert: true,
         announcement: false,
@@ -60,6 +61,22 @@ class RequestNotificationService {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final title = message.notification?.title ?? 'Nouvelle demande';
       final body = message.notification?.body ?? 'Une demande a été soumise.';
+      _showLocalNotification(title: title, body: body);
+    });
+
+    FirebaseDatabase.instance.ref('notifications').onChildAdded.listen((event) {
+      final payload = event.snapshot.value;
+      if (payload is! Map) {
+        return;
+      }
+
+      final broadcastToAll = payload['broadcastToAll'] == true;
+      if (!broadcastToAll) {
+        return;
+      }
+
+      final title = payload['title']?.toString() ?? 'Nouvelle demande';
+      final body = payload['body']?.toString() ?? 'Une demande a été soumise.';
       _showLocalNotification(title: title, body: body);
     });
   }
@@ -84,6 +101,8 @@ class RequestNotificationService {
         'urgency': urgency,
         'location': location,
         'phone': phone,
+        'targetTopic': 'all_devices',
+        'broadcastToAll': true,
         'createdAt': ServerValue.timestamp,
       });
     }

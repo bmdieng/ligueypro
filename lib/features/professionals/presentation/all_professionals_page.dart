@@ -157,6 +157,7 @@ class AllProfessionalsPage extends StatelessWidget {
           margin: EdgeInsets.zero,
           child: ListTile(
             contentPadding: const EdgeInsets.all(16),
+            isThreeLine: true,
             leading: const CircleAvatar(radius: 28, child: Icon(Icons.person)),
             title: Text(
               professional.name,
@@ -164,6 +165,7 @@ class AllProfessionalsPage extends StatelessWidget {
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 6),
                 Text(professional.service),
@@ -197,22 +199,28 @@ class AllProfessionalsPage extends StatelessWidget {
                 ),
               ],
             ),
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '${professional.reviewsCount} avis',
-                  style: const TextStyle(color: AppColors.muted, fontSize: 12),
-                ),
-                const SizedBox(height: 8),
-                FilledButton(
-                  onPressed: () => context.push(
-                      '/professional/${Uri.encodeComponent(professional.id)}'),
-                  style:
-                      FilledButton.styleFrom(backgroundColor: AppColors.navy),
-                  child: const Text('Voir'),
-                ),
-              ],
+            trailing: SizedBox(
+              width: 96,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${professional.reviewsCount} avis',
+                    style:
+                        const TextStyle(color: AppColors.muted, fontSize: 12),
+                    textAlign: TextAlign.right,
+                  ),
+                  const SizedBox(height: 8),
+                  FilledButton(
+                    onPressed: () => context.push(
+                        '/professional/${Uri.encodeComponent(professional.id)}'),
+                    style:
+                        FilledButton.styleFrom(backgroundColor: AppColors.navy),
+                    child: const Text('Voir'),
+                  ),
+                ],
+              ),
             ),
           ),
         );

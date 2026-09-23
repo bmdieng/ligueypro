@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/network/firebase_bootstrap.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/uri_helpers.dart';
 
 class ProfessionalPage extends StatefulWidget {
   const ProfessionalPage({super.key, required this.id});
@@ -42,7 +43,7 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
   }
 
   Future<void> _loadProfessional() async {
-    final targetId = Uri.decodeComponent(widget.id);
+    final targetId = safeDecodeUriComponent(widget.id);
 
     if (!FirebaseBootstrap.isReady) {
       setState(() {
@@ -150,10 +151,29 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
     if (digits.isEmpty) {
       return;
     }
-    final uri = Uri.parse('https://wa.me/$digits');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+    final whatsappUri = Uri.parse('whatsapp://send?phone=$digits');
+    final webUri = Uri.parse('https://wa.me/$digits');
+
+    if (await canLaunchUrl(whatsappUri)) {
+      await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+      return;
     }
+
+    if (await canLaunchUrl(webUri)) {
+      await launchUrl(webUri, mode: LaunchMode.externalApplication);
+      return;
+    }
+
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('WhatsApp n’est pas disponible sur cet appareil.'),
+      ),
+    );
   }
 
   static double _parseStoredRating(String? ratingText) {
@@ -410,7 +430,7 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
           const SizedBox(height: 12),
           Text(
             _professionalName.isEmpty
-                ? Uri.decodeComponent(widget.id)
+                ? safeDecodeUriComponent(widget.id)
                 : _professionalName,
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800),

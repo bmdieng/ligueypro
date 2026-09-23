@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/network/firebase_bootstrap.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/uri_helpers.dart';
 
 class _ProfessionalSummary {
   const _ProfessionalSummary({
@@ -208,7 +209,7 @@ class _ServiceSearchPageState extends State<ServiceSearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    final decodedCategory = Uri.decodeComponent(widget.category);
+    final decodedCategory = safeDecodeUriComponent(widget.category);
     final normalizedQuery =
         decodedCategory == 'Recherche' ? '' : decodedCategory;
 

@@ -335,15 +335,15 @@ class _RequestPageState extends State<RequestPage> {
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: () => setState(() => _photoAdded = !_photoAdded),
-              icon: Icon(
-                _photoAdded ? Icons.check_circle : Icons.camera_alt_outlined,
-                color: _photoAdded ? AppColors.primary : null,
-              ),
-              label: Text(_photoAdded ? 'Photo ajoutée' : 'Ajouter une photo'),
-            ),
+            // const SizedBox(height: 16),
+            // OutlinedButton.icon(
+            //   onPressed: () => setState(() => _photoAdded = !_photoAdded),
+            //   icon: Icon(
+            //     _photoAdded ? Icons.check_circle : Icons.camera_alt_outlined,
+            //     color: _photoAdded ? AppColors.primary : null,
+            //   ),
+            //   label: Text(_photoAdded ? 'Photo ajoutée' : 'Ajouter une photo'),
+            // ),
             const SizedBox(height: 16),
             TextField(
               controller: _locationController,
