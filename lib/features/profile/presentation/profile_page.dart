@@ -112,32 +112,32 @@ class ProfilePage extends StatelessWidget {
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               onTap: () => context.push('/all-professionals'),
             ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.workspace_premium_outlined),
-              title: const Text('Abonnement Pro',
-                  maxLines: 1, overflow: TextOverflow.ellipsis),
-              subtitle:
-                  const Text('Recevoir les demandes et émettre des offres'),
-              onTap: () => context.push('/pro-subscription'),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.admin_panel_settings_outlined),
-              title: const Text('Back-office',
-                  maxLines: 1, overflow: TextOverflow.ellipsis),
-              subtitle:
-                  const Text('Accès sécurisé aux demandes et au pilotage'),
-              onTap: () => context.push('/back-office'),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.inventory_2_outlined),
-              title: const Text('Mes offres envoyées',
-                  maxLines: 1, overflow: TextOverflow.ellipsis),
-              subtitle: const Text('Suivre les offres déjà transmises'),
-              onTap: () => context.push('/pro-sent-offers'),
-            ),
+            // const Divider(height: 1),
+            // ListTile(
+            //   leading: const Icon(Icons.workspace_premium_outlined),
+            //   title: const Text('Abonnement Pro',
+            //       maxLines: 1, overflow: TextOverflow.ellipsis),
+            //   subtitle:
+            //       const Text('Recevoir les demandes et émettre des offres'),
+            //   onTap: () => context.push('/pro-subscription'),
+            // ),
+            // const Divider(height: 1),
+            // ListTile(
+            //   leading: const Icon(Icons.admin_panel_settings_outlined),
+            //   title: const Text('Back-office',
+            //       maxLines: 1, overflow: TextOverflow.ellipsis),
+            //   subtitle:
+            //       const Text('Accès sécurisé aux demandes et au pilotage'),
+            //   onTap: () => context.push('/back-office'),
+            // ),
+            // const Divider(height: 1),
+            // ListTile(
+            //   leading: const Icon(Icons.inventory_2_outlined),
+            //   title: const Text('Mes offres envoyées',
+            //       maxLines: 1, overflow: TextOverflow.ellipsis),
+            //   subtitle: const Text('Suivre les offres déjà transmises'),
+            //   onTap: () => context.push('/pro-sent-offers'),
+            // ),
           ]),
           _buildSectionTitle('APPLICATION'),
           _buildGroup([
@@ -147,13 +147,13 @@ class ProfilePage extends StatelessWidget {
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               onTap: () => context.push('/presentation'),
             ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.notifications_none),
-              title: const Text('Notifications',
-                  maxLines: 1, overflow: TextOverflow.ellipsis),
-              onTap: () => context.push('/settings'),
-            ),
+            // const Divider(height: 1),
+            // ListTile(
+            //   leading: const Icon(Icons.notifications_none),
+            //   title: const Text('Notifications',
+            //       maxLines: 1, overflow: TextOverflow.ellipsis),
+            //   onTap: () => context.push('/settings'),
+            // ),
             const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.settings_outlined),
