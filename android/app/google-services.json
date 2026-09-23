@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1036306872826",
+    "firebase_url": "https://ligueypro-default-rtdb.firebaseio.com",
+    "project_id": "ligueypro",
+    "storage_bucket": "ligueypro.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1036306872826:android:f3ed7a9a92bb880908cc43",
+        "android_client_info": {
+          "package_name": "sn.digitprestconsulting.ligueypro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVp2hgX3hKMinqjH5B38hA-YrluioT-7E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

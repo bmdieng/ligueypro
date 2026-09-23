@@ -1,0 +1,27 @@
+{
+  "home": {
+    "categories": {
+      "1": { "label": "Plombier", "icon": "plumbing" },
+      "2": { "label": "Électricien", "icon": "bolt" },
+      "3": { "label": "Ménage", "icon": "cleaning_services" },
+      "4": { "label": "Climatisation", "icon": "ac_unit" },
+      "5": { "label": "Jardinage", "icon": "grass" },
+      "6": { "label": "Chauffeur", "icon": "directions_car" },
+      "7": { "label": "Mécanicien", "icon": "build" },
+      "8": { "label": "Livreur", "icon": "motorcycle" },
+      "9": { "label": "Vendeur(se)", "icon": "store" },
+      "10": { "label": "Informatique", "icon": "computer" },
+      "11": { "label": "Autres", "icon": "more_horiz" }
+    }
+  },
+  "professionals": {
+    "Plombier": {
+      "1": {
+        "name": "Mamadou Diop",
+        "rating": "⭐ 4.8",
+        "distance": "1.2 km",
+        "price": "À partir de 5 000 FCFA"
+      }
+    }
+  }
+}

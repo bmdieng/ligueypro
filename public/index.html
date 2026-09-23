@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LigueyPro Back Office</title>
+    <style>
+      :root {
+        --bg: #f4f7fb;
+        --card: #ffffff;
+        --primary: #0a2647;
+        --primary-soft: #dfeeff;
+        --accent: #ffb703;
+        --success: #1a9d6c;
+        --danger: #d9485f;
+        --text: #132238;
+        --muted: #627087;
+        --border: #e7edf5;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      .topbar {
+        background: var(--primary);
+        color: white;
+        padding: 18px 28px;
+        border-radius: 18px;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 10px 25px rgba(10, 38, 71, 0.12);
+      }
+
+      h1, h2, h3, p { margin-top: 0; }
+      h1 { font-size: 28px; margin-bottom: 0; }
+      .sub { color: rgba(255,255,255,0.8); font-size: 14px; }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .stat {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 18px;
+      }
+
+      .stat .label {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+      }
+
+      .stat .value {
+        font-size: 28px;
+        font-weight: 700;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
+      }
+
+      .panel {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 20px;
+      }
+
+      form {
+        display: grid;
+        gap: 12px;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      input, select, button {
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        padding: 10px 12px;
+        font-size: 14px;
+      }
+
+      input:focus, select:focus {
+        outline: 2px solid rgba(10, 38, 71, 0.12);
+      }
+
+      button {
+        background: var(--primary);
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+      }
+
+      button.secondary {
+        background: var(--primary-soft);
+        color: var(--primary);
+      }
+
+      .list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        background: var(--primary-soft);
+        color: var(--primary);
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      th, td {
+        text-align: left;
+        padding: 10px 8px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+
+      .status {
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        display: inline-block;
+      }
+
+      .pending { background: #fff1d6; color: #8a5d00; }
+      .in_progress { background: #e2f0ff; color: #1b5fa7; }
+      .completed { background: #dff7ee; color: #116d4a; }
+      .cancelled { background: #fde7ea; color: #a62b3d; }
+
+      @media (max-width: 900px) {
+        .grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="topbar">
+        <div>
+          <h1>LigueyPro Back Office</h1>
+          <div class="sub">Gestion des demandes, catégories et professionnels</div>
+        </div>
+      </div>
+
+      <section class="stats">
+        <div class="stat">
+          <span class="label">Demandes</span>
+          <span class="value" id="requestCount">0</span>
+        </div>
+        <div class="stat">
+          <span class="label">Professionnels</span>
+          <span class="value" id="professionalCount">0</span>
+        </div>
+        <div class="stat">
+          <span class="label">Catégories</span>
+          <span class="value" id="categoryCount">0</span>
+        </div>
+        <div class="stat">
+          <span class="label">Notifications</span>
+          <span class="value" id="notificationCount">0</span>
+        </div>
+      </section>
+
+      <section class="grid">
+        <div class="panel">
+          <h2>Ajouter une catégorie</h2>
+          <form id="categoryForm">
+            <label>
+              Nom de la catégorie
+              <input type="text" id="categoryName" placeholder="Ex. Électricité" required />
+            </label>
+            <label>
+              Icône
+              <input type="text" id="categoryIcon" placeholder="Ex. bolt" />
+            </label>
+            <button type="submit">Enregistrer la catégorie</button>
+          </form>
+        </div>
+
+        <div class="panel">
+          <h2>Ajouter un professionnel</h2>
+          <form id="professionalForm">
+            <label>
+              Nom
+              <input type="text" id="professionalName" placeholder="Nom complet" required />
+            </label>
+            <label>
+              Service
+              <select id="professionalService" required></select>
+            </label>
+            <label>
+              Localisation
+              <input type="text" id="professionalLocation" placeholder="Dakar, Sénégal" required />
+            </label>
+            <label>
+              Prix
+              <input type="text" id="professionalPrice" placeholder="À partir de 5 000 FCFA" required />
+            </label>
+            <label>
+              Téléphone
+              <input type="tel" id="professionalPhone" placeholder="+221 ..." required />
+            </label>
+            <button type="submit">Ajouter le professionnel</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="panel" style="margin-bottom: 24px;">
+        <h2>Demandes récentes</h2>
+        <div id="requestsContainer" class="list"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Professionnels enregistrés</h2>
+        <div id="professionalsContainer" class="list"></div>
+      </section>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: 'AIzaSyBiW3m8GRwJdFm4MJ__AW3aPRknET1fJXc',
+        authDomain: 'ligueypro.firebaseapp.com',
+        databaseURL: 'https://ligueypro-default-rtdb.firebaseio.com',
+        projectId: 'ligueypro',
+        storageBucket: 'ligueypro.firebasestorage.app',
+        messagingSenderId: '1036306872826',
+        appId: '1:1036306872826:web:693d5ad28562898b08cc43'
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+
+      function formatDate(timestamp) {
+        if (!timestamp) return 'N/A';
+        const date = new Date(timestamp);
+        return date.toLocaleString('fr-FR');
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function setCounts({ requests, professionals, categories, notifications }) {
+        document.getElementById('requestCount').textContent = requests;
+        document.getElementById('professionalCount').textContent = professionals;
+        document.getElementById('categoryCount').textContent = categories;
+        document.getElementById('notificationCount').textContent = notifications;
+      }
+
+      function renderRequests(items) {
+        const el = document.getElementById('requestsContainer');
+        if (!items.length) {
+          el.innerHTML = '<p>Aucune demande pour le moment.</p>';
+          return;
+        }
+
+        const rows = items.map((item) => `
+          <div style="border:1px solid var(--border);border-radius:12px;padding:12px;">
+            <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;">
+              <div>
+                <strong>${escapeHtml(item.service || 'Service')}</strong>
+                <div style="color:var(--muted);margin-top:4px;">${escapeHtml(item.location || 'Localisation')}</div>
+              </div>
+              <span class="status ${item.status || 'pending'}">${escapeHtml(item.status || 'pending')}</span>
+            </div>
+            <p style="margin:10px 0;">${escapeHtml(item.description || 'Aucune description')}</p>
+            <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center;">
+              <div>
+                <div><strong>Téléphone:</strong> ${escapeHtml(item.phone || 'Non renseigné')}</div>
+                <div><strong>Urgence:</strong> ${escapeHtml(item.urgency || 'Standard')}</div>
+              </div>
+              <div>
+                <label style="display:block; margin-bottom:6px; font-size:12px; color:var(--muted);">Changer le statut</label>
+                <select data-request-id="${escapeHtml(item.id)}">
+                  <option value="pending" ${item.status === 'pending' ? 'selected' : ''}>En attente</option>
+                  <option value="in_progress" ${item.status === 'in_progress' ? 'selected' : ''}>En cours</option>
+                  <option value="completed" ${item.status === 'completed' ? 'selected' : ''}>Terminé</option>
+                  <option value="cancelled" ${item.status === 'cancelled' ? 'selected' : ''}>Annulé</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-top:10px;color:var(--muted);font-size:12px;">${formatDate(item.createdAt)}</div>
+          </div>
+        `).join('');
+
+        el.innerHTML = rows;
+        document.querySelectorAll('[data-request-id]').forEach((select) => {
+          select.addEventListener('change', async (event) => {
+            const id = event.target.getAttribute('data-request-id');
+            const status = event.target.value;
+            await db.ref('requests/' + id + '/status').set(status);
+            alert('Statut mis à jour');
+          });
+        });
+      }
+
+      function renderProfessionals(items) {
+        const el = document.getElementById('professionalsContainer');
+        if (!items.length) {
+          el.innerHTML = '<p>Aucun professionnel enregistrée.</p>';
+          return;
+        }
+
+        const html = items.map((item) => `
+          <div style="border:1px solid var(--border);border-radius:12px;padding:12px;display:grid;gap:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+              <strong>${escapeHtml(item.name || 'Professionnel')}</strong>
+              <span class="chip">${escapeHtml(item.service || 'Service')}</span>
+            </div>
+            <div>📍 ${escapeHtml(item.location || 'Non renseignée')}</div>
+            <div>💰 ${escapeHtml(item.price || 'À confirmer')}</div>
+            <div>📞 ${escapeHtml(item.phone || 'Non renseigné')}</div>
+            <div>⭐ ${escapeHtml(item.ratingAverage ? item.ratingAverage.toFixed(1) : '4.5')} / 5 — ${escapeHtml(String(item.reviewsCount || 0))} avis</div>
+          </div>
+        `).join('');
+
+        el.innerHTML = html;
+      }
+
+      function loadCategories() {
+        return db.ref('home/categories').once('value').then((snapshot) => {
+          const value = snapshot.val() || {};
+          const categories = Object.values(value)
+            .map((item) => item && item.label ? item.label : '')
+            .filter(Boolean)
+            .sort();
+
+          const serviceSelect = document.getElementById('professionalService');
+          serviceSelect.innerHTML = categories.length
+            ? categories.map((label) => `<option value="${escapeHtml(label)}">${escapeHtml(label)}</option>`).join('')
+            : '<option value="Autre">Autre</option>';
+
+          return categories;
+        });
+      }
+
+      function loadData() {
+        Promise.all([
+          db.ref('requests').once('value'),
+          db.ref('professionals').once('value'),
+          db.ref('home/categories').once('value'),
+          db.ref('notifications').once('value')
+        ]).then(([requestsSnap, prosSnap, categoriesSnap, notificationsSnap]) => {
+          const requests = requestsSnap.val() || {};
+          const professionals = prosSnap.val() || {};
+          const categories = categoriesSnap.val() || {};
+          const notifications = notificationsSnap.val() || {};
+
+          const requestList = Object.entries(requests).map(([id, value]) => ({ id, ...value }));
+          const professionalList = [];
+          Object.entries(professionals).forEach(([service, value]) => {
+            if (value && typeof value === 'object') {
+              Object.entries(value).forEach(([id, item]) => {
+                professionalList.push({ id, service, ...item });
+              });
+            }
+          });
+
+          setCounts({
+            requests: requestList.length,
+            professionals: professionalList.length,
+            categories: Object.keys(categories).length,
+            notifications: Object.keys(notifications).length
+          });
+
+          renderRequests(requestList.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
+          renderProfessionals(professionalList);
+          return loadCategories();
+        }).catch((error) => {
+          console.error('Load error:', error);
+          alert('Impossible de charger les données Firebase. Vérifiez la configuration.');
+        });
+      }
+
+      document.getElementById('categoryForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const label = document.getElementById('categoryName').value.trim();
+        const icon = document.getElementById('categoryIcon').value.trim() || 'settings';
+        if (!label) return;
+
+        const ref = db.ref('home/categories').push();
+        await ref.set({ label, icon, createdAt: Date.now() });
+        event.target.reset();
+        loadData();
+      });
+
+      document.getElementById('professionalForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const name = document.getElementById('professionalName').value.trim();
+        const service = document.getElementById('professionalService').value;
+        const location = document.getElementById('professionalLocation').value.trim();
+        const price = document.getElementById('professionalPrice').value.trim();
+        const phone = document.getElementById('professionalPhone').value.trim();
+
+        if (!name || !service || !location || !price || !phone) {
+          alert('Veuillez remplir tous les champs du formulaire.');
+          return;
+        }
+
+        const ref = db.ref('professionals/' + service).push();
+        await ref.set({
+          name,
+          service,
+          location,
+          price,
+          phone,
+          ratingAverage: 4.5,
+          reviewsCount: 0,
+          rating: '⭐ 4.5',
+          createdAt: Date.now()
+        });
+
+        event.target.reset();
+        loadData();
+      });
+
+      loadCategories().then(loadData);
+    </script>
+  </body>
+</html>
