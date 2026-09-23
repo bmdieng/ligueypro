@@ -1,9 +1,8 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/network/firebase_bootstrap.dart';
-import '../../../core/services/request_notification_service.dart';
+import '../../../core/services/request_submission_service.dart';
 import '../../../core/theme/app_colors.dart';
 
 class RequestPage extends StatefulWidget {
@@ -58,7 +57,8 @@ class _RequestPageState extends State<RequestPage> {
     }
 
     try {
-      final snapshot = await FirebaseDatabase.instance.ref('home/categories').get();
+      final snapshot =
+          await FirebaseDatabase.instance.ref('home/categories').get();
       final labels = <String>[];
 
       void collect(dynamic value) {
@@ -80,7 +80,8 @@ class _RequestPageState extends State<RequestPage> {
 
       collect(snapshot.value);
 
-      final loadedOptions = labels.isNotEmpty ? labels : _fallbackServiceOptions;
+      final loadedOptions =
+          labels.isNotEmpty ? labels : _fallbackServiceOptions;
       if (!mounted) return;
       setState(() {
         _serviceOptions = loadedOptions;
@@ -111,7 +112,8 @@ class _RequestPageState extends State<RequestPage> {
 
     if (phoneText.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez renseigner votre numéro de téléphone.')),
+        const SnackBar(
+            content: Text('Veuillez renseigner votre numéro de téléphone.')),
       );
       return;
     }
@@ -119,41 +121,31 @@ class _RequestPageState extends State<RequestPage> {
     setState(() => _isSending = true);
 
     try {
-      final requestData = {
-        'service': _selectedService,
-        'urgency': _selectedUrgency,
-        'description': requestText,
-        'location': locationText.isEmpty ? 'Localisation non renseignée' : locationText,
-        'phone': phoneText,
-        'photoAttached': _photoAdded,
-        'status': 'pending',
-        'createdAt': ServerValue.timestamp,
-      };
-
-      if (FirebaseBootstrap.isReady) {
-        final requestRef = FirebaseDatabase.instance.ref('requests').push();
-        await requestRef.set(requestData);
-      }
-
-      await RequestNotificationService.sendRequestNotification(
+      final draft = ServiceRequestDraft(
         service: _selectedService,
         urgency: _selectedUrgency,
-        location: locationText.isEmpty ? 'Localisation non renseignée' : locationText,
+        description: requestText,
+        location:
+            locationText.isEmpty ? 'Localisation non renseignée' : locationText,
         phone: phoneText,
+        photoAttached: _photoAdded,
       );
 
+      await RequestSubmissionService.submitRequest(draft: draft);
+
       if (!mounted) return;
-      await showDialog(
+      await showDialog<void>(
         context: context,
         builder: (_) => AlertDialog(
           title: const Text('Demande envoyée'),
-          content: Text(
-            FirebaseBootstrap.isReady
-                ? 'Votre demande a été enregistrée et transmise aux professionnels disponibles.'
-                : 'Votre demande a été enregistrée localement. Configure Firebase pour la sauvegarde en temps réel.',
+          content: const Text(
+            'Votre demande a été publiée. Les professionnels abonnés peuvent maintenant recevoir cette demande et vous envoyer leurs offres.',
           ),
           actions: [
-            TextButton(onPressed: () => context.pop(), child: const Text('OK')),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Voir mes demandes'),
+            ),
           ],
         ),
       );
@@ -162,14 +154,17 @@ class _RequestPageState extends State<RequestPage> {
       _phoneController.clear();
       _locationController.text = 'Dakar, Sénégal';
       setState(() {
-        _selectedService = _serviceOptions.isEmpty ? _fallbackServiceOptions.first : _serviceOptions.first;
+        _selectedService = _serviceOptions.isEmpty
+            ? _fallbackServiceOptions.first
+            : _serviceOptions.first;
         _selectedUrgency = _urgencyOptions.first;
         _photoAdded = false;
       });
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Échec de sauvegarde de la demande. Réessayez.')),
+        const SnackBar(
+            content: Text('Échec de sauvegarde de la demande. Réessayez.')),
       );
     } finally {
       if (mounted) {
@@ -208,7 +203,7 @@ class _RequestPageState extends State<RequestPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButtonFormField<String>(
-                    value: _selectedService,
+                    initialValue: _selectedService,
                     decoration: const InputDecoration(
                       labelText: 'Type de service',
                       border: InputBorder.none,
@@ -231,6 +226,45 @@ class _RequestPageState extends State<RequestPage> {
               ),
             ),
             const SizedBox(height: 18),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.16),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Résumé de votre demande',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Service : $_selectedService'),
+                  const SizedBox(height: 4),
+                  Text('Urgence : $_selectedUrgency'),
+                  const SizedBox(height: 4),
+                  Text(
+                    _descriptionController.text.trim().isEmpty
+                        ? 'Ajoutez une description claire pour améliorer le matching.'
+                        : _descriptionController.text.trim(),
+                    style: const TextStyle(color: AppColors.muted),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Paiement direct : le client règle ensuite le professionnel hors application, après réception des offres.',
+                    style: TextStyle(
+                      color: AppColors.navy,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             const Text(
               'Urgence',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
@@ -244,7 +278,7 @@ class _RequestPageState extends State<RequestPage> {
                 return ChoiceChip(
                   label: Text(urgency),
                   selected: isSelected,
-                  selectedColor: AppColors.primary.withOpacity(0.14),
+                  selectedColor: AppColors.primary.withValues(alpha: 0.14),
                   onSelected: (_) => setState(() => _selectedUrgency = urgency),
                 );
               }).toList(),
@@ -262,6 +296,7 @@ class _RequestPageState extends State<RequestPage> {
                 hintText: 'Ex. Mon climatiseur ne refroidit plus…',
                 border: OutlineInputBorder(),
               ),
+              onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -309,7 +344,7 @@ class _RequestPageState extends State<RequestPage> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('Envoyer la demande'),
+                  : const Text('Publier la demande'),
             ),
           ],
         ),

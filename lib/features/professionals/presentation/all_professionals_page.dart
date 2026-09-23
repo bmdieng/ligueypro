@@ -1,5 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/network/firebase_bootstrap.dart';
 import '../../../core/theme/app_colors.dart';
@@ -12,6 +13,8 @@ class _ProfessionalSummary {
     required this.price,
     required this.ratingAverage,
     required this.reviewsCount,
+    required this.verified,
+    required this.availableNow,
   });
 
   final String name;
@@ -20,6 +23,8 @@ class _ProfessionalSummary {
   final String price;
   final double ratingAverage;
   final int reviewsCount;
+  final bool verified;
+  final bool availableNow;
 }
 
 class AllProfessionalsPage extends StatelessWidget {
@@ -33,6 +38,8 @@ class AllProfessionalsPage extends StatelessWidget {
       price: 'À partir de 5 000 FCFA',
       ratingAverage: 4.8,
       reviewsCount: 127,
+      verified: true,
+      availableNow: true,
     ),
     _ProfessionalSummary(
       name: 'Aliou Ba',
@@ -41,6 +48,8 @@ class AllProfessionalsPage extends StatelessWidget {
       price: 'À partir de 6 000 FCFA',
       ratingAverage: 4.6,
       reviewsCount: 88,
+      verified: true,
+      availableNow: false,
     ),
     _ProfessionalSummary(
       name: 'Yacine Fall',
@@ -49,6 +58,8 @@ class AllProfessionalsPage extends StatelessWidget {
       price: 'À partir de 7 000 FCFA',
       ratingAverage: 4.9,
       reviewsCount: 142,
+      verified: false,
+      availableNow: true,
     ),
   ];
 
@@ -77,11 +88,14 @@ class AllProfessionalsPage extends StatelessWidget {
               professionals.add(
                 _ProfessionalSummary(
                   name: name,
-                  service: value['service']?.toString() ?? categoryEntry.key.toString(),
+                  service: value['service']?.toString() ??
+                      categoryEntry.key.toString(),
                   location: value['location']?.toString() ?? 'Dakar',
                   price: value['price']?.toString() ?? 'À confirmer',
                   ratingAverage: ratingAverage,
                   reviewsCount: reviewsCount,
+                  verified: value['verified'] == true,
+                  availableNow: value['availableNow'] != false,
                 ),
               );
             }
@@ -114,7 +128,8 @@ class AllProfessionalsPage extends StatelessWidget {
                     return _buildList(_fallbackProfessionals);
                   }
 
-                  final professionals = _fromSnapshot(snapshot.data?.snapshot.value);
+                  final professionals =
+                      _fromSnapshot(snapshot.data?.snapshot.value);
                   return _buildList(professionals);
                 },
               )
@@ -157,20 +172,70 @@ class AllProfessionalsPage extends StatelessWidget {
                   children: [
                     const Icon(Icons.star, color: AppColors.primary, size: 18),
                     const SizedBox(width: 4),
-                    const Text('Moyenne', style: TextStyle(fontWeight: FontWeight.w700)),
+                    const Text('Moyenne',
+                        style: TextStyle(fontWeight: FontWeight.w700)),
                     const SizedBox(width: 8),
-                    Text('${professional.ratingAverage.toStringAsFixed(1)} / 5'),
+                    Text(
+                        '${professional.ratingAverage.toStringAsFixed(1)} / 5'),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    if (professional.verified)
+                      _AllProsBadge(label: 'Vérifié', color: AppColors.success),
+                    if (professional.availableNow)
+                      _AllProsBadge(
+                          label: 'Disponible', color: AppColors.primary),
                   ],
                 ),
               ],
             ),
-            trailing: Text(
-              '${professional.reviewsCount} avis',
-              style: const TextStyle(color: AppColors.muted, fontSize: 12),
+            trailing: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '${professional.reviewsCount} avis',
+                  style: const TextStyle(color: AppColors.muted, fontSize: 12),
+                ),
+                const SizedBox(height: 8),
+                FilledButton(
+                  onPressed: () => context.push(
+                      '/professional/${Uri.encodeComponent(professional.name)}'),
+                  style:
+                      FilledButton.styleFrom(backgroundColor: AppColors.navy),
+                  child: const Text('Voir'),
+                ),
+              ],
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class _AllProsBadge extends StatelessWidget {
+  const _AllProsBadge({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style:
+            TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12),
+      ),
     );
   }
 }
