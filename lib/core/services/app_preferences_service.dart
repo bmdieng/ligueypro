@@ -108,6 +108,8 @@ class AppPreferencesService {
       'settings.auto_play_presentation';
   static const String _recentRequestKey = 'home.recent_request';
   static const String _currentProfessionalKey = 'pro.current_professional';
+    static const String _lastHandledNotificationKey =
+      'notifications.last_handled_key';
   static const String _backOfficeUnlockedUntilKey =
       'bo.security.unlocked_until';
   static const String _backOfficeCustomAccessCodeKey =
@@ -191,6 +193,24 @@ class AppPreferencesService {
   static Future<void> clearCurrentProfessional() async {
     final preferences = await SharedPreferences.getInstance();
     await preferences.remove(_currentProfessionalKey);
+  }
+
+  static Future<String?> getLastHandledNotificationKey() async {
+    final preferences = await SharedPreferences.getInstance();
+    final value = preferences.getString(_lastHandledNotificationKey);
+    if (value == null || value.isEmpty) {
+      return null;
+    }
+    return value;
+  }
+
+  static Future<void> setLastHandledNotificationKey(String key) async {
+    if (key.isEmpty) {
+      return;
+    }
+
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString(_lastHandledNotificationKey, key);
   }
 
   static Future<String> getBackOfficeAccessCode() async {

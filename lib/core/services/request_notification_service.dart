@@ -4,12 +4,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../network/firebase_bootstrap.dart';
+import 'app_preferences_service.dart';
 
 class RequestNotificationService {
   RequestNotificationService._();
 
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
+  static bool _isInitialized = false;
+  static String? _lastHandledNotificationKey;
 
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
     'ligueypro_requests',
@@ -20,10 +23,16 @@ class RequestNotificationService {
   );
 
   static Future<void> initialize() async {
+    if (_isInitialized) {
+      return;
+    }
+
     if (!FirebaseBootstrap.isReady) {
       debugPrint('Firebase not ready, skip FCM notification initialization.');
       return;
     }
+
+    _isInitialized = true;
 
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings();
@@ -64,7 +73,36 @@ class RequestNotificationService {
       _showLocalNotification(title: title, body: body);
     });
 
+    _lastHandledNotificationKey =
+        await AppPreferencesService.getLastHandledNotificationKey();
+
+    if (_lastHandledNotificationKey == null) {
+      final latestSnapshot = await FirebaseDatabase.instance
+          .ref('notifications')
+          .orderByKey()
+          .limitToLast(1)
+          .get();
+      final latestKey = latestSnapshot.children.isEmpty
+          ? null
+          : latestSnapshot.children.first.key;
+      if (latestKey != null) {
+        _lastHandledNotificationKey = latestKey;
+        await AppPreferencesService.setLastHandledNotificationKey(latestKey);
+      }
+    }
+
     FirebaseDatabase.instance.ref('notifications').onChildAdded.listen((event) {
+      final notificationKey = event.snapshot.key;
+      if (notificationKey == null) {
+        return;
+      }
+
+      final lastHandledNotificationKey = _lastHandledNotificationKey;
+      if (lastHandledNotificationKey != null &&
+          notificationKey.compareTo(lastHandledNotificationKey) <= 0) {
+        return;
+      }
+
       final payload = event.snapshot.value;
       if (payload is! Map) {
         return;
@@ -77,6 +115,8 @@ class RequestNotificationService {
 
       final title = payload['title']?.toString() ?? 'Nouvelle demande';
       final body = payload['body']?.toString() ?? 'Une demande a été soumise.';
+      _lastHandledNotificationKey = notificationKey;
+      AppPreferencesService.setLastHandledNotificationKey(notificationKey);
       _showLocalNotification(title: title, body: body);
     });
   }
@@ -94,6 +134,11 @@ class RequestNotificationService {
 
     if (FirebaseBootstrap.isReady) {
       final notificationRef = FirebaseDatabase.instance.ref('notifications').push();
+      final notificationKey = notificationRef.key;
+      if (notificationKey != null) {
+        _lastHandledNotificationKey = notificationKey;
+        await AppPreferencesService.setLastHandledNotificationKey(notificationKey);
+      }
       await notificationRef.set({
         'title': title,
         'body': body,
