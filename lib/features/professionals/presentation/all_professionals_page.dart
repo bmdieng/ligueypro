@@ -202,21 +202,28 @@ class AllProfessionalsPage extends StatelessWidget {
             trailing: SizedBox(
               width: 96,
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
                     '${professional.reviewsCount} avis',
                     style:
-                        const TextStyle(color: AppColors.muted, fontSize: 12),
+                        const TextStyle(color: AppColors.muted, fontSize: 11),
                     textAlign: TextAlign.right,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   FilledButton(
                     onPressed: () => context.push(
                         '/professional/${Uri.encodeComponent(professional.id)}'),
                     style:
-                        FilledButton.styleFrom(backgroundColor: AppColors.navy),
+                        FilledButton.styleFrom(
+                      backgroundColor: AppColors.navy,
+                      visualDensity: VisualDensity.compact,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      minimumSize: const Size(0, 32),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                    ),
                     child: const Text('Voir'),
                   ),
                 ],
