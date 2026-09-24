@@ -343,6 +343,13 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
     }
 
     categories.sort((a, b) {
+      final aIsOther = a.label.trim().toLowerCase() == 'autres';
+      final bIsOther = b.label.trim().toLowerCase() == 'autres';
+
+      if (aIsOther != bIsOther) {
+        return aIsOther ? 1 : -1;
+      }
+
       if (a.order != b.order) {
         return a.order.compareTo(b.order);
       }

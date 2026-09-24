@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -59,5 +56,15 @@ class DefaultFirebaseOptions {
     projectId: 'ligueypro',
     databaseURL: 'https://ligueypro-default-rtdb.firebaseio.com',
     storageBucket: 'ligueypro.firebasestorage.app',
+  );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyBiW3m8GRwJdFm4MJ__AW3aPRknET1fJXc',
+    authDomain: 'ligueypro.firebaseapp.com',
+    databaseURL: 'https://ligueypro-default-rtdb.firebaseio.com',
+    projectId: 'ligueypro',
+    storageBucket: 'ligueypro.firebasestorage.app',
+    messagingSenderId: '1036306872826',
+    appId: '1:1036306872826:web:693d5ad28562898b08cc43',
   );
 }
