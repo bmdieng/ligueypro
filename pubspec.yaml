@@ -42,3 +42,8 @@ flutter_launcher_icons:
   image_path: assets/ligueyPro2.0.png
   adaptive_icon_background: '#FFFFFF'
   adaptive_icon_foreground: assets/ligueyPro2.0.png
+  web:
+    generate: true
+    image_path: assets/ligueyPro2.0.png
+    background_color: '#FFFFFF'
+    theme_color: '#FFFFFF'

@@ -617,7 +617,7 @@ class _ProLeadsAdminPageState extends State<ProLeadsAdminPage> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(22),
                   child: Image.asset(
-                    'assets/ligueyPro2.0.png',
+                    'assets/ligueyPro2.0_.png',
                     fit: BoxFit.cover,
                   ),
                 ),
