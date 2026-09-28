@@ -39,8 +39,25 @@ class _RequestItem {
   final String? acceptedOfferEta;
 }
 
-class MyRequestsPage extends StatelessWidget {
+enum _RequestDateSort {
+  newestFirst,
+  oldestFirst,
+}
+
+class MyRequestsPage extends StatefulWidget {
   const MyRequestsPage({super.key});
+
+  @override
+  State<MyRequestsPage> createState() => _MyRequestsPageState();
+}
+
+class _MyRequestsPageState extends State<MyRequestsPage> {
+  static const String _allTypes = 'Tous les types';
+  static const String _allCategories = 'Toutes les categories';
+
+  String _selectedType = _allTypes;
+  String _selectedCategory = _allCategories;
+  _RequestDateSort _dateSort = _RequestDateSort.newestFirst;
 
   static const Map<String, int> _urgencyRank = {
     'Très urgent': 3,
@@ -103,10 +120,6 @@ class MyRequestsPage extends StatelessWidget {
       }
     }
 
-    requests.sort(
-      (a, b) => (_urgencyRank[b.urgency] ?? 0)
-          .compareTo(_urgencyRank[a.urgency] ?? 0),
-    );
     return requests;
   }
 
@@ -188,18 +201,193 @@ class MyRequestsPage extends StatelessWidget {
     }
   }
 
-  static Widget _buildList(List<_RequestItem> requests) {
-    final sortedRequests = [...requests]..sort(
-        (a, b) => (_urgencyRank[b.urgency] ?? 0)
-            .compareTo(_urgencyRank[a.urgency] ?? 0),
+  List<String> _typeOptions(List<_RequestItem> requests) {
+    final options = requests
+        .map((request) => _statusLabel(request.status))
+        .where((status) => status.trim().isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+
+    return <String>[_allTypes, ...options];
+  }
+
+  List<String> _categoryOptions(List<_RequestItem> requests) {
+    final options = requests
+        .map((request) => request.service)
+        .where((service) => service.trim().isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+
+    return <String>[_allCategories, ...options];
+  }
+
+  List<_RequestItem> _applyFilters(List<_RequestItem> requests) {
+    final filtered = requests.where((request) {
+      final matchesType = _selectedType == _allTypes ||
+          _statusLabel(request.status) == _selectedType;
+      final matchesCategory = _selectedCategory == _allCategories ||
+          request.service == _selectedCategory;
+      return matchesType && matchesCategory;
+    }).toList();
+
+    filtered.sort(
+      (a, b) => _dateSort == _RequestDateSort.newestFirst
+          ? b.createdAt.compareTo(a.createdAt)
+          : a.createdAt.compareTo(b.createdAt),
+    );
+    return filtered;
+  }
+
+  void _syncSelectedFilterValues(
+    List<String> typeOptions,
+    List<String> categoryOptions,
+  ) {
+    if (!typeOptions.contains(_selectedType)) {
+      _selectedType = _allTypes;
+    }
+    if (!categoryOptions.contains(_selectedCategory)) {
+      _selectedCategory = _allCategories;
+    }
+  }
+
+  Widget _buildFilters(
+    List<String> typeOptions,
+    List<String> categoryOptions,
+  ) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Filtres',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 14),
+          DropdownButtonFormField<String>(
+            initialValue: _selectedType,
+            decoration: const InputDecoration(
+              labelText: 'Type de demande',
+              border: OutlineInputBorder(),
+            ),
+            items: typeOptions
+                .map(
+                  (type) => DropdownMenuItem<String>(
+                    value: type,
+                    child: Text(type),
+                  ),
+                )
+                .toList(),
+            onChanged: (value) {
+              if (value == null) {
+                return;
+              }
+              setState(() => _selectedType = value);
+            },
+          ),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            initialValue: _selectedCategory,
+            decoration: const InputDecoration(
+              labelText: 'Categorie',
+              border: OutlineInputBorder(),
+            ),
+            items: categoryOptions
+                .map(
+                  (category) => DropdownMenuItem<String>(
+                    value: category,
+                    child: Text(category),
+                  ),
+                )
+                .toList(),
+            onChanged: (value) {
+              if (value == null) {
+                return;
+              }
+              setState(() => _selectedCategory = value);
+            },
+          ),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<_RequestDateSort>(
+            initialValue: _dateSort,
+            decoration: const InputDecoration(
+              labelText: 'Tri par date',
+              border: OutlineInputBorder(),
+            ),
+            items: const [
+              DropdownMenuItem<_RequestDateSort>(
+                value: _RequestDateSort.newestFirst,
+                child: Text('Plus recentes d\'abord'),
+              ),
+              DropdownMenuItem<_RequestDateSort>(
+                value: _RequestDateSort.oldestFirst,
+                child: Text('Plus anciennes d\'abord'),
+              ),
+            ],
+            onChanged: (value) {
+              if (value == null) {
+                return;
+              }
+              setState(() => _dateSort = value);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildList(List<_RequestItem> requests) {
+    final typeOptions = _typeOptions(requests);
+    final categoryOptions = _categoryOptions(requests);
+    _syncSelectedFilterValues(typeOptions, categoryOptions);
+
+    final filteredRequests = _applyFilters(requests);
+    final hasActiveFilters =
+        _selectedType != _allTypes || _selectedCategory != _allCategories;
+
+    if (requests.isEmpty) {
+      return ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _buildFilters(typeOptions, categoryOptions),
+          const SizedBox(height: 16),
+          const _EmptyRequestsState(
+            title: 'Aucune demande envoyee',
+            message:
+                'Vos demandes apparaitront ici avec leur statut, leurs offres et leur historique.',
+          ),
+        ],
       );
+    }
 
     return ListView.separated(
       padding: const EdgeInsets.all(16),
-      itemCount: sortedRequests.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemCount: filteredRequests.isEmpty ? 2 : filteredRequests.length + 1,
+      separatorBuilder: (_, index) =>
+          index == 0 ? const SizedBox(height: 16) : const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        final request = sortedRequests[index];
+        if (index == 0) {
+          return _buildFilters(typeOptions, categoryOptions);
+        }
+
+        if (filteredRequests.isEmpty) {
+          return _EmptyRequestsState(
+            title: 'Aucun resultat pour ces filtres',
+            message: hasActiveFilters
+                ? 'Modifiez le type, la categorie ou le tri pour afficher d\'autres demandes.'
+                : 'Aucune demande disponible pour le moment.',
+          );
+        }
+
+        final request = filteredRequests[index - 1];
 
         return Card(
           elevation: 0,
@@ -425,6 +613,57 @@ class MyRequestsPage extends StatelessWidget {
                 },
               )
             : _buildList(const []),
+      ),
+    );
+  }
+}
+
+class _EmptyRequestsState extends StatelessWidget {
+  const _EmptyRequestsState({
+    required this.title,
+    required this.message,
+  });
+
+  final String title;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppColors.navy.withValues(alpha: 0.08),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.receipt_long_outlined,
+              color: AppColors.navy,
+              size: 30,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.muted, height: 1.5),
+          ),
+        ],
       ),
     );
   }

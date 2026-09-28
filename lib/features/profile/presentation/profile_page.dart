@@ -152,7 +152,7 @@ class ProfilePage extends StatelessWidget {
               leading: const Icon(Icons.notifications_none),
               title: const Text('Notifications',
                   maxLines: 1, overflow: TextOverflow.ellipsis),
-              onTap: () => context.push('/settings'),
+              onTap: () => context.push('/notifications'),
             ),
             const Divider(height: 1),
             ListTile(

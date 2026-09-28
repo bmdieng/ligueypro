@@ -21,6 +21,7 @@ import '../features/professionals/presentation/pro_subscription_page.dart';
 import '../features/profile/presentation/app_settings_page.dart';
 import '../features/profile/presentation/cgu_page.dart';
 import '../features/profile/presentation/help_support_page.dart';
+import '../features/profile/presentation/notifications_page.dart';
 import '../features/profile/presentation/profile_page.dart';
 import '../features/requests/presentation/my_requests_page.dart';
 import '../features/requests/presentation/request_offers_page.dart';
@@ -64,6 +65,10 @@ final appRouter = GoRouter(
       },
     ),
     GoRoute(path: '/settings', builder: (_, __) => const AppSettingsPage()),
+    GoRoute(
+      path: '/notifications',
+      builder: (_, __) => const NotificationsPage(),
+    ),
     GoRoute(path: '/help-support', builder: (_, __) => const HelpSupportPage()),
     GoRoute(path: '/cgu', builder: (_, __) => const CguPage()),
     GoRoute(
