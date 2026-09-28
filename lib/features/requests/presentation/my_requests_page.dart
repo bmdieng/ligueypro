@@ -54,10 +54,28 @@ class MyRequestsPage extends StatefulWidget {
 class _MyRequestsPageState extends State<MyRequestsPage> {
   static const String _allTypes = 'Tous les types';
   static const String _allCategories = 'Toutes les categories';
+  static const int _pageSize = 20;
 
   String _selectedType = _allTypes;
   String _selectedCategory = _allCategories;
   _RequestDateSort _dateSort = _RequestDateSort.newestFirst;
+  int _visibleRequestCount = _pageSize;
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoadingMore = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_handleScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_handleScroll)
+      ..dispose();
+    super.dispose();
+  }
 
   static const Map<String, int> _urgencyRank = {
     'Très urgent': 3,
@@ -252,6 +270,37 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
     }
   }
 
+  bool _canLoadMore(List<_RequestItem> requests) {
+    return requests.length >= _visibleRequestCount;
+  }
+
+  void _handleScroll() {
+    if (!_scrollController.hasClients) {
+      return;
+    }
+
+    final position = _scrollController.position;
+    if (position.pixels < position.maxScrollExtent - 240) {
+      return;
+    }
+
+    if (_isLoadingMore) {
+      return;
+    }
+
+    setState(() {
+      _isLoadingMore = true;
+      _visibleRequestCount += _pageSize;
+    });
+  }
+
+  Query _requestsQuery() {
+    return FirebaseDatabase.instance
+        .ref('requests')
+        .orderByChild('createdAt')
+        .limitToLast(_visibleRequestCount);
+  }
+
   Widget _buildFilters(
     List<String> typeOptions,
     List<String> categoryOptions,
@@ -344,7 +393,251 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
     );
   }
 
-  Widget _buildList(List<_RequestItem> requests) {
+  Widget _buildLoadingMoreIndicator({required bool visible}) {
+    if (!visible) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(strokeWidth: 2.2),
+          ),
+          SizedBox(width: 12),
+          Text(
+            'Chargement des demandes...',
+            style: TextStyle(
+              color: AppColors.muted,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRequestCard(BuildContext context, _RequestItem request) {
+    return Card(
+      elevation: 0,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    request.service,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color:
+                        _urgencyColor(request.urgency).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    request.urgency,
+                    style: TextStyle(
+                      color: _urgencyColor(request.urgency),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: _statusColor(request.status).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                _statusLabel(request.status),
+                style: TextStyle(
+                  color: _statusColor(request.status),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              request.description,
+              style: const TextStyle(color: AppColors.muted, height: 1.45),
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: LinearProgressIndicator(
+                minHeight: 8,
+                value: _statusProgress(request.status),
+                backgroundColor: Colors.grey.shade200,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  _statusColor(request.status),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(Icons.location_on_outlined,
+                    size: 18, color: AppColors.primary),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    request.location,
+                    style: const TextStyle(color: AppColors.muted),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.phone_outlined,
+                    size: 18, color: AppColors.primary),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    request.phone,
+                    style: const TextStyle(color: AppColors.muted),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Créée le ${request.createdAt.day}/${request.createdAt.month}/${request.createdAt.year}',
+              style: const TextStyle(fontSize: 12, color: AppColors.muted),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${_offersStatusLabel(request.offersStatus)} • ${request.offersCount} offre(s)',
+              style: const TextStyle(
+                color: AppColors.navy,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Règlement direct entre client et professionnel après choix de l’offre.',
+              style: TextStyle(color: AppColors.muted),
+            ),
+            if (request.acceptedProfessionalName != null) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: AppColors.success.withValues(alpha: 0.18),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Professionnel retenu',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.navy,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      request.acceptedProfessionalName!,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    if (request.acceptedOfferPrice != null)
+                      Text(
+                        'Prix accepté : ${request.acceptedOfferPrice}',
+                        style: const TextStyle(color: AppColors.muted),
+                      ),
+                    if (request.acceptedOfferEta != null)
+                      Text(
+                        'Délai confirmé : ${request.acceptedOfferEta}',
+                        style: const TextStyle(color: AppColors.muted),
+                      ),
+                    if (request.acceptedProfessionalId != null) ...[
+                      const SizedBox(height: 10),
+                      OutlinedButton.icon(
+                        onPressed: () => context.push(
+                          '/professional/${Uri.encodeComponent(request.acceptedProfessionalId!)}',
+                        ),
+                        icon: const Icon(Icons.person_search_outlined),
+                        label: const Text('Voir le profil'),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => context.push(
+                      '/request-offers',
+                      extra: {
+                        'requestId': request.id,
+                        'service': request.service,
+                        'location': request.location,
+                        'urgency': request.urgency,
+                      },
+                    ),
+                    child: const Text('Voir les offres'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => context.push('/request'),
+                    style:
+                        FilledButton.styleFrom(backgroundColor: AppColors.navy),
+                    child: const Text('Nouvelle demande'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildList(
+    List<_RequestItem> requests, {
+    required bool isWaiting,
+  }) {
+    if (_isLoadingMore && !isWaiting) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        setState(() => _isLoadingMore = false);
+      });
+    }
+
     final typeOptions = _typeOptions(requests);
     final categoryOptions = _categoryOptions(requests);
     _syncSelectedFilterValues(typeOptions, categoryOptions);
@@ -352,9 +645,11 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
     final filteredRequests = _applyFilters(requests);
     final hasActiveFilters =
         _selectedType != _allTypes || _selectedCategory != _allCategories;
+    final canLoadMore = _canLoadMore(requests);
 
     if (requests.isEmpty) {
       return ListView(
+        controller: _scrollController,
         padding: const EdgeInsets.all(16),
         children: [
           _buildFilters(typeOptions, categoryOptions),
@@ -364,13 +659,33 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
             message:
                 'Vos demandes apparaitront ici avec leur statut, leurs offres et leur historique.',
           ),
+          _buildLoadingMoreIndicator(visible: _isLoadingMore),
+        ],
+      );
+    }
+
+    if (filteredRequests.isEmpty) {
+      return ListView(
+        controller: _scrollController,
+        padding: const EdgeInsets.all(16),
+        children: [
+          _buildFilters(typeOptions, categoryOptions),
+          const SizedBox(height: 16),
+          _EmptyRequestsState(
+            title: 'Aucun resultat pour ces filtres',
+            message: hasActiveFilters
+                ? 'Modifiez le type, la categorie ou le tri pour afficher d\'autres demandes.'
+                : 'Aucune demande disponible pour le moment.',
+          ),
+          _buildLoadingMoreIndicator(visible: _isLoadingMore),
         ],
       );
     }
 
     return ListView.separated(
+      controller: _scrollController,
       padding: const EdgeInsets.all(16),
-      itemCount: filteredRequests.isEmpty ? 2 : filteredRequests.length + 1,
+      itemCount: filteredRequests.length + 1 + (canLoadMore ? 1 : 0),
       separatorBuilder: (_, index) =>
           index == 0 ? const SizedBox(height: 16) : const SizedBox(height: 12),
       itemBuilder: (context, index) {
@@ -378,218 +693,12 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
           return _buildFilters(typeOptions, categoryOptions);
         }
 
-        if (filteredRequests.isEmpty) {
-          return _EmptyRequestsState(
-            title: 'Aucun resultat pour ces filtres',
-            message: hasActiveFilters
-                ? 'Modifiez le type, la categorie ou le tri pour afficher d\'autres demandes.'
-                : 'Aucune demande disponible pour le moment.',
-          );
+        if (index == filteredRequests.length + 1) {
+          return _buildLoadingMoreIndicator(visible: _isLoadingMore);
         }
 
         final request = filteredRequests[index - 1];
-
-        return Card(
-          elevation: 0,
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: Colors.grey.shade200),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        request.service,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: _urgencyColor(request.urgency)
-                            .withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        request.urgency,
-                        style: TextStyle(
-                          color: _urgencyColor(request.urgency),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: _statusColor(request.status).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    _statusLabel(request.status),
-                    style: TextStyle(
-                      color: _statusColor(request.status),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  request.description,
-                  style: const TextStyle(color: AppColors.muted, height: 1.45),
-                ),
-                const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
-                  child: LinearProgressIndicator(
-                    minHeight: 8,
-                    value: _statusProgress(request.status),
-                    backgroundColor: Colors.grey.shade200,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                        _statusColor(request.status)),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Icon(Icons.location_on_outlined,
-                        size: 18, color: AppColors.primary),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        request.location,
-                        style: const TextStyle(color: AppColors.muted),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(Icons.phone_outlined,
-                        size: 18, color: AppColors.primary),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        request.phone,
-                        style: const TextStyle(color: AppColors.muted),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Créée le ${request.createdAt.day}/${request.createdAt.month}/${request.createdAt.year}',
-                  style: const TextStyle(fontSize: 12, color: AppColors.muted),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '${_offersStatusLabel(request.offersStatus)} • ${request.offersCount} offre(s)',
-                  style: const TextStyle(
-                    color: AppColors.navy,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Règlement direct entre client et professionnel après choix de l’offre.',
-                  style: TextStyle(color: AppColors.muted),
-                ),
-                if (request.acceptedProfessionalName != null) ...[
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.success.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: AppColors.success.withValues(alpha: 0.18),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Professionnel retenu',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.navy,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          request.acceptedProfessionalName!,
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        if (request.acceptedOfferPrice != null)
-                          Text(
-                            'Prix accepté : ${request.acceptedOfferPrice}',
-                            style: const TextStyle(color: AppColors.muted),
-                          ),
-                        if (request.acceptedOfferEta != null)
-                          Text(
-                            'Délai confirmé : ${request.acceptedOfferEta}',
-                            style: const TextStyle(color: AppColors.muted),
-                          ),
-                        if (request.acceptedProfessionalId != null) ...[
-                          const SizedBox(height: 10),
-                          OutlinedButton.icon(
-                            onPressed: () => context.push(
-                              '/professional/${Uri.encodeComponent(request.acceptedProfessionalId!)}',
-                            ),
-                            icon: const Icon(Icons.person_search_outlined),
-                            label: const Text('Voir le profil'),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => context.push(
-                          '/request-offers',
-                          extra: {
-                            'requestId': request.id,
-                            'service': request.service,
-                            'location': request.location,
-                            'urgency': request.urgency,
-                          },
-                        ),
-                        child: const Text('Voir les offres'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: () => context.push('/request'),
-                        style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.navy),
-                        child: const Text('Nouvelle demande'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
+        return _buildRequestCard(context, request);
       },
     );
   }
@@ -601,18 +710,26 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
       body: SafeArea(
         child: FirebaseBootstrap.isReady
             ? StreamBuilder<DatabaseEvent>(
-                stream: FirebaseDatabase.instance.ref('requests').onValue,
+                stream: _requestsQuery().onValue,
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    return _buildList(const []);
+                    return _buildList(
+                      const [],
+                      isWaiting:
+                          snapshot.connectionState == ConnectionState.waiting,
+                    );
                   }
 
                   final requests =
                       _requestsFromSnapshot(snapshot.data?.snapshot.value);
-                  return _buildList(requests);
+                  return _buildList(
+                    requests,
+                    isWaiting:
+                        snapshot.connectionState == ConnectionState.waiting,
+                  );
                 },
               )
-            : _buildList(const []),
+            : _buildList(const [], isWaiting: false),
       ),
     );
   }
