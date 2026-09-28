@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/services/app_preferences_service.dart';
 import '../../../core/theme/app_colors.dart';
 
-class SecureBackOfficeRoute extends StatelessWidget {
+class SecureBackOfficeRoute extends StatefulWidget {
   const SecureBackOfficeRoute({
     super.key,
     required this.child,
@@ -17,38 +17,64 @@ class SecureBackOfficeRoute extends StatelessWidget {
   final String title;
 
   @override
+  State<SecureBackOfficeRoute> createState() =>
+      _SecureBackOfficeRouteState();
+}
+
+class _SecureBackOfficeRouteState extends State<SecureBackOfficeRoute> {
+  late Future<bool> _unlockFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _unlockFuture =
+        AppPreferencesService.isBackOfficeUnlocked();
+  }
+
+  void _refreshAccess() {
+    setState(() {
+      _unlockFuture =
+          AppPreferencesService.isBackOfficeUnlocked();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder<bool>(
-      future: AppPreferencesService.isBackOfficeUnlocked(),
+      future: _unlockFuture,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
           );
         }
 
         if (snapshot.data == true) {
-          return child;
+          return widget.child;
         }
 
         return BackOfficeAccessPage(
-          targetRoute: targetRoute,
-          title: title,
+          targetRoute: widget.targetRoute,
+          title: widget.title,
+          onUnlocked: _refreshAccess,
         );
       },
     );
   }
 }
-
 class BackOfficeAccessPage extends StatefulWidget {
   const BackOfficeAccessPage({
     super.key,
     required this.targetRoute,
     this.title = 'Accès sécurisé',
+    required this.onUnlocked,
   });
 
   final String targetRoute;
   final String title;
+  final VoidCallback onUnlocked;
 
   @override
   State<BackOfficeAccessPage> createState() => _BackOfficeAccessPageState();
@@ -103,11 +129,17 @@ class _BackOfficeAccessPageState extends State<BackOfficeAccessPage> {
     }
 
     await AppPreferencesService.unlockBackOffice();
+
     if (!mounted) {
       return;
     }
 
-    context.go(widget.targetRoute);
+    debugPrint('Back-office unlocked');
+    debugPrint('Target route: ${widget.targetRoute}');
+
+    // Demande au SecureBackOfficeRoute de vérifier à nouveau
+    widget.onUnlocked();
+      
   }
 
   @override
@@ -181,10 +213,10 @@ class _BackOfficeAccessPageState extends State<BackOfficeAccessPage> {
                         icon: Icons.verified_user_outlined,
                         label: 'Accès privé',
                       ),
-                      _SecurityChip(
-                        icon: Icons.phonelink_lock_outlined,
-                        label: 'Code local',
-                      ),
+                      // _SecurityChip(
+                      //   icon: Icons.phonelink_lock_outlined,
+                      //   label: 'Code local',
+                      // ),
                     ],
                   ),
                 ],
@@ -223,11 +255,11 @@ class _BackOfficeAccessPageState extends State<BackOfficeAccessPage> {
                   TextField(
                     controller: _codeController,
                     keyboardType: TextInputType.number,
-                    maxLength: 4,
+                    maxLength: 6,
                     obscureText: true,
                     decoration: const InputDecoration(
                       labelText: 'Code BO',
-                      hintText: 'Saisir 4 chiffres',
+                      hintText: 'Saisir 6 chiffres',
                       prefixIcon: Icon(Icons.lock_outline),
                       border: OutlineInputBorder(),
                     ),

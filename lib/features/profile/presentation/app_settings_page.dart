@@ -112,18 +112,18 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Définissez un code à 4 chiffres pour protéger l’accès au BO.',
+                    'Définissez un code à 6 chiffres pour protéger l’accès au BO.',
                     style: TextStyle(color: AppColors.muted, height: 1.4),
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: controller,
                     keyboardType: TextInputType.number,
-                    maxLength: 4,
+                    maxLength: 6,
                     obscureText: true,
                     decoration: const InputDecoration(
                       labelText: 'Nouveau code',
-                      hintText: '4 chiffres',
+                      hintText: '6 chiffres',
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -140,11 +140,11 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                       ? null
                       : () async {
                           final code = controller.text.trim();
-                          if (code.length != 4 || int.tryParse(code) == null) {
+                          if (code.length != 6 || int.tryParse(code) == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
-                                  'Le code BO doit contenir exactement 4 chiffres.',
+                                  'Le code BO doit contenir exactement 6 chiffres.',
                                 ),
                               ),
                             );
@@ -152,14 +152,24 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                           }
 
                           setLocalState(() => isSaving = true);
-                          await AppPreferencesService
-                              .setCustomBackOfficeAccessCode(code);
-                          if (!mounted || !dialogContext.mounted) return;
-                          Navigator.of(dialogContext).pop();
-                          await _loadSettings();
-                          _showSettingsHint(
-                            'Code BO personnalisé enregistré. La session a été reverrouillée.',
-                          );
+                          try {
+                            await AppPreferencesService
+                                .setCustomBackOfficeAccessCode(code);
+                            if (!mounted || !dialogContext.mounted) return;
+                            Navigator.of(dialogContext).pop();
+                            await _loadSettings();
+                            _showSettingsHint(
+                              'Code BO Firebase enregistré. La session a été reverrouillée.',
+                            );
+                          } catch (error) {
+                            setLocalState(() => isSaving = false);
+                            if (!context.mounted) {
+                              return;
+                            }
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(error.toString())),
+                            );
+                          }
                         },
                   child: const Text('Enregistrer'),
                 ),
@@ -168,15 +178,6 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
           },
         );
       },
-    );
-  }
-
-  Future<void> _resetBackOfficeCode() async {
-    await AppPreferencesService.clearCustomBackOfficeAccessCode();
-    if (!mounted) return;
-    await _loadSettings();
-    _showSettingsHint(
-      'Code BO réinitialisé. Le code par défaut est réappliqué et la session est verrouillée.',
     );
   }
 
@@ -297,21 +298,10 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                     title: const Text('Modifier le code BO'),
                     subtitle: Text(
                       _customBackOfficeCode == null
-                          ? 'Utilise le code par défaut lié au professionnel courant'
-                          : 'Code personnalisé actif',
+                          ? 'Code BO Firebase non chargé'
+                          : 'Code actif : $_customBackOfficeCode',
                     ),
                     onTap: _showBackOfficeCodeDialog,
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.lock_reset_outlined),
-                    title: const Text('Réinitialiser le code BO'),
-                    subtitle: const Text(
-                      'Revenir au code par défaut ou au code démo',
-                    ),
-                    onTap: _customBackOfficeCode == null
-                        ? null
-                        : _resetBackOfficeCode,
                   ),
                   const Divider(height: 1),
                   ListTile(

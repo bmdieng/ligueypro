@@ -55,6 +55,7 @@ class ProfessionalsAdminPage extends StatelessWidget {
                                     context,
                                     serviceOptions: serviceOptions,
                                   ),
+                          onManageCategories: () => context.go('/admin-categories'),
                         ),
                         const SizedBox(height: 16),
                         if (serviceOptions.isEmpty)
@@ -497,12 +498,14 @@ class _HeaderCard extends StatelessWidget {
     required this.subscribedCount,
     required this.verifiedCount,
     required this.onCreate,
+    required this.onManageCategories,
   });
 
   final int professionalsCount;
   final int subscribedCount;
   final int verifiedCount;
   final VoidCallback? onCreate;
+  final VoidCallback onManageCategories;
 
   @override
   Widget build(BuildContext context) {
@@ -543,14 +546,29 @@ class _HeaderCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: onCreate,
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppColors.navy,
-            ),
-            icon: const Icon(Icons.person_add_alt_1_outlined),
-            label: const Text('Ajouter un professionnel'),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              FilledButton.icon(
+                onPressed: onCreate,
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppColors.navy,
+                ),
+                icon: const Icon(Icons.person_add_alt_1_outlined),
+                label: const Text('Ajouter un professionnel'),
+              ),
+              OutlinedButton.icon(
+                onPressed: onManageCategories,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(color: Colors.white38),
+                ),
+                icon: const Icon(Icons.category_outlined),
+                label: const Text('Gérer les catégories'),
+              ),
+            ],
           ),
         ],
       ),

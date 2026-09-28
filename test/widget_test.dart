@@ -10,8 +10,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:ligueypro_2_0/app/app.dart';
+import 'package:ligueypro_2_0/app/router.dart';
 import 'package:ligueypro_2_0/features/professionals/presentation/add_professional_page.dart';
 import 'package:ligueypro_2_0/features/professionals/presentation/all_professionals_page.dart';
+import 'package:ligueypro_2_0/features/professionals/presentation/back_office_dashboard_page.dart';
+import 'package:ligueypro_2_0/features/professionals/presentation/category_admin_page.dart';
+import 'package:ligueypro_2_0/features/professionals/presentation/professionals_admin_page.dart';
 import 'package:ligueypro_2_0/features/presentation/presentation_page.dart';
 import 'package:ligueypro_2_0/features/profile/presentation/cgu_page.dart';
 import 'package:ligueypro_2_0/features/profile/presentation/help_support_page.dart';
@@ -86,5 +90,29 @@ void main() {
 
     expect(find.text('Présentation de l’application'), findsOneWidget);
     expect(find.text('LigueyPro'), findsWidgets);
+  });
+
+  testWidgets('Back-office hides pro profile actions', (WidgetTester tester) async {
+    await tester.pumpWidget(const MaterialApp(home: BackOfficeDashboardPage()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Abonnement Pro'), findsNothing);
+    expect(find.text('Ajouter un pro'), findsNothing);
+    expect(find.text('Professionnel actif'), findsNothing);
+  });
+
+  testWidgets('Category admin page supports add edit and delete flows', (WidgetTester tester) async {
+    await tester.pumpWidget(const MaterialApp(home: CategoryAdminPage()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Catégories de services'), findsOneWidget);
+    expect(find.text('Ajouter une catégorie'), findsOneWidget);
+    expect(find.byType(TextField), findsWidgets);
+  });
+
+  testWidgets('Web redirect helper sends public routes to the back-office', (WidgetTester tester) async {
+    expect(resolveWebRedirect('/'), '/back-office');
+    expect(resolveWebRedirect('/presentation'), '/back-office');
+    expect(resolveWebRedirect('/back-office'), isNull);
   });
 }

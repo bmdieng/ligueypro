@@ -603,17 +603,17 @@ class _HomePageState extends State<HomePage> {
                       label: Text(heroContent.primaryCtaLabel),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  OutlinedButton(
-                    onPressed: () => context.push('/all-professionals'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white38),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 14),
-                    ),
-                    child: Text(heroContent.secondaryCtaLabel),
-                  ),
+                  // const SizedBox(width: 12),
+                  // OutlinedButton(
+                  //   onPressed: () => context.push('/all-professionals'),
+                  //   style: OutlinedButton.styleFrom(
+                  //     foregroundColor: Colors.white,
+                  //     side: const BorderSide(color: Colors.white38),
+                  //     padding: const EdgeInsets.symmetric(
+                  //         horizontal: 16, vertical: 14),
+                  //   ),
+                  //   child: Text(heroContent.secondaryCtaLabel),
+                  // ),
                 ],
               ),
             ],

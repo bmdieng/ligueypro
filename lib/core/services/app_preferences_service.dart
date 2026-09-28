@@ -1,6 +1,9 @@
 import 'dart:convert';
 
+import 'package:firebase_database/firebase_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../network/firebase_bootstrap.dart';
 
 class CurrentProfessionalSummary {
   const CurrentProfessionalSummary({
@@ -112,8 +115,8 @@ class AppPreferencesService {
       'notifications.last_handled_key';
   static const String _backOfficeUnlockedUntilKey =
       'bo.security.unlocked_until';
-  static const String _backOfficeCustomAccessCodeKey =
-      'bo.security.custom_access_code';
+    static const String _backOfficeAccessCodePath =
+      'security/backoffice/access_code';
 
   static const Duration _backOfficeSessionDuration = Duration(minutes: 30);
 
@@ -121,12 +124,27 @@ class AppPreferencesService {
     return value.replaceAll(RegExp(r'[^0-9]'), '');
   }
 
-  static String _resolveBackOfficeAccessCode(CurrentProfessionalSummary? pro) {
-    final digits = pro == null ? '' : _digitsOnly(pro.phone);
-    if (digits.length >= 4) {
-      return digits.substring(digits.length - 4);
+  static String? _normalizeBackOfficeAccessCode(Object? value) {
+    final digits = _digitsOnly(value?.toString() ?? '');
+    if (digits.length == 6) {
+      return digits;
     }
-    return '2408';
+    return null;
+  }
+
+  static Future<String?> _readBackOfficeAccessCodeFromFirebase() async {
+    if (!FirebaseBootstrap.isReady) {
+      return null;
+    }
+
+    try {
+      final snapshot = await FirebaseDatabase.instance
+          .ref(_backOfficeAccessCodePath)
+          .get();
+      return _normalizeBackOfficeAccessCode(snapshot.value);
+    } catch (_) {
+      return null;
+    }
   }
 
   static Future<bool> getAutoPlayPresentation() async {
@@ -214,29 +232,21 @@ class AppPreferencesService {
   }
 
   static Future<String> getBackOfficeAccessCode() async {
-    final preferences = await SharedPreferences.getInstance();
-    final customCode = preferences.getString(_backOfficeCustomAccessCodeKey);
-    if (customCode != null && customCode.length == 4) {
-      return customCode;
+    final firebaseCode = await _readBackOfficeAccessCodeFromFirebase();
+    if (firebaseCode != null) {
+      return firebaseCode;
     }
 
-    final currentProfessional = await getCurrentProfessional();
-    return _resolveBackOfficeAccessCode(currentProfessional);
+    return '';
   }
 
   static Future<String> getBackOfficeAccessHint() async {
-    final preferences = await SharedPreferences.getInstance();
-    final customCode = preferences.getString(_backOfficeCustomAccessCodeKey);
-    if (customCode != null && customCode.length == 4) {
-      return 'Code personnalisé actif';
+    final code = await getBackOfficeAccessCode();
+    if (code.isEmpty) {
+      return 'Code BO indisponible. Vérifiez la clé Firebase security/backoffice/access_code.';
     }
 
-    final currentProfessional = await getCurrentProfessional();
-    if (currentProfessional == null) {
-      return 'Code démo : 2408';
-    }
-
-    return 'Code d’accès : 4 derniers chiffres du numéro de ${currentProfessional.name}';
+    return 'Code BO actif dans Firebase : ${code.substring(0, 3)}- *** (6 chiffres)';
   }
 
   static Future<bool> verifyBackOfficeAccessCode(String code) async {
@@ -246,29 +256,32 @@ class AppPreferencesService {
   }
 
   static Future<String?> getCustomBackOfficeAccessCode() async {
-    final preferences = await SharedPreferences.getInstance();
-    final customCode = preferences.getString(_backOfficeCustomAccessCodeKey);
-    if (customCode == null || customCode.length != 4) {
-      return null;
-    }
-
-    return customCode;
+    final code = await getBackOfficeAccessCode();
+    return code.isEmpty ? null : code;
   }
 
   static Future<void> setCustomBackOfficeAccessCode(String code) async {
     final normalized = _digitsOnly(code);
-    if (normalized.length != 4) {
-      throw ArgumentError('Le code doit contenir exactement 4 chiffres.');
+    if (normalized.length != 6) {
+      throw ArgumentError('Le code doit contenir exactement 6 chiffres.');
     }
 
-    final preferences = await SharedPreferences.getInstance();
-    await preferences.setString(_backOfficeCustomAccessCodeKey, normalized);
+    if (!FirebaseBootstrap.isReady) {
+      throw StateError('Firebase indisponible. Impossible de modifier le code BO.');
+    }
+
+    await FirebaseDatabase.instance
+        .ref(_backOfficeAccessCodePath)
+        .set(normalized);
     await lockBackOffice();
   }
 
   static Future<void> clearCustomBackOfficeAccessCode() async {
-    final preferences = await SharedPreferences.getInstance();
-    await preferences.remove(_backOfficeCustomAccessCodeKey);
+    if (!FirebaseBootstrap.isReady) {
+      throw StateError('Firebase indisponible. Impossible de supprimer le code BO.');
+    }
+
+    await FirebaseDatabase.instance.ref(_backOfficeAccessCodePath).remove();
     await lockBackOffice();
   }
 

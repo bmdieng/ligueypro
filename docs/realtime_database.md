@@ -24,6 +24,11 @@ Note: Le code initialise Firebase au demarrage. Sans configuration FlutterFire, 
       "cat3": {"label": "Menage", "icon": "cleaning_services"}
     }
   },
+  "security": {
+    "backoffice": {
+      "access_code": "07****"
+    }
+  },
   "professionals": {
     "Plombier": {
       "pro1": {
@@ -43,6 +48,8 @@ Note: Le code initialise Firebase au demarrage. Sans configuration FlutterFire, 
   }
 }
 ```
+
+Le code d'acces du back-office est maintenant lu uniquement depuis Firebase a l'emplacement `security/backoffice/access_code`.
 
 ## 3) Regles minimales (dev)
 

@@ -26,13 +26,40 @@ import '../features/profile/presentation/profile_page.dart';
 import '../features/requests/presentation/my_requests_page.dart';
 import '../features/requests/presentation/request_offers_page.dart';
 
+String? resolveWebRedirect(String path) {
+  const backOfficeRoutes = {
+    '/back-office',
+    '/admin-categories',
+    '/admin-professionals',
+    '/admin-pro-leads',
+    '/pro-leads',
+    '/pro-sent-offers',
+  };
+
+  if (backOfficeRoutes.contains(path)) {
+    return null;
+  }
+
+  return '/back-office';
+}
+
 final appRouter = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/back-office',
+  redirect: (context, state) {
+    if (!kIsWeb) {
+      return null;
+    }
+
+    return resolveWebRedirect(state.uri.path);
+  },
   routes: [
     GoRoute(
       path: '/',
-      builder: (_, __) =>
-          kIsWeb ? const PresentationLandingPage() : const HomePage(),
+      builder: (_, __) => const SecureBackOfficeRoute(
+        targetRoute: '/back-office',
+        title: 'Back-office sécurisé',
+        child: BackOfficeDashboardPage(),
+      ),
     ),
     GoRoute(path: '/app', builder: (_, __) => const HomePage()),
     GoRoute(

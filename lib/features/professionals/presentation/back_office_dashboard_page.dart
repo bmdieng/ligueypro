@@ -263,18 +263,32 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: FilledButton.icon(
-                          onPressed: () => context.go('/pro-sent-offers'),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: AppColors.navy,
+                        child: OutlinedButton.icon(
+                          onPressed: () => context.go('/admin-categories'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            side: const BorderSide(color: Colors.white38),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
-                          icon: const Icon(Icons.inventory_2_outlined),
-                          label: const Text('Mes offres'),
+                          icon: const Icon(Icons.category_outlined),
+                          label: const Text('Catégories'),
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () => context.go('/pro-sent-offers'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: AppColors.navy,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      icon: const Icon(Icons.inventory_2_outlined),
+                      label: const Text('Mes offres'),
+                    ),
                   ),
                 ],
               ),
@@ -383,22 +397,6 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
             ),
             const SizedBox(height: 12),
             _SectionCard(
-              title: 'Professionnel actif',
-              subtitle: _currentProfessional == null
-                  ? 'Aucun professionnel sélectionné pour le BO.'
-                  : '${_currentProfessional!.name} • ${_currentProfessional!.service} • ${_currentProfessional!.planLabel.toUpperCase()}',
-              icon: Icons.badge_outlined,
-              actionLabel: _currentProfessional == null
-                  ? 'Ajouter un pro'
-                  : 'Gérer les demandes',
-              onTap: () => context.go(
-                _currentProfessional == null
-                    ? '/add-professional'
-                    : '/pro-leads',
-              ),
-            ),
-            const SizedBox(height: 12),
-            _SectionCard(
               title: 'Top professionnels',
               subtitle: leaderboard.isEmpty
                   ? 'Aucune donnée d’offre disponible pour le moment.'
@@ -445,14 +443,9 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                     onTap: () => context.go('/pro-sent-offers'),
                   ),
                   _ActionPill(
-                    label: 'Abonnement Pro',
-                    icon: Icons.workspace_premium_outlined,
-                    onTap: () => context.go('/pro-subscription'),
-                  ),
-                  _ActionPill(
-                    label: 'Ajouter un pro',
-                    icon: Icons.person_add_alt_1_outlined,
-                    onTap: () => context.go('/add-professional'),
+                    label: 'Catégories',
+                    icon: Icons.category_outlined,
+                    onTap: () => context.go('/admin-categories'),
                   ),
                 ],
               ),
