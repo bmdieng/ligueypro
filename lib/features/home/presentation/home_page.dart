@@ -83,6 +83,10 @@ class _HomePageState extends State<HomePage> {
         return Icons.computer;
       case 'child_care':
         return Icons.child_care;
+      case 'security':
+        return Icons.security;
+      case 'person_outline':
+        return Icons.person_outline;
       default:
         return Icons.more_horiz;
     }

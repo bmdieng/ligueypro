@@ -177,11 +177,11 @@ class ProfilePage extends StatelessWidget {
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               onTap: () => context.push('/cgu'),
             ),
-            const Divider(height: 1),
-            const ListTile(
-                leading: Icon(Icons.logout),
-                title: Text('Se déconnecter',
-                    maxLines: 1, overflow: TextOverflow.ellipsis)),
+            // const Divider(height: 1),
+            // const ListTile(
+            //     leading: Icon(Icons.logout),
+            //     title: Text('Se déconnecter',
+            //         maxLines: 1, overflow: TextOverflow.ellipsis)),
           ]),
           const SizedBox(height: 24),
         ],

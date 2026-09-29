@@ -220,48 +220,48 @@ class _BackOfficeAccessPageState extends State<BackOfficeAccessPage> {
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          OutlinedButton.icon(
-                            onPressed: () => context.go('/admin-requests'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              side: const BorderSide(color: Colors.white38),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
-                              ),
-                              visualDensity: VisualDensity.compact,
-                              textStyle: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                            icon: const Icon(Icons.receipt_long_outlined, size: 16),
-                            label: const Text('Demandes clients'),
-                          ),
-                          OutlinedButton.icon(
-                            onPressed: () => context.go('/admin-professionals'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              side: const BorderSide(color: Colors.white38),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
-                              ),
-                              visualDensity: VisualDensity.compact,
-                              textStyle: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                            icon: const Icon(Icons.badge_outlined, size: 16),
-                            label: const Text('Professionnels'),
-                          ),
+                          // OutlinedButton.icon(
+                          //   onPressed: () => context.go('/admin-requests'),
+                          //   style: OutlinedButton.styleFrom(
+                          //     foregroundColor: Colors.white,
+                          //     side: const BorderSide(color: Colors.white38),
+                          //     padding: const EdgeInsets.symmetric(
+                          //       horizontal: 12,
+                          //       vertical: 10,
+                          //     ),
+                          //     visualDensity: VisualDensity.compact,
+                          //     textStyle: const TextStyle(
+                          //       fontSize: 12,
+                          //       fontWeight: FontWeight.w600,
+                          //     ),
+                          //     shape: RoundedRectangleBorder(
+                          //       borderRadius: BorderRadius.circular(14),
+                          //     ),
+                          //   ),
+                          //   icon: const Icon(Icons.receipt_long_outlined, size: 16),
+                          //   label: const Text('Demandes clients'),
+                          // ),
+                          // OutlinedButton.icon(
+                          //   onPressed: () => context.go('/admin-professionals'),
+                          //   style: OutlinedButton.styleFrom(
+                          //     foregroundColor: Colors.white,
+                          //     side: const BorderSide(color: Colors.white38),
+                          //     padding: const EdgeInsets.symmetric(
+                          //       horizontal: 12,
+                          //       vertical: 10,
+                          //     ),
+                          //     visualDensity: VisualDensity.compact,
+                          //     textStyle: const TextStyle(
+                          //       fontSize: 12,
+                          //       fontWeight: FontWeight.w600,
+                          //     ),
+                          //     shape: RoundedRectangleBorder(
+                          //       borderRadius: BorderRadius.circular(14),
+                          //     ),
+                          //   ),
+                          //   icon: const Icon(Icons.badge_outlined, size: 16),
+                          //   label: const Text('Professionnels'),
+                          // ),
                         ],
                       ),
                     ],
@@ -354,26 +354,6 @@ class _BackOfficeAccessPageState extends State<BackOfficeAccessPage> {
                                 ? 'Vérification...'
                                 : 'Accéder au back-office',
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () => context.go('/profile'),
-                          style: OutlinedButton.styleFrom(
-                            minimumSize: const Size.fromHeight(44),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            textStyle: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          icon: const Icon(Icons.arrow_back_outlined, size: 18),
-                          label: const Text('Retour au profil'),
                         ),
                       ),
                     ],

@@ -32,6 +32,7 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
     _CategoryIconChoice('motorcycle', 'Livraison', Icons.motorcycle),
     _CategoryIconChoice('store', 'Commerce', Icons.store),
     _CategoryIconChoice('computer', 'Informatique', Icons.computer),
+    _CategoryIconChoice('child_care', 'Nounou', Icons.child_care),
     _CategoryIconChoice('more_horiz', 'Autre', Icons.more_horiz),
   ];
 
@@ -370,6 +371,7 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
 
   IconData _iconFromKey(String key) {
     for (final choice in _categoryIconChoices) {
+      print('Comparing choice.key: ${choice.key} with key: $key');
       if (choice.key == key) {
         return choice.icon;
       }
