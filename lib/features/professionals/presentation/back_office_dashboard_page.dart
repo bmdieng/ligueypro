@@ -119,6 +119,7 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Back-office'),
+        toolbarHeight: 52,
         actions: [
           IconButton(
             tooltip: 'Verrouiller',
@@ -165,12 +166,12 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
 
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1240),
+        constraints: const BoxConstraints(maxWidth: 1100),
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           children: [
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [
@@ -205,48 +206,50 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                               style: TextStyle(
                                 color: Colors.white70,
                                 fontWeight: FontWeight.w700,
-                                letterSpacing: 0.2,
+                                letterSpacing: 0.1,
+                                fontSize: 12,
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 8),
                             const Text(
                               'Pilotez votre BO LigueyPro',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 28,
+                                fontSize: 24,
                                 fontWeight: FontWeight.w900,
                                 height: 1.1,
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 8),
                             Text(
                               _currentProfessional == null
                                   ? 'Sélectionnez un professionnel abonné pour suivre les demandes et la performance des offres.'
                                   : '${_currentProfessional!.name} est actif sur ${_currentProfessional!.service} avec le plan ${_currentProfessional!.planLabel.toUpperCase()}.',
                               style: const TextStyle(
                                 color: Colors.white70,
-                                height: 1.45,
+                                height: 1.35,
+                                fontSize: 13,
                               ),
                             ),
                           ],
                         ),
                       ),
                       Container(
-                        width: 56,
-                        height: 56,
+                        width: 48,
+                        height: 48,
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.14),
-                          borderRadius: BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: const Icon(
                           Icons.dashboard_customize_outlined,
                           color: Colors.white,
-                          size: 28,
+                          size: 24,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 14),
                   Row(
                     children: [
                       Expanded(
@@ -255,28 +258,46 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.white,
                             side: const BorderSide(color: Colors.white38),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            minimumSize: const Size.fromHeight(38),
+                            padding: const EdgeInsets.symmetric(vertical: 9),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            textStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                          icon: const Icon(Icons.campaign_outlined),
+                          icon: const Icon(Icons.campaign_outlined, size: 16),
                           label: const Text('Demandes'),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () => context.go('/admin-categories'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.white,
                             side: const BorderSide(color: Colors.white38),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            minimumSize: const Size.fromHeight(38),
+                            padding: const EdgeInsets.symmetric(vertical: 9),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            textStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                          icon: const Icon(Icons.category_outlined),
+                          icon: const Icon(Icons.category_outlined, size: 16),
                           label: const Text('Catégories'),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
@@ -284,16 +305,25 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: AppColors.navy,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        minimumSize: const Size.fromHeight(38),
+                        padding: const EdgeInsets.symmetric(vertical: 9),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        visualDensity: VisualDensity.compact,
+                        textStyle: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                      icon: const Icon(Icons.inventory_2_outlined),
+                      icon: const Icon(Icons.inventory_2_outlined, size: 16),
                       label: const Text('Mes offres'),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -302,10 +332,10 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                   : MediaQuery.sizeOf(context).width > 800
                       ? 2
                       : 1,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
               childAspectRatio:
-                  MediaQuery.sizeOf(context).width > 1200 ? 1.35 : 1.2,
+                  MediaQuery.sizeOf(context).width > 1200 ? 1.45 : 1.28,
               children: [
                 _MetricCard(
                   title: 'Demandes visibles',
@@ -333,7 +363,7 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                 ),
               ],
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
             _SectionCard(
               title: 'Performance commerciale',
               subtitle:
@@ -351,7 +381,7 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                           accent: AppColors.success,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: _KpiStrip(
                           label: 'Couverture',
@@ -363,7 +393,7 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
                       Expanded(
@@ -375,7 +405,7 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                           accent: AppColors.primary,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: _KpiStrip(
                           label: 'Activité 24h',
@@ -386,7 +416,7 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 10),
                   _FunnelBar(
                     openRequests: stats.openRequests,
                     coveredRequests: stats.requestsWithOffers,
@@ -395,7 +425,7 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             _SectionCard(
               title: 'Top professionnels',
               subtitle: leaderboard.isEmpty
@@ -422,7 +452,7 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                       ],
                     ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             _SectionCard(
               title: 'Actions rapides',
               subtitle:
@@ -531,21 +561,21 @@ class _MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: accent.withValues(alpha: 0.14)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               color: accent.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: accent),
           ),
@@ -553,7 +583,7 @@ class _MetricCard extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 22,
               fontWeight: FontWeight.w900,
               color: accent,
             ),
@@ -608,7 +638,7 @@ class _KpiStrip extends StatelessWidget {
           Text(
             value,
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 21,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -689,7 +719,7 @@ class _FunnelStep extends StatelessWidget {
     return Row(
       children: [
         SizedBox(
-          width: 134,
+          width: 118,
           child: Text(
             label,
             style: const TextStyle(
@@ -702,7 +732,7 @@ class _FunnelStep extends StatelessWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(999),
             child: LinearProgressIndicator(
-              minHeight: 10,
+              minHeight: 8,
               value: ratio.clamp(0.0, 1.0),
               backgroundColor: color.withValues(alpha: 0.10),
               valueColor: AlwaysStoppedAnimation<Color>(color),
@@ -731,20 +761,20 @@ class _LeaderboardTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.background,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.10)),
       ),
       child: Row(
         children: [
           Container(
-            width: 36,
-            height: 36,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
               color: AppColors.navy,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
             ),
             alignment: Alignment.center,
             child: Text(
@@ -755,7 +785,7 @@ class _LeaderboardTile extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -764,7 +794,7 @@ class _LeaderboardTile extends StatelessWidget {
                   performance.professionalName,
                   style: const TextStyle(
                     fontWeight: FontWeight.w800,
-                    fontSize: 16,
+                    fontSize: 15,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -780,7 +810,7 @@ class _LeaderboardTile extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.success,
               fontWeight: FontWeight.w900,
-              fontSize: 18,
+              fontSize: 16,
             ),
           ),
         ],
@@ -809,10 +839,10 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
       ),
       child: Column(
@@ -821,15 +851,15 @@ class _SectionCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 42,
-                height: 42,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
                   color: AppColors.navy.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: AppColors.navy),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -837,7 +867,7 @@ class _SectionCard extends StatelessWidget {
                     Text(
                       title,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 17,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -855,20 +885,28 @@ class _SectionCard extends StatelessWidget {
             ],
           ),
           if (content != null) ...[
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             content!,
           ],
           if (actionLabel != null && onTap != null) ...[
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
                 onPressed: onTap,
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.navy,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  minimumSize: const Size.fromHeight(42),
+                  padding: const EdgeInsets.symmetric(vertical: 11),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-                icon: const Icon(Icons.arrow_forward_outlined),
+                icon: const Icon(Icons.arrow_forward_outlined, size: 18),
                 label: Text(actionLabel!),
               ),
             ),
@@ -896,7 +934,7 @@ class _ActionPill extends StatelessWidget {
       borderRadius: BorderRadius.circular(999),
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: AppColors.background,
           borderRadius: BorderRadius.circular(999),
@@ -905,11 +943,12 @@ class _ActionPill extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 18, color: AppColors.navy),
-            const SizedBox(width: 8),
+            Icon(icon, size: 16, color: AppColors.navy),
+            const SizedBox(width: 6),
             Text(
               label,
               style: const TextStyle(
+                fontSize: 13,
                 fontWeight: FontWeight.w700,
                 color: AppColors.navy,
               ),
