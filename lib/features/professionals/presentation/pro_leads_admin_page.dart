@@ -113,6 +113,233 @@ class _ProLeadsAdminPageState extends State<ProLeadsAdminPage> {
     );
   }
 
+  Future<void> _editLead(ProLeadItem lead) async {
+    final fullNameController = TextEditingController(text: lead.fullName);
+    final phoneController = TextEditingController(text: lead.phone);
+    final serviceController = TextEditingController(text: lead.service);
+    final cityController = TextEditingController(text: lead.city);
+    final businessNameController = TextEditingController(
+      text: lead.businessName ?? '',
+    );
+    final noteController = TextEditingController(text: lead.note ?? '');
+
+    var selectedStatus = lead.status;
+    var isSaving = false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Modifier la demande'),
+          content: SizedBox(
+            width: 520,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: fullNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nom / entreprise',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(
+                      labelText: 'Téléphone',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: serviceController,
+                    decoration: const InputDecoration(
+                      labelText: 'Service',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: cityController,
+                    decoration: const InputDecoration(
+                      labelText: 'Ville',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: businessNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Raison sociale / boutique',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: noteController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: 'Note',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: selectedStatus,
+                    decoration: const InputDecoration(
+                      labelText: 'Statut',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'new', child: Text('Nouveau')),
+                      DropdownMenuItem(
+                        value: 'contacted',
+                        child: Text('Contacté'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'qualified',
+                        child: Text('Qualifié'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'rejected',
+                        child: Text('Refusé'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setDialogState(() => selectedStatus = value);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isSaving ? null : () => Navigator.of(context).pop(),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              onPressed: isSaving
+                  ? null
+                  : () async {
+                      final fullName = fullNameController.text.trim();
+                      final phone = phoneController.text.trim();
+                      final service = serviceController.text.trim();
+                      final city = cityController.text.trim();
+                      final businessName = businessNameController.text.trim();
+                      final note = noteController.text.trim();
+
+                      if (fullName.isEmpty || phone.isEmpty || service.isEmpty || city.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Renseignez au minimum le nom, le téléphone, le service et la ville.',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
+
+                      setDialogState(() => isSaving = true);
+                      try {
+                        await ProLeadCaptureService.updateLead(
+                          leadId: lead.id,
+                          draft: ProLeadDraft(
+                            fullName: fullName,
+                            phone: phone,
+                            service: service,
+                            city: city,
+                            businessName: businessName.isEmpty
+                                ? null
+                                : businessName,
+                            note: note.isEmpty ? null : note,
+                          ),
+                          status: selectedStatus,
+                        );
+                        if (!context.mounted) {
+                          return;
+                        }
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Demande mise à jour.'),
+                          ),
+                        );
+                      } catch (_) {
+                        if (!context.mounted) {
+                          return;
+                        }
+                        setDialogState(() => isSaving = false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Échec de la mise à jour de la demande.'),
+                          ),
+                        );
+                      }
+                    },
+              style: FilledButton.styleFrom(backgroundColor: AppColors.navy),
+              child: Text(isSaving ? 'Enregistrement...' : 'Enregistrer'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    fullNameController.dispose();
+    phoneController.dispose();
+    serviceController.dispose();
+    cityController.dispose();
+    businessNameController.dispose();
+    noteController.dispose();
+  }
+
+  Future<void> _deleteLead(ProLeadItem lead) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Supprimer la demande'),
+        content: Text('Supprimer la demande de ${lead.fullName} ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            child: const Text('Supprimer'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) {
+      return;
+    }
+
+    try {
+      await ProLeadCaptureService.deleteLead(lead.id);
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Demande supprimée.')),
+      );
+    } catch (_) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Échec de la suppression de la demande.')),
+      );
+    }
+  }
+
   String _statusLabel(String status) {
     switch (status) {
       case 'contacted':
@@ -508,6 +735,20 @@ class _ProLeadsAdminPageState extends State<ProLeadsAdminPage> {
                               : () => _updateStatus(lead, 'rejected'),
                           icon: const Icon(Icons.block_outlined),
                           label: const Text('Refuser'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () => _editLead(lead),
+                          icon: const Icon(Icons.edit_outlined),
+                          label: const Text('Modifier'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () => _deleteLead(lead),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.danger,
+                            side: const BorderSide(color: AppColors.danger),
+                          ),
+                          icon: const Icon(Icons.delete_outline),
+                          label: const Text('Supprimer'),
                         ),
                       ],
                     ),

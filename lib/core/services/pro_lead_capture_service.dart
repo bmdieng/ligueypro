@@ -121,4 +121,33 @@ class ProLeadCaptureService {
         .ref('professional_leads/$leadId')
         .update({'status': status, 'updatedAt': ServerValue.timestamp});
   }
+
+  static Future<void> updateLead({
+    required String leadId,
+    required ProLeadDraft draft,
+    required String status,
+  }) async {
+    if (!FirebaseBootstrap.isReady) {
+      return;
+    }
+
+    await FirebaseDatabase.instance.ref('professional_leads/$leadId').update({
+      'fullName': draft.fullName,
+      'phone': draft.phone,
+      'service': draft.service,
+      'city': draft.city,
+      'businessName': draft.businessName,
+      'note': draft.note,
+      'status': status,
+      'updatedAt': ServerValue.timestamp,
+    });
+  }
+
+  static Future<void> deleteLead(String leadId) async {
+    if (!FirebaseBootstrap.isReady) {
+      return;
+    }
+
+    await FirebaseDatabase.instance.ref('professional_leads/$leadId').remove();
+  }
 }

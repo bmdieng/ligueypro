@@ -503,4 +503,40 @@ class OfferMarketplaceService {
       acceptedOfferEta: offer.eta,
     );
   }
+
+  static Future<void> updateRequest({
+    required String requestId,
+    required String service,
+    required String urgency,
+    required String description,
+    required String location,
+    required String phone,
+    required String status,
+    required String offersStatus,
+    required int offersCount,
+  }) async {
+    if (!FirebaseBootstrap.isReady) {
+      return;
+    }
+
+    await FirebaseDatabase.instance.ref('requests/$requestId').update({
+      'service': service,
+      'urgency': urgency,
+      'description': description,
+      'location': location,
+      'phone': phone,
+      'status': status,
+      'offersStatus': offersStatus,
+      'offersCount': offersCount,
+      'updatedAt': ServerValue.timestamp,
+    });
+  }
+
+  static Future<void> deleteRequest(String requestId) async {
+    if (!FirebaseBootstrap.isReady) {
+      return;
+    }
+
+    await FirebaseDatabase.instance.ref('requests/$requestId').remove();
+  }
 }

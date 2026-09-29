@@ -257,7 +257,7 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
-                            onPressed: () => context.go('/pro-leads'),
+                            onPressed: () => context.go('/admin-requests'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white,
                               side: const BorderSide(color: Colors.white38),
@@ -273,14 +273,14 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                               ),
                             ),
                             icon: const Icon(Icons.campaign_outlined, size: 16),
-                            label: const Text('Demandes'),
+                            label: const Text('Demandes clients'),
                           ),
                         ),
                         const SizedBox(height: 8),
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
-                            onPressed: () => context.go('/admin-categories'),
+                            onPressed: () => context.go('/admin-professionals'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white,
                               side: const BorderSide(color: Colors.white38),
@@ -295,8 +295,8 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            icon: const Icon(Icons.category_outlined, size: 16),
-                            label: const Text('Catégories'),
+                            icon: const Icon(Icons.badge_outlined, size: 16),
+                            label: const Text('Professionnels'),
                           ),
                         ),
                       ],
@@ -306,7 +306,7 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                       children: [
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: () => context.go('/pro-leads'),
+                            onPressed: () => context.go('/admin-requests'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white,
                               side: const BorderSide(color: Colors.white38),
@@ -322,13 +322,13 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                               ),
                             ),
                             icon: const Icon(Icons.campaign_outlined, size: 16),
-                            label: const Text('Demandes'),
+                            label: const Text('Demandes clients'),
                           ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: () => context.go('/admin-categories'),
+                            onPressed: () => context.go('/admin-professionals'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.white,
                               side: const BorderSide(color: Colors.white38),
@@ -343,8 +343,8 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            icon: const Icon(Icons.category_outlined, size: 16),
-                            label: const Text('Catégories'),
+                            icon: const Icon(Icons.badge_outlined, size: 16),
+                            label: const Text('Professionnels'),
                           ),
                         ),
                       ],
@@ -353,7 +353,7 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
-                      onPressed: () => context.go('/pro-sent-offers'),
+                      onPressed: () => context.go('/admin-categories'),
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: AppColors.navy,
@@ -369,7 +369,7 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                         ),
                       ),
                       icon: const Icon(Icons.inventory_2_outlined, size: 16),
-                      label: const Text('Mes offres'),
+                      label: const Text('Categories & Offres'),
                     ),
                   ),
                 ],
@@ -508,21 +508,21 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
             _SectionCard(
               title: 'Actions rapides',
               subtitle:
-                  'Ouvrez vos écrans clés pour traiter plus vite les demandes et les offres.',
+                  'Ouvrez vos écrans clés pour modifier ou supprimer une demande ou un professionnel.',
               icon: Icons.flash_on_outlined,
               content: Wrap(
                 spacing: 10,
                 runSpacing: 10,
                 children: [
                   _ActionPill(
-                    label: 'Demandes ouvertes',
-                    icon: Icons.campaign_outlined,
-                    onTap: () => context.go('/pro-leads'),
+                    label: 'Demandes clients',
+                    icon: Icons.receipt_long_outlined,
+                    onTap: () => context.go('/admin-requests'),
                   ),
                   _ActionPill(
-                    label: 'Offres envoyées',
-                    icon: Icons.inventory_2_outlined,
-                    onTap: () => context.go('/pro-sent-offers'),
+                    label: 'Gérer les professionnels',
+                    icon: Icons.badge_outlined,
+                    onTap: () => context.go('/admin-professionals'),
                   ),
                   _ActionPill(
                     label: 'Catégories',

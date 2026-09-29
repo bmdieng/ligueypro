@@ -6,6 +6,7 @@ import '../features/presentation/presentation_page.dart';
 import '../features/services/presentation/service_search_page.dart';
 import '../features/professionals/presentation/professional_page.dart';
 import '../features/requests/presentation/request_page.dart';
+import '../features/requests/presentation/request_admin_page.dart';
 import '../features/professionals/presentation/add_professional_page.dart';
 import '../features/professionals/presentation/all_professionals_page.dart';
 import '../features/professionals/presentation/back_office_access_page.dart';
@@ -29,6 +30,7 @@ import '../features/requests/presentation/request_offers_page.dart';
 String? resolveWebRedirect(String path) {
   const backOfficeRoutes = {
     '/back-office',
+    '/admin-requests',
     '/admin-categories',
     '/admin-professionals',
     '/admin-pro-leads',
@@ -141,6 +143,14 @@ final appRouter = GoRouter(
         targetRoute: '/back-office',
         title: 'Back-office sécurisé',
         child: BackOfficeDashboardPage(),
+      ),
+    ),
+    GoRoute(
+      path: '/admin-requests',
+      builder: (_, __) => const SecureBackOfficeRoute(
+        targetRoute: '/admin-requests',
+        title: 'Accès sécurisé aux demandes',
+        child: RequestAdminPage(),
       ),
     ),
     GoRoute(

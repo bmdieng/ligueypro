@@ -17,8 +17,7 @@ class SecureBackOfficeRoute extends StatefulWidget {
   final String title;
 
   @override
-  State<SecureBackOfficeRoute> createState() =>
-      _SecureBackOfficeRouteState();
+  State<SecureBackOfficeRoute> createState() => _SecureBackOfficeRouteState();
 }
 
 class _SecureBackOfficeRouteState extends State<SecureBackOfficeRoute> {
@@ -27,14 +26,12 @@ class _SecureBackOfficeRouteState extends State<SecureBackOfficeRoute> {
   @override
   void initState() {
     super.initState();
-    _unlockFuture =
-        AppPreferencesService.isBackOfficeUnlocked();
+    _unlockFuture = AppPreferencesService.isBackOfficeUnlocked();
   }
 
   void _refreshAccess() {
     setState(() {
-      _unlockFuture =
-          AppPreferencesService.isBackOfficeUnlocked();
+      _unlockFuture = AppPreferencesService.isBackOfficeUnlocked();
     });
   }
 
@@ -64,6 +61,7 @@ class _SecureBackOfficeRouteState extends State<SecureBackOfficeRoute> {
     );
   }
 }
+
 class BackOfficeAccessPage extends StatefulWidget {
   const BackOfficeAccessPage({
     super.key,
@@ -134,10 +132,6 @@ class _BackOfficeAccessPageState extends State<BackOfficeAccessPage> {
       return;
     }
 
-    debugPrint('Back-office unlocked');
-    debugPrint('Target route: ${widget.targetRoute}');
-
-    // Demande au SecureBackOfficeRoute de vérifier à nouveau
     widget.onUnlocked();
   }
 
@@ -221,6 +215,55 @@ class _BackOfficeAccessPageState extends State<BackOfficeAccessPage> {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: () => context.go('/admin-requests'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.white38),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              visualDensity: VisualDensity.compact,
+                              textStyle: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            icon: const Icon(Icons.receipt_long_outlined, size: 16),
+                            label: const Text('Demandes clients'),
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: () => context.go('/admin-professionals'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.white38),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              visualDensity: VisualDensity.compact,
+                              textStyle: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            icon: const Icon(Icons.badge_outlined, size: 16),
+                            label: const Text('Professionnels'),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -246,7 +289,10 @@ class _BackOfficeAccessPageState extends State<BackOfficeAccessPage> {
                     children: [
                       const Text(
                         'Déverrouiller le BO',
-                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       const SizedBox(height: 6),
                       Text(
