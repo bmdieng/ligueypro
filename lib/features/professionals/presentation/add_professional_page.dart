@@ -290,64 +290,64 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
                   const Text('Visible comme disponible dans les résultats.'),
             ),
             const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.18),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SwitchListTile(
-                    value: _isSubscribed,
-                    onChanged: (value) => setState(() => _isSubscribed = value),
-                    contentPadding: EdgeInsets.zero,
-                    title:
-                        const Text('Abonner ce professionnel à LigueyPro Pro'),
-                    subtitle: const Text(
-                        'Les abonnés reçoivent les demandes et peuvent émettre des offres.'),
-                  ),
-                  if (_isSubscribed) ...[
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedPlanId,
-                      decoration: const InputDecoration(
-                        labelText: 'Plan Pro',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: ProSubscriptionService.plans
-                          .map(
-                            (plan) => DropdownMenuItem(
-                              value: plan.id,
-                              child: Text(
-                                  '${plan.name} • ${ProSubscriptionService.formatFcfa(plan.priceFcfa)}/mois'),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() => _selectedPlanId = value);
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(
-                        onPressed: () => context.push('/pro-subscription'),
-                        icon: const Icon(Icons.workspace_premium_outlined),
-                        label: const Text('Voir les détails des abonnements'),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
+            // Container(
+            //   padding: const EdgeInsets.all(16),
+            //   decoration: BoxDecoration(
+            //     color: AppColors.primary.withValues(alpha: 0.08),
+            //     borderRadius: BorderRadius.circular(18),
+            //     border: Border.all(
+            //       color: AppColors.primary.withValues(alpha: 0.18),
+            //     ),
+            //   ),
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       SwitchListTile(
+            //         value: _isSubscribed,
+            //         onChanged: (value) => setState(() => _isSubscribed = value),
+            //         contentPadding: EdgeInsets.zero,
+            //         title:
+            //             const Text('Abonner ce professionnel à LigueyPro Premium'),
+            //         subtitle: const Text(
+            //             'Les abonnés reçoivent les demandes et peuvent émettre des offres.'),
+            //       ),
+            //       if (_isSubscribed) ...[
+            //         const SizedBox(height: 8),
+            //         DropdownButtonFormField<String>(
+            //           initialValue: _selectedPlanId,
+            //           decoration: const InputDecoration(
+            //             labelText: 'Plan Premium',
+            //             border: OutlineInputBorder(),
+            //           ),
+            //           items: ProSubscriptionService.plans
+            //               .map(
+            //                 (plan) => DropdownMenuItem(
+            //                   value: plan.id,
+            //                   child: Text(
+            //                       '${plan.name} • ${ProSubscriptionService.formatFcfa(plan.priceFcfa)}/mois'),
+            //                 ),
+            //               )
+            //               .toList(),
+            //           onChanged: (value) {
+            //             if (value != null) {
+            //               setState(() => _selectedPlanId = value);
+            //             }
+            //           },
+            //         ),
+            //         const SizedBox(height: 8),
+            //         Align(
+            //           alignment: Alignment.centerLeft,
+            //           child: TextButton.icon(
+            //             onPressed: () => context.push('/pro-subscription'),
+            //             icon: const Icon(Icons.workspace_premium_outlined),
+            //             label: const Text('Voir les détails des abonnements'),
+            //           ),
+            //         ),
+            //       ],
+            //     ],
+            //   ),
+            // ),
+            // const SizedBox(height: 20),
             FilledButton(
               onPressed: _isSaving ? null : _saveProfessional,
               style: FilledButton.styleFrom(

@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import '../features/home/presentation/home_page.dart';
-import '../features/presentation/presentation_landing_page.dart';
+//import '../features/presentation/presentation_landing_page.dart'
 import '../features/presentation/presentation_page.dart';
 import '../features/services/presentation/service_search_page.dart';
 import '../features/professionals/presentation/professional_page.dart';
@@ -44,7 +44,7 @@ String? resolveWebRedirect(String path) {
 }
 
 final appRouter = GoRouter(
-  initialLocation: '/back-office',
+  initialLocation: kIsWeb ? '/back-office' : '/app',
   redirect: (context, state) {
     if (!kIsWeb) {
       return null;
