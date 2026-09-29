@@ -141,6 +141,7 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
   }
 
   Widget _buildContent(BuildContext context, Object? root) {
+    final isCompactHeader = MediaQuery.sizeOf(context).width < 720;
     final requests = root is Map
         ? OfferMarketplaceService.requestsFromSnapshot(root['requests'])
       : const <MarketplaceRequestItem>[];
@@ -250,53 +251,104 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => context.go('/pro-leads'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            side: const BorderSide(color: Colors.white38),
-                            minimumSize: const Size.fromHeight(38),
-                            padding: const EdgeInsets.symmetric(vertical: 9),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                  if (isCompactHeader)
+                    Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () => context.go('/pro-leads'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.white38),
+                              minimumSize: const Size.fromHeight(38),
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              visualDensity: VisualDensity.compact,
+                              textStyle: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                            visualDensity: VisualDensity.compact,
-                            textStyle: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            icon: const Icon(Icons.campaign_outlined, size: 16),
+                            label: const Text('Demandes'),
                           ),
-                          icon: const Icon(Icons.campaign_outlined, size: 16),
-                          label: const Text('Demandes'),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => context.go('/admin-categories'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            side: const BorderSide(color: Colors.white38),
-                            minimumSize: const Size.fromHeight(38),
-                            padding: const EdgeInsets.symmetric(vertical: 9),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () => context.go('/admin-categories'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.white38),
+                              minimumSize: const Size.fromHeight(38),
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              visualDensity: VisualDensity.compact,
+                              textStyle: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                            visualDensity: VisualDensity.compact,
-                            textStyle: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            icon: const Icon(Icons.category_outlined, size: 16),
+                            label: const Text('Catégories'),
                           ),
-                          icon: const Icon(Icons.category_outlined, size: 16),
-                          label: const Text('Catégories'),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    )
+                  else
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => context.go('/pro-leads'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.white38),
+                              minimumSize: const Size.fromHeight(38),
+                              padding: const EdgeInsets.symmetric(vertical: 9),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              visualDensity: VisualDensity.compact,
+                              textStyle: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            icon: const Icon(Icons.campaign_outlined, size: 16),
+                            label: const Text('Demandes'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => context.go('/admin-categories'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.white38),
+                              minimumSize: const Size.fromHeight(38),
+                              padding: const EdgeInsets.symmetric(vertical: 9),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              visualDensity: VisualDensity.compact,
+                              textStyle: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            icon: const Icon(Icons.category_outlined, size: 16),
+                            label: const Text('Catégories'),
+                          ),
+                        ),
+                      ],
+                    ),
                   const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
