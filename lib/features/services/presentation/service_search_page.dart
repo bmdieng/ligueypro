@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/network/firebase_bootstrap.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/uri_helpers.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class _ProfessionalSummary {
   const _ProfessionalSummary({
@@ -57,14 +58,13 @@ class _ServiceSearchPageState extends State<ServiceSearchPage> {
         final name = value['name']?.toString();
         final rating = value['rating']?.toString() ?? '⭐ 4.5';
         final distance = value['distance']?.toString() ?? 'N/A';
-        final price = value['price']?.toString() ?? 'À confirmer';
+        final price = value['price']?.toString() ?? '';
         final ratingAverage = value['ratingAverage'] is num
             ? (value['ratingAverage'] as num).toDouble()
             : _parseRating(rating);
         final verified = value['verified'] == true;
         final availableNow = value['availableNow'] != false;
-        final responseTime =
-            value['responseTime']?.toString() ?? 'Réponse rapide';
+        final responseTime = value['responseTime']?.toString() ?? '';
         final completedJobs = value['completedJobs'] is num
             ? (value['completedJobs'] as num).toInt()
             : 0;
@@ -129,27 +129,33 @@ class _ServiceSearchPageState extends State<ServiceSearchPage> {
   }
 
   List<_ProfessionalSummary> _applyFilter(
-      List<_ProfessionalSummary> professionals) {
-    switch (_selectedFilter) {
-      case 'Vérifiés':
-        return professionals
-            .where((professional) => professional.verified)
-            .toList();
-      case 'Disponibles':
-        return professionals
-            .where((professional) => professional.availableNow)
-            .toList();
-      case 'Top notés':
-        final filtered = [...professionals]
-          ..sort((a, b) => b.ratingAverage.compareTo(a.ratingAverage));
-        return filtered;
-      default:
-        return professionals;
+    List<_ProfessionalSummary> professionals,
+    AppLocalizations l10n,
+  ) {
+    if (_selectedFilter == l10n.serviceSearchFilterVerified) {
+      return professionals
+          .where((professional) => professional.verified)
+          .toList();
     }
+
+    if (_selectedFilter == l10n.serviceSearchFilterAvailable) {
+      return professionals
+          .where((professional) => professional.availableNow)
+          .toList();
+    }
+
+    if (_selectedFilter == l10n.serviceSearchFilterTopRated) {
+      final filtered = [...professionals]
+        ..sort((a, b) => b.ratingAverage.compareTo(a.ratingAverage));
+      return filtered;
+    }
+
+    return professionals;
   }
 
   List<Widget> _buildPros(
       BuildContext context, List<_ProfessionalSummary> pros) {
+    final l10n = AppLocalizations.of(context);
     return pros
         .map(
           (professional) => Card(
@@ -178,16 +184,18 @@ class _ServiceSearchPageState extends State<ServiceSearchPage> {
                     children: [
                       if (professional.verified)
                         _ResultBadge(
-                          label: 'Vérifié',
+                          label: l10n.serviceSearchBadgeVerified,
                           color: AppColors.success,
                         ),
                       if (professional.availableNow)
                         _ResultBadge(
-                          label: 'Disponible',
+                          label: l10n.serviceSearchBadgeAvailable,
                           color: AppColors.primary,
                         ),
                       _ResultBadge(
-                        label: professional.responseTime,
+                        label: professional.responseTime.isEmpty
+                            ? l10n.serviceSearchDefaultResponseTime
+                            : professional.responseTime,
                         color: AppColors.navy,
                       ),
                     ],
@@ -199,7 +207,7 @@ class _ServiceSearchPageState extends State<ServiceSearchPage> {
                 onPressed: () => context.push(
                     '/professional/${Uri.encodeComponent(professional.id)}'),
                 style: FilledButton.styleFrom(backgroundColor: AppColors.navy),
-                child: const Text('Voir'),
+                child: Text(l10n.serviceSearchSee),
               ),
             ),
           ),
@@ -209,18 +217,29 @@ class _ServiceSearchPageState extends State<ServiceSearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final decodedCategory = safeDecodeUriComponent(widget.category);
     final normalizedQuery =
-        decodedCategory == 'Recherche' ? '' : decodedCategory;
+        decodedCategory == l10n.serviceSearchTitle ? '' : decodedCategory;
+
+    final filterAll = l10n.serviceSearchFilterAll;
+    final filterVerified = l10n.serviceSearchFilterVerified;
+    final filterAvailable = l10n.serviceSearchFilterAvailable;
+    final filterTopRated = l10n.serviceSearchFilterTopRated;
+
+    if (_selectedFilter == 'Tous') {
+      _selectedFilter = filterAll;
+    }
 
     return Scaffold(
       appBar: AppBar(
-          title: Text(
-              decodedCategory == 'Recherche' ? 'Recherche' : decodedCategory)),
+          title: Text(decodedCategory == l10n.serviceSearchTitle
+              ? l10n.serviceSearchTitle
+              : decodedCategory)),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/add-professional'),
         icon: const Icon(Icons.person_add_alt_1_rounded),
-        label: const Text('Ajouter'),
+        label: Text(l10n.serviceSearchAdd),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -238,21 +257,26 @@ class _ServiceSearchPageState extends State<ServiceSearchPage> {
               children: [
                 Text(
                   normalizedQuery.isEmpty
-                      ? 'Professionnels proches'
-                      : 'Résultats pour "$normalizedQuery"',
+                      ? l10n.serviceSearchNearby
+                      : l10n.serviceSearchResultsFor(normalizedQuery),
                   style: const TextStyle(
                       fontSize: 20, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Filtrez les profils les plus fiables, disponibles et bien notés.',
-                  style: TextStyle(color: AppColors.muted),
+                Text(
+                  l10n.serviceSearchFilterDescription,
+                  style: const TextStyle(color: AppColors.muted),
                 ),
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: ['Tous', 'Vérifiés', 'Disponibles', 'Top notés']
+                  children: [
+                    filterAll,
+                    filterVerified,
+                    filterAvailable,
+                    filterTopRated,
+                  ]
                       .map(
                         (filter) => ChoiceChip(
                           label: Text(filter),
@@ -269,8 +293,8 @@ class _ServiceSearchPageState extends State<ServiceSearchPage> {
           const SizedBox(height: 12),
           Text(
             normalizedQuery.isEmpty
-                ? 'Professionnels proches'
-                : 'Résultats pour "$normalizedQuery"',
+                ? l10n.serviceSearchNearby
+                : l10n.serviceSearchResultsFor(normalizedQuery),
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 12),
@@ -288,7 +312,7 @@ class _ServiceSearchPageState extends State<ServiceSearchPage> {
 
                 final pros = _fromSnapshot(snapshot.data?.snapshot.value,
                     search: normalizedQuery);
-                final filtered = _applyFilter(pros);
+                final filtered = _applyFilter(pros, l10n);
                 if (filtered.isEmpty) {
                   return Column(children: _buildEmptyResults());
                 }
@@ -309,19 +333,20 @@ class _ServiceSearchPageState extends State<ServiceSearchPage> {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
         ),
-        child: const Column(
+        child: Column(
           children: [
-            Icon(Icons.search_off_outlined, size: 42, color: AppColors.primary),
-            SizedBox(height: 12),
+            const Icon(Icons.search_off_outlined,
+                size: 42, color: AppColors.primary),
+            const SizedBox(height: 12),
             Text(
-              'Aucun professionnel trouvé',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              AppLocalizations.of(context).serviceSearchEmptyTitle,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
-              'Aucun profil ne correspond à cette recherche dans Firebase pour le moment.',
-              style: TextStyle(color: AppColors.muted, height: 1.4),
+              AppLocalizations.of(context).serviceSearchEmptyMessage,
+              style: const TextStyle(color: AppColors.muted, height: 1.4),
               textAlign: TextAlign.center,
             ),
           ],

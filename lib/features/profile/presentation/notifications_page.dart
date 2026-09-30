@@ -1,9 +1,11 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/network/firebase_bootstrap.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class _NotificationItem {
   const _NotificationItem({
@@ -35,7 +37,9 @@ class NotificationsPage extends StatelessWidget {
   const NotificationsPage({super.key});
 
   static List<_NotificationItem> _notificationsFromSnapshot(
-      Object? snapshotValue) {
+    Object? snapshotValue,
+    AppLocalizations l10n,
+  ) {
     final notifications = <_NotificationItem>[];
 
     if (snapshotValue is! Map) {
@@ -51,11 +55,13 @@ class NotificationsPage extends StatelessWidget {
       notifications.add(
         _NotificationItem(
           id: entry.key.toString(),
-          title: value['title']?.toString() ?? 'Nouvelle demande',
-          body: value['body']?.toString() ?? 'Une demande a ete soumise.',
+          title: value['title']?.toString() ??
+              l10n.notificationsDefaultRequestTitle,
+          body:
+              value['body']?.toString() ?? l10n.notificationsDefaultRequestBody,
           createdAt: _parseDateTime(value['createdAt']),
-          type: _resolveType(value),
-          category: _resolveCategory(value),
+          type: _resolveType(value, l10n),
+          category: _resolveCategory(value, l10n),
           service: value['service']?.toString(),
           urgency: value['urgency']?.toString(),
           location: value['location']?.toString(),
@@ -68,7 +74,7 @@ class NotificationsPage extends StatelessWidget {
     return notifications;
   }
 
-  static String _resolveType(Map value) {
+  static String _resolveType(Map value, AppLocalizations l10n) {
     final rawType = value['type']?.toString().trim();
     if (rawType != null && rawType.isNotEmpty) {
       return rawType;
@@ -79,10 +85,10 @@ class NotificationsPage extends StatelessWidget {
       return title;
     }
 
-    return 'Nouvelle demande';
+    return l10n.notificationsDefaultRequestTitle;
   }
 
-  static String _resolveCategory(Map value) {
+  static String _resolveCategory(Map value, AppLocalizations l10n) {
     final rawCategory = value['category']?.toString().trim();
     if (rawCategory != null && rawCategory.isNotEmpty) {
       return rawCategory;
@@ -93,7 +99,7 @@ class NotificationsPage extends StatelessWidget {
       return service;
     }
 
-    return 'Non classee';
+    return l10n.notificationsDefaultCategory;
   }
 
   static DateTime _parseDateTime(Object? value) {
@@ -120,13 +126,8 @@ class NotificationsPage extends StatelessWidget {
     return DateTime.now();
   }
 
-  static String _formatDateTime(DateTime value) {
-    final day = value.day.toString().padLeft(2, '0');
-    final month = value.month.toString().padLeft(2, '0');
-    final year = value.year.toString();
-    final hour = value.hour.toString().padLeft(2, '0');
-    final minute = value.minute.toString().padLeft(2, '0');
-    return '$day/$month/$year a $hour:$minute';
+  static String _formatDateTime(DateTime value, AppLocalizations l10n) {
+    return DateFormat.yMd(l10n.localeName).add_Hm().format(value);
   }
 
   static Color _urgencyColor(String? urgency) {
@@ -141,7 +142,11 @@ class NotificationsPage extends StatelessWidget {
     }
   }
 
-  static Widget _buildHeader(BuildContext context, int count) {
+  static Widget _buildHeader(
+    BuildContext context,
+    AppLocalizations l10n,
+    int count,
+  ) {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       padding: const EdgeInsets.all(20),
@@ -169,8 +174,8 @@ class NotificationsPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          const Text(
-            'Notifications',
+          Text(
+            l10n.commonNotifications,
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -179,9 +184,7 @@ class NotificationsPage extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            count == 0
-                ? 'Aucune alerte pour le moment.'
-                : '$count notification${count > 1 ? 's' : ''} disponible${count > 1 ? 's' : ''}.',
+            l10n.notificationsHeaderCount(count),
             style: const TextStyle(color: Colors.white70, height: 1.35),
           ),
           const SizedBox(height: 14),
@@ -192,14 +195,14 @@ class NotificationsPage extends StatelessWidget {
               side: const BorderSide(color: Colors.white30),
             ),
             icon: const Icon(Icons.tune),
-            label: const Text('Regler les autorisations'),
+            label: Text(l10n.notificationsManagePermissions),
           ),
         ],
       ),
     );
   }
 
-  static Widget _buildEmptyState() {
+  static Widget _buildEmptyState(AppLocalizations l10n) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -220,16 +223,16 @@ class NotificationsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Aucune notification a afficher',
+            Text(
+              l10n.notificationsEmptyTitle,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Les nouvelles demandes et alertes importantes apparaitront ici en temps reel.',
+            Text(
+              l10n.notificationsEmptyDescription,
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.muted, height: 1.5),
+              style: const TextStyle(color: AppColors.muted, height: 1.5),
             ),
           ],
         ),
@@ -237,7 +240,10 @@ class NotificationsPage extends StatelessWidget {
     );
   }
 
-  static Widget _buildNotificationCard(_NotificationItem item) {
+  static Widget _buildNotificationCard(
+    _NotificationItem item,
+    AppLocalizations l10n,
+  ) {
     final metadata = <String>[
       if (item.type.isNotEmpty) item.type,
       if (item.category.isNotEmpty) item.category,
@@ -288,7 +294,7 @@ class NotificationsPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        _formatDateTime(item.createdAt),
+                        _formatDateTime(item.createdAt, l10n),
                         style: const TextStyle(
                           color: AppColors.muted,
                           fontSize: 12,
@@ -362,15 +368,17 @@ class NotificationsPage extends StatelessWidget {
     );
   }
 
-  static Widget _buildBody() {
+  static Widget _buildBody(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     if (!FirebaseBootstrap.isReady) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Text(
-            'Les notifications ne sont pas disponibles tant que Firebase n\'est pas initialise.',
+            l10n.notificationsFirebaseUnavailable,
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.muted, height: 1.5),
+            style: const TextStyle(color: AppColors.muted, height: 1.5),
           ),
         ),
       );
@@ -384,7 +392,7 @@ class NotificationsPage extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Text(
-                'Impossible de charger les notifications pour le moment.',
+                l10n.notificationsLoadError,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.red.shade700, height: 1.5),
               ),
@@ -397,20 +405,22 @@ class NotificationsPage extends StatelessWidget {
         }
 
         final notifications =
-            _notificationsFromSnapshot(snapshot.data?.snapshot.value);
+            _notificationsFromSnapshot(snapshot.data?.snapshot.value, l10n);
 
         return Column(
           children: [
-            _buildHeader(context, notifications.length),
+            _buildHeader(context, l10n, notifications.length),
             Expanded(
               child: notifications.isEmpty
-                  ? _buildEmptyState()
+                  ? _buildEmptyState(l10n)
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                       itemCount: notifications.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 12),
-                      itemBuilder: (_, index) =>
-                          _buildNotificationCard(notifications[index]),
+                      itemBuilder: (_, index) => _buildNotificationCard(
+                        notifications[index],
+                        l10n,
+                      ),
                     ),
             ),
           ],
@@ -421,9 +431,11 @@ class NotificationsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Notifications')),
-      body: SafeArea(child: _buildBody()),
+      appBar: AppBar(title: Text(l10n.commonNotifications)),
+      body: SafeArea(child: _buildBody(context)),
     );
   }
 }

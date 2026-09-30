@@ -6,6 +6,7 @@ import '../../../core/network/firebase_bootstrap.dart';
 import '../../../core/services/offer_marketplace_service.dart';
 import '../../../core/services/professional_admin_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class _PresentationMetrics {
   const _PresentationMetrics({
@@ -125,9 +126,12 @@ class PresentationLandingPage extends StatelessWidget {
     return '$count';
   }
 
-  static String _formatAverageResponse(double? minutes) {
+  static String _formatAverageResponse(
+    AppLocalizations l10n,
+    double? minutes,
+  ) {
     if (minutes == null) {
-      return 'N/A';
+      return l10n.landingNotAvailable;
     }
     if (minutes < 60) {
       return '${minutes.round()} min';
@@ -137,9 +141,12 @@ class PresentationLandingPage extends StatelessWidget {
     return '${hours.toStringAsFixed(hours >= 10 ? 0 : 1)} h';
   }
 
-  static String _formatAverageRating(_PresentationMetrics metrics) {
+  static String _formatAverageRating(
+    AppLocalizations l10n,
+    _PresentationMetrics metrics,
+  ) {
     if (metrics.averageRating == null) {
-      return 'N/A';
+      return l10n.landingNotAvailable;
     }
     return '${metrics.averageRating!.toStringAsFixed(1)}/5';
   }
@@ -167,6 +174,8 @@ class PresentationLandingPage extends StatelessWidget {
     bool compact,
     _PresentationMetrics metrics,
   ) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -199,60 +208,53 @@ class PresentationLandingPage extends StatelessWidget {
                       ),
                 const SizedBox(height: 18),
                 _SectionShell(
-                  title: 'Pourquoi LigueyPro',
-                  subtitle:
-                      'Une place de marché locale pensée pour accélérer la rencontre entre clients et professionnels abonnés.',
+                  title: l10n.landingWhyTitle,
+                  subtitle: l10n.landingWhySubtitle,
                   child: compact
-                      ? const Column(
+                      ? Column(
                           children: [
                             _FeatureCard(
                               icon: Icons.flash_on_outlined,
-                              title: 'Demande express',
-                              body:
-                                  'Le client publie son besoin en quelques secondes avec urgence, zone et téléphone.',
+                              title: l10n.landingFeatureExpressTitle,
+                              body: l10n.landingFeatureExpressBody,
                             ),
-                            SizedBox(height: 12),
+                            const SizedBox(height: 12),
                             _FeatureCard(
                               icon: Icons.local_offer_outlined,
-                              title: 'Offres comparables',
-                              body:
-                                  'Les pros abonnés répondent avec prix, délai et message personnalisé.',
+                              title: l10n.landingFeatureOffersTitle,
+                              body: l10n.landingFeatureOffersBody,
                             ),
-                            SizedBox(height: 12),
+                            const SizedBox(height: 12),
                             _FeatureCard(
                               icon: Icons.admin_panel_settings_outlined,
-                              title: 'BO sécurisé',
-                              body:
-                                  'Le back-office permet de piloter les demandes, les offres et la performance commerciale.',
+                              title: l10n.landingFeatureBackOfficeTitle,
+                              body: l10n.landingFeatureBackOfficeBody,
                             ),
                           ],
                         )
-                      : const Row(
+                      : Row(
                           children: [
                             Expanded(
                               child: _FeatureCard(
                                 icon: Icons.flash_on_outlined,
-                                title: 'Demande express',
-                                body:
-                                    'Le client publie son besoin en quelques secondes avec urgence, zone et téléphone.',
+                                title: l10n.landingFeatureExpressTitle,
+                                body: l10n.landingFeatureExpressBody,
                               ),
                             ),
-                            SizedBox(width: 12),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: _FeatureCard(
                                 icon: Icons.local_offer_outlined,
-                                title: 'Offres comparables',
-                                body:
-                                    'Les pros abonnés répondent avec prix, délai et message personnalisé.',
+                                title: l10n.landingFeatureOffersTitle,
+                                body: l10n.landingFeatureOffersBody,
                               ),
                             ),
-                            SizedBox(width: 12),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: _FeatureCard(
                                 icon: Icons.admin_panel_settings_outlined,
-                                title: 'BO sécurisé',
-                                body:
-                                    'Le back-office permet de piloter les demandes, les offres et la performance commerciale.',
+                                title: l10n.landingFeatureBackOfficeTitle,
+                                body: l10n.landingFeatureBackOfficeBody,
                               ),
                             ),
                           ],
@@ -260,32 +262,33 @@ class PresentationLandingPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 _SectionShell(
-                  title: 'Indicateurs clés',
-                  subtitle:
-                      'Des chiffres réels issus de Firebase pour refléter le volume et la qualité de l’activité LigueyPro.',
+                  title: l10n.landingMetricsTitle,
+                  subtitle: l10n.landingMetricsSubtitle,
                   child: compact
                       ? Column(
                           children: [
                             _MetricTile(
-                              label: 'Professionnels actifs',
+                              label: l10n.landingMetricActivePros,
                               value: _formatCount(metrics.professionalsCount),
                             ),
                             const SizedBox(height: 10),
                             _MetricTile(
-                              label: 'Demandes publiées',
+                              label: l10n.landingMetricPublishedRequests,
                               value: _formatCount(metrics.requestsCount),
                             ),
                             const SizedBox(height: 10),
                             _MetricTile(
-                              label: 'Offres envoyées',
+                              label: l10n.landingMetricSentOffers,
                               value: _formatCount(metrics.offersCount),
                             ),
                             const SizedBox(height: 10),
                             _MetricTile(
                               label: metrics.reviewsCount == 0
-                                  ? 'Note moyenne'
-                                  : 'Note moyenne (${metrics.reviewsCount} avis)',
-                              value: _formatAverageRating(metrics),
+                                  ? l10n.landingMetricAverageRating
+                                  : l10n.landingMetricAverageRatingWithReviews(
+                                      metrics.reviewsCount,
+                                    ),
+                              value: _formatAverageRating(l10n, metrics),
                             ),
                           ],
                         )
@@ -301,23 +304,26 @@ class PresentationLandingPage extends StatelessWidget {
                               childAspectRatio: 1.35,
                               children: [
                                 _MetricTile(
-                                  label: 'Professionnels actifs',
+                                  label: l10n.landingMetricActivePros,
                                   value:
                                       _formatCount(metrics.professionalsCount),
                                 ),
                                 _MetricTile(
-                                  label: 'Demandes publiées',
+                                  label: l10n.landingMetricPublishedRequests,
                                   value: _formatCount(metrics.requestsCount),
                                 ),
                                 _MetricTile(
-                                  label: 'Offres envoyées',
+                                  label: l10n.landingMetricSentOffers,
                                   value: _formatCount(metrics.offersCount),
                                 ),
                                 _MetricTile(
                                   label: metrics.reviewsCount == 0
-                                      ? 'Note moyenne'
-                                      : 'Note moyenne (${metrics.reviewsCount} avis)',
-                                  value: _formatAverageRating(metrics),
+                                      ? l10n.landingMetricAverageRating
+                                      : l10n
+                                          .landingMetricAverageRatingWithReviews(
+                                          metrics.reviewsCount,
+                                        ),
+                                  value: _formatAverageRating(l10n, metrics),
                                 ),
                               ],
                             );
@@ -336,36 +342,36 @@ class PresentationLandingPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: compact
-                      ? const Column(
+                      ? Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Passez à l’application',
-                              style: TextStyle(
+                              l10n.landingSwitchAppTitle,
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 24,
                                 fontWeight: FontWeight.w900,
                               ),
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             Text(
-                              'Consultez les services, publiez une demande ou ouvrez votre back-office professionnel sécurisé.',
-                              style:
-                                  TextStyle(color: Colors.white70, height: 1.4),
+                              l10n.landingSwitchAppBody,
+                              style: const TextStyle(
+                                  color: Colors.white70, height: 1.4),
                             ),
-                            SizedBox(height: 16),
-                            _BottomCtas(),
+                            const SizedBox(height: 16),
+                            const _BottomCtas(),
                           ],
                         )
-                      : const Row(
+                      : Row(
                           children: [
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Passez à l’application',
-                                    style: TextStyle(
+                                    l10n.landingSwitchAppTitle,
+                                    style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 24,
                                       fontWeight: FontWeight.w900,
@@ -403,6 +409,8 @@ class _TopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       decoration: BoxDecoration(
@@ -422,18 +430,18 @@ class _TopBar extends StatelessWidget {
                   children: [
                     OutlinedButton(
                       onPressed: () => context.go('/for-pros'),
-                      child: const Text('Professionnels'),
+                      child: Text(l10n.landingNavProfessionals),
                     ),
                     OutlinedButton(
                       onPressed: () => context.go('/presentation'),
-                      child: const Text('Présentation'),
+                      child: Text(l10n.landingNavPresentation),
                     ),
                     FilledButton(
                       onPressed: () => context.go('/back-office'),
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.navy,
                       ),
-                      child: const Text('Back-office'),
+                      child: Text(l10n.landingNavBackOffice),
                     ),
                   ],
                 ),
@@ -444,12 +452,12 @@ class _TopBar extends StatelessWidget {
                 const Expanded(child: _BrandBlock()),
                 OutlinedButton(
                   onPressed: () => context.go('/for-pros'),
-                  child: const Text('Professionnels'),
+                  child: Text(l10n.landingNavProfessionals),
                 ),
                 const SizedBox(width: 10),
                 OutlinedButton(
                   onPressed: () => context.go('/presentation'),
-                  child: const Text('Présentation'),
+                  child: Text(l10n.landingNavPresentation),
                 ),
                 const SizedBox(width: 10),
                 FilledButton(
@@ -457,7 +465,7 @@ class _TopBar extends StatelessWidget {
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.navy,
                   ),
-                  child: const Text('Back-office'),
+                  child: Text(l10n.landingNavBackOffice),
                 ),
               ],
             ),
@@ -486,7 +494,7 @@ class _BrandBlock extends StatelessWidget {
           child: const Icon(Icons.handyman_outlined, color: Colors.white),
         ),
         const SizedBox(width: 12),
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -494,10 +502,10 @@ class _BrandBlock extends StatelessWidget {
                 'LigueyPro',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
-                'Marketplace sénégalaise de services et back-office professionnel',
-                style: TextStyle(color: AppColors.muted, height: 1.3),
+                AppLocalizations.of(context).landingBrandSubtitle,
+                style: const TextStyle(color: AppColors.muted, height: 1.3),
               ),
             ],
           ),
@@ -515,6 +523,8 @@ class _HeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
@@ -541,9 +551,9 @@ class _HeroCard extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(999),
             ),
-            child: const Text(
-              'Client + Professionnel + BO',
-              style: TextStyle(
+            child: Text(
+              l10n.landingHeroBadge,
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
               ),
@@ -551,9 +561,7 @@ class _HeroCard extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           Text(
-            compact
-                ? 'Le bon pro, plus vite.'
-                : 'Publiez une demande, comparez les offres et pilotez vos opérations depuis un back-office sécurisé.',
+            compact ? l10n.landingHeroCompactTitle : l10n.landingHeroWideTitle,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 34,
@@ -563,7 +571,16 @@ class _HeroCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            'LigueyPro connecte les besoins du quotidien à ${PresentationLandingPage._formatCount(metrics.subscribedProfessionalsCount)} professionnel(s) abonné(s), avec ${PresentationLandingPage._formatCount(metrics.offersCount)} offre(s) déjà envoyée(s) et un temps de réponse moyen de ${PresentationLandingPage._formatAverageResponse(metrics.averageResponseMinutes)}.',
+            l10n.landingHeroBody(
+              PresentationLandingPage._formatCount(
+                metrics.subscribedProfessionalsCount,
+              ),
+              PresentationLandingPage._formatCount(metrics.offersCount),
+              PresentationLandingPage._formatAverageResponse(
+                l10n,
+                metrics.averageResponseMinutes,
+              ),
+            ),
             style: const TextStyle(color: Colors.white70, height: 1.5),
           ),
           const SizedBox(height: 22),
@@ -588,7 +605,7 @@ class _HeroHighlightsRow extends StatelessWidget {
         Expanded(
           child: _HeroHighlight(
             value: PresentationLandingPage._formatCount(metrics.servicesCount),
-            label: 'services couverts',
+            label: AppLocalizations.of(context).landingHeroServicesCovered,
           ),
         ),
         const SizedBox(width: 12),
@@ -597,7 +614,7 @@ class _HeroHighlightsRow extends StatelessWidget {
             value: PresentationLandingPage._formatCount(
               metrics.verifiedProfessionalsCount,
             ),
-            label: 'pros vérifiés',
+            label: AppLocalizations.of(context).landingHeroVerifiedPros,
           ),
         ),
         const SizedBox(width: 12),
@@ -606,7 +623,7 @@ class _HeroHighlightsRow extends StatelessWidget {
             value: PresentationLandingPage._formatCount(
               metrics.subscribedProfessionalsCount,
             ),
-            label: 'pros abonnés',
+            label: AppLocalizations.of(context).landingHeroSubscribedPros,
           ),
         ),
       ],
@@ -625,21 +642,21 @@ class _HeroHighlightsColumn extends StatelessWidget {
       children: [
         _HeroHighlight(
           value: PresentationLandingPage._formatCount(metrics.servicesCount),
-          label: 'services couverts',
+          label: AppLocalizations.of(context).landingHeroServicesCovered,
         ),
         const SizedBox(height: 10),
         _HeroHighlight(
           value: PresentationLandingPage._formatCount(
             metrics.verifiedProfessionalsCount,
           ),
-          label: 'pros vérifiés',
+          label: AppLocalizations.of(context).landingHeroVerifiedPros,
         ),
         const SizedBox(height: 10),
         _HeroHighlight(
           value: PresentationLandingPage._formatCount(
             metrics.subscribedProfessionalsCount,
           ),
-          label: 'pros abonnés',
+          label: AppLocalizations.of(context).landingHeroSubscribedPros,
         ),
       ],
     );
@@ -688,6 +705,8 @@ class _AccessPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
@@ -698,44 +717,44 @@ class _AccessPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Entrées rapides',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+          Text(
+            l10n.landingQuickAccessTitle,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Choisissez votre parcours selon votre rôle ou votre objectif du moment.',
-            style: TextStyle(color: AppColors.muted, height: 1.4),
+          Text(
+            l10n.landingQuickAccessSubtitle,
+            style: const TextStyle(color: AppColors.muted, height: 1.4),
           ),
           const SizedBox(height: 18),
           _AccessTile(
             icon: Icons.storefront_outlined,
-            title: 'Parcourir l’application',
-            subtitle: 'Découvrir les services et publier une demande.',
+            title: l10n.landingAccessBrowseTitle,
+            subtitle: l10n.landingAccessBrowseSubtitle,
             accent: AppColors.navy,
             onTap: () => context.go('/app'),
           ),
           const SizedBox(height: 12),
           _AccessTile(
             icon: Icons.workspace_premium_outlined,
-            title: 'Devenir professionnel',
-            subtitle: 'Découvrir les abonnements et laisser vos coordonnées.',
+            title: l10n.landingAccessBecomeProTitle,
+            subtitle: l10n.landingAccessBecomeProSubtitle,
             accent: AppColors.success,
             onTap: () => context.go('/for-pros'),
           ),
           const SizedBox(height: 12),
           _AccessTile(
             icon: Icons.admin_panel_settings_outlined,
-            title: 'Ouvrir le back-office',
-            subtitle: 'Accès protégé aux leads, offres et statistiques.',
+            title: l10n.landingAccessBackOfficeTitle,
+            subtitle: l10n.landingAccessBackOfficeSubtitle,
             accent: AppColors.primary,
             onTap: () => context.go('/back-office'),
           ),
           const SizedBox(height: 12),
           _AccessTile(
             icon: Icons.play_circle_outline,
-            title: 'Voir la présentation',
-            subtitle: 'Comprendre le fonctionnement de LigueyPro.',
+            title: l10n.landingAccessPresentationTitle,
+            subtitle: l10n.landingAccessPresentationSubtitle,
             accent: AppColors.success,
             onTap: () => context.go('/presentation'),
           ),
@@ -946,6 +965,8 @@ class _BottomCtas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       children: [
         SizedBox(
@@ -958,7 +979,7 @@ class _BottomCtas extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 15),
             ),
             icon: const Icon(Icons.storefront_outlined),
-            label: const Text('Entrer dans l’application'),
+            label: Text(l10n.landingEnterApp),
           ),
         ),
         const SizedBox(height: 10),
@@ -972,7 +993,7 @@ class _BottomCtas extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 15),
             ),
             icon: const Icon(Icons.admin_panel_settings_outlined),
-            label: const Text('Accéder au BO sécurisé'),
+            label: Text(l10n.landingSecureBo),
           ),
         ),
       ],

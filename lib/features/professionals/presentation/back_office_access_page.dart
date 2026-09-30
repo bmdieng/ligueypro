@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/services/app_preferences_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class SecureBackOfficeRoute extends StatefulWidget {
   const SecureBackOfficeRoute({
@@ -81,7 +82,7 @@ class BackOfficeAccessPage extends StatefulWidget {
 class _BackOfficeAccessPageState extends State<BackOfficeAccessPage> {
   final TextEditingController _codeController = TextEditingController();
   bool _isSubmitting = false;
-  String _hint = 'Chargement du code d’accès...';
+  String _hint = '';
 
   @override
   void initState() {
@@ -119,8 +120,8 @@ class _BackOfficeAccessPageState extends State<BackOfficeAccessPage> {
         _isSubmitting = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Code invalide. Vérifiez le code BO et réessayez.'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).boAccessInvalidCode),
         ),
       );
       return;
@@ -143,6 +144,9 @@ class _BackOfficeAccessPageState extends State<BackOfficeAccessPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final hint = _hint.isEmpty ? l10n.boAccessLoadingHint : _hint;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -192,9 +196,9 @@ class _BackOfficeAccessPageState extends State<BackOfficeAccessPage> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Le back-office permet de piloter les demandes, vos offres et le professionnel actif. L’accès est limité à une session sécurisée de 30 minutes.',
-                        style: TextStyle(
+                      Text(
+                        l10n.boAccessDescription,
+                        style: const TextStyle(
                           color: Colors.white70,
                           height: 1.35,
                           fontSize: 13,
@@ -204,14 +208,14 @@ class _BackOfficeAccessPageState extends State<BackOfficeAccessPage> {
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: const [
+                        children: [
                           _SecurityChip(
                             icon: Icons.lock_clock_outlined,
-                            label: 'Session 30 min',
+                            label: l10n.boAccessSession,
                           ),
                           _SecurityChip(
                             icon: Icons.verified_user_outlined,
-                            label: 'Accès privé',
+                            label: l10n.boAccessPrivate,
                           ),
                         ],
                       ),
@@ -287,16 +291,16 @@ class _BackOfficeAccessPageState extends State<BackOfficeAccessPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Déverrouiller le BO',
-                        style: TextStyle(
+                      Text(
+                        l10n.boAccessUnlockTitle,
+                        style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        _hint,
+                        hint,
                         style: const TextStyle(
                           color: AppColors.muted,
                           height: 1.35,
@@ -309,13 +313,13 @@ class _BackOfficeAccessPageState extends State<BackOfficeAccessPage> {
                         keyboardType: TextInputType.number,
                         maxLength: 6,
                         obscureText: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Code BO',
-                          hintText: 'Saisir 6 chiffres',
-                          prefixIcon: Icon(Icons.lock_outline, size: 20),
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: l10n.boAccessCodeLabel,
+                          hintText: l10n.boAccessCodeHint,
+                          prefixIcon: const Icon(Icons.lock_outline, size: 20),
+                          border: const OutlineInputBorder(),
                           isDense: true,
-                          contentPadding: EdgeInsets.symmetric(
+                          contentPadding: const EdgeInsets.symmetric(
                             horizontal: 14,
                             vertical: 12,
                           ),
@@ -351,8 +355,8 @@ class _BackOfficeAccessPageState extends State<BackOfficeAccessPage> {
                               : const Icon(Icons.lock_open_outlined, size: 18),
                           label: Text(
                             _isSubmitting
-                                ? 'Vérification...'
-                                : 'Accéder au back-office',
+                                ? l10n.requestOffersValidating
+                                : l10n.boCommonUnlock,
                           ),
                         ),
                       ),

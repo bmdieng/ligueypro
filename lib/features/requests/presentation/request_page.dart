@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../core/network/firebase_bootstrap.dart';
 import '../../../core/services/request_submission_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class RequestPage extends StatefulWidget {
   const RequestPage({super.key});
@@ -109,30 +110,28 @@ class _RequestPageState extends State<RequestPage> {
   }
 
   Future<void> _submitRequest() async {
+    final l10n = AppLocalizations.of(context);
     final requestText = _descriptionController.text.trim();
     final locationText = _locationController.text.trim();
     final phoneText = _phoneController.text.trim();
 
     if (requestText.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez décrire votre besoin.')),
+        SnackBar(content: Text(l10n.requestNeedDescription)),
       );
       return;
     }
 
     if (phoneText.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Veuillez renseigner votre numéro de téléphone.')),
+        SnackBar(content: Text(l10n.requestNeedPhone)),
       );
       return;
     }
 
     if (_selectedService == null || _selectedService!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Aucun service n’est disponible pour le moment.'),
-        ),
+        SnackBar(content: Text(l10n.requestNoServiceAvailable)),
       );
       return;
     }
@@ -145,7 +144,7 @@ class _RequestPageState extends State<RequestPage> {
         urgency: _selectedUrgency,
         description: requestText,
         location:
-            locationText.isEmpty ? 'Localisation non renseignée' : locationText,
+            locationText.isEmpty ? l10n.requestUnknownLocation : locationText,
         phone: phoneText,
         photoAttached: _photoAdded,
       );
@@ -156,14 +155,12 @@ class _RequestPageState extends State<RequestPage> {
       await showDialog<void>(
         context: context,
         builder: (_) => AlertDialog(
-          title: const Text('Demande envoyée'),
-          content: const Text(
-            'Votre demande a été publiée. Les professionnels abonnés peuvent maintenant recevoir cette demande et vous envoyer leurs offres.',
-          ),
+          title: Text(l10n.requestDialogSentTitle),
+          content: Text(l10n.requestDialogSentBody),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Voir mes demandes'),
+              child: Text(l10n.requestDialogViewMyRequests),
             ),
           ],
         ),
@@ -171,7 +168,7 @@ class _RequestPageState extends State<RequestPage> {
 
       _descriptionController.clear();
       _phoneController.clear();
-      _locationController.text = 'Dakar, Sénégal';
+      _locationController.text = l10n.requestDefaultLocation;
       setState(() {
         _selectedService =
             _serviceOptions.isEmpty ? null : _serviceOptions.first;
@@ -181,8 +178,7 @@ class _RequestPageState extends State<RequestPage> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Échec de sauvegarde de la demande. Réessayez.')),
+        SnackBar(content: Text(l10n.requestSaveFailed)),
       );
     } finally {
       if (mounted) {
@@ -201,15 +197,17 @@ class _RequestPageState extends State<RequestPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Nouvelle demande')),
+      appBar: AppBar(title: Text(l10n.requestPageTitle)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            const Text(
-              'Décrivez votre besoin',
-              style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
+            Text(
+              l10n.requestPageDescribeNeed,
+              style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 16),
             DecoratedBox(
@@ -220,18 +218,18 @@ class _RequestPageState extends State<RequestPage> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: _serviceOptions.isEmpty
-                    ? const Padding(
+                    ? Padding(
                         padding: EdgeInsets.symmetric(vertical: 18),
                         child: Text(
-                          'Aucun service disponible dans Firebase.',
-                          style: TextStyle(color: AppColors.muted),
+                          l10n.requestFirebaseNoService,
+                          style: const TextStyle(color: AppColors.muted),
                         ),
                       )
                     : DropdownButtonHideUnderline(
                         child: DropdownButtonFormField<String>(
                           initialValue: _selectedService,
-                          decoration: const InputDecoration(
-                            labelText: 'Type de service',
+                          decoration: InputDecoration(
+                            labelText: l10n.requestServiceTypeLabel,
                             border: InputBorder.none,
                           ),
                           items: _serviceOptions
@@ -264,24 +262,28 @@ class _RequestPageState extends State<RequestPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Résumé de votre demande',
+                  Text(
+                    l10n.requestSummaryTitle,
                     style: TextStyle(fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 8),
-                  Text('Service : ${_selectedService ?? 'Non disponible'}'),
+                  Text(
+                    l10n.requestSummaryService(
+                      _selectedService ?? l10n.requestSummaryNoService,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text('Urgence : $_selectedUrgency'),
+                  Text(l10n.requestSummaryUrgency(_selectedUrgency)),
                   const SizedBox(height: 4),
                   Text(
                     _descriptionController.text.trim().isEmpty
-                        ? 'Ajoutez une description claire pour améliorer le matching.'
+                        ? l10n.requestSummaryImproveMatching
                         : _descriptionController.text.trim(),
                     style: const TextStyle(color: AppColors.muted),
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    'Paiement direct : le client règle ensuite le professionnel hors application, après réception des offres.',
+                  Text(
+                    l10n.requestDirectPaymentNotice,
                     style: TextStyle(
                       color: AppColors.navy,
                       fontWeight: FontWeight.w700,
@@ -291,8 +293,8 @@ class _RequestPageState extends State<RequestPage> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Urgence',
+            Text(
+              l10n.requestUrgencyTitle,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 10),
@@ -310,17 +312,17 @@ class _RequestPageState extends State<RequestPage> {
               }).toList(),
             ),
             const SizedBox(height: 18),
-            const Text(
-              'Description',
+            Text(
+              l10n.requestDescriptionTitle,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             TextField(
               controller: _descriptionController,
               maxLines: 6,
-              decoration: const InputDecoration(
-                hintText: 'Ex. Mon climatiseur ne refroidit plus…',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: l10n.requestDescriptionHint,
+                border: const OutlineInputBorder(),
               ),
               onChanged: (_) => setState(() {}),
             ),
@@ -328,11 +330,11 @@ class _RequestPageState extends State<RequestPage> {
             TextField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Numéro de téléphone',
-                prefixIcon: Icon(Icons.phone, color: AppColors.primary),
-                hintText: '+221 77 123 45 67',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.requestPhoneLabel,
+                prefixIcon: const Icon(Icons.phone, color: AppColors.primary),
+                hintText: l10n.requestPhoneHint,
+                border: const OutlineInputBorder(),
               ),
             ),
             // const SizedBox(height: 16),
@@ -347,11 +349,12 @@ class _RequestPageState extends State<RequestPage> {
             const SizedBox(height: 16),
             TextField(
               controller: _locationController,
-              decoration: const InputDecoration(
-                labelText: 'Localisation',
-                prefixIcon: Icon(Icons.location_on, color: AppColors.primary),
-                hintText: 'Votre adresse ou quartier',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.requestLocationLabel,
+                prefixIcon:
+                    const Icon(Icons.location_on, color: AppColors.primary),
+                hintText: l10n.requestLocationHint,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 20),
@@ -372,7 +375,7 @@ class _RequestPageState extends State<RequestPage> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('Publier la demande'),
+                  : Text(l10n.requestPublish),
             ),
           ],
         ),

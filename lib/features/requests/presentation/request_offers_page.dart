@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/network/firebase_bootstrap.dart';
 import '../../../core/services/offer_marketplace_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class RequestOffersPage extends StatefulWidget {
   const RequestOffersPage({
@@ -51,13 +52,15 @@ class _RequestOffersPageState extends State<RequestOffersPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Offre de ${offer.professionalName} acceptée. Le règlement se fait ensuite en direct.',
+          AppLocalizations.of(context)
+              .requestOffersAcceptedMessage(offer.professionalName),
         ),
       ),
     );
   }
 
   Widget _buildList(MarketplaceRequestDetails details) {
+    final l10n = AppLocalizations.of(context);
     final offers = details.offers;
     if (offers.isEmpty) {
       return ListView(
@@ -71,20 +74,21 @@ class _RequestOffersPageState extends State<RequestOffersPage> {
               border:
                   Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
             ),
-            child: const Column(
+            child: Column(
               children: [
-                Icon(Icons.hourglass_top_rounded,
+                const Icon(Icons.hourglass_top_rounded,
                     size: 42, color: AppColors.primary),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 Text(
-                  'Aucune offre reçue pour le moment',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                  l10n.requestOffersEmptyTitle,
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w800),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
-                  'Les professionnels abonnés verront votre demande et pourront bientôt proposer leurs prix et délais.',
-                  style: TextStyle(color: AppColors.muted, height: 1.4),
+                  l10n.requestOffersEmptyMessage,
+                  style: const TextStyle(color: AppColors.muted, height: 1.4),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -136,8 +140,8 @@ class _RequestOffersPageState extends State<RequestOffersPage> {
                         color: AppColors.success.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(999),
                       ),
-                      child: const Text(
-                        'Offre acceptée',
+                      child: Text(
+                        l10n.requestOffersBadgeAccepted,
                         style: TextStyle(
                             color: AppColors.success,
                             fontWeight: FontWeight.w700,
@@ -152,8 +156,8 @@ class _RequestOffersPageState extends State<RequestOffersPage> {
                         color: AppColors.primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(999),
                       ),
-                      child: const Text(
-                        'Offre mise en avant',
+                      child: Text(
+                        l10n.requestOffersBadgeHighlighted,
                         style: TextStyle(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w700,
@@ -181,7 +185,9 @@ class _RequestOffersPageState extends State<RequestOffersPage> {
                       onPressed: () => _launchPhone(offer.phone),
                       icon: const Icon(Icons.phone_outlined),
                       label: Text(
-                        offer.isAccepted ? 'Appeler le pro' : 'Contacter',
+                        offer.isAccepted
+                            ? l10n.requestOffersCallPro
+                            : l10n.requestOffersContact,
                       ),
                     ),
                   ),
@@ -198,12 +204,12 @@ class _RequestOffersPageState extends State<RequestOffersPage> {
                       ),
                       child: Text(
                         offer.isAccepted
-                            ? 'Offre retenue'
+                            ? l10n.requestOffersRetained
                             : hasAcceptedOffer
-                                ? 'Déjà attribuée'
+                                ? l10n.requestOffersAlreadyAssigned
                                 : _isAccepting
-                                    ? 'Validation...'
-                                    : 'Choisir cette offre',
+                                    ? l10n.requestOffersValidating
+                                    : l10n.requestOffersChooseThis,
                       ),
                     ),
                   ),
@@ -218,13 +224,14 @@ class _RequestOffersPageState extends State<RequestOffersPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final fallbackDetails = OfferMarketplaceService.requestDetailsFromSnapshot(
       widget.requestId,
       null,
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Offres reçues')),
+      appBar: AppBar(title: Text(l10n.requestOffersTitle)),
       body: Column(
         children: [
           Container(

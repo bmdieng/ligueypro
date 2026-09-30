@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/network/firebase_bootstrap.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class CategoryAdminPage extends StatefulWidget {
   const CategoryAdminPage({super.key});
@@ -37,19 +38,18 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
   ];
 
   Future<void> _createCategory() async {
+    final l10n = AppLocalizations.of(context);
     final label = _labelController.text.trim();
     if (label.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Renseignez un libellé de catégorie.')),
+        SnackBar(content: Text(l10n.categoryAdminLabelRequired)),
       );
       return;
     }
 
     if (!FirebaseBootstrap.isReady) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Firebase n’est pas disponible pour le moment.'),
-        ),
+        SnackBar(content: Text(l10n.categoryAdminFirebaseUnavailable)),
       );
       return;
     }
@@ -78,7 +78,7 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
         _selectedIconKey = _categoryIconChoices.first.key;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Catégorie ajoutée.')),
+        SnackBar(content: Text(l10n.categoryAdminCreated)),
       );
     } catch (_) {
       if (!mounted) {
@@ -86,7 +86,7 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Échec de l’ajout de la catégorie.')),
+        SnackBar(content: Text(l10n.categoryAdminCreateFailed)),
       );
     } finally {
       if (mounted) {
@@ -114,19 +114,17 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Supprimer la catégorie'),
-        content: const Text(
-          'Cette action retirera la catégorie de l’accueil et du formulaire de demande.',
-        ),
+        title: Text(AppLocalizations.of(context).categoryAdminDeleteTitle),
+        content: Text(AppLocalizations.of(context).categoryAdminDeleteBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Annuler'),
+            child: Text(AppLocalizations.of(context).boCommonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
-            child: const Text('Supprimer'),
+            child: Text(AppLocalizations.of(context).boCommonDelete),
           ),
         ],
       ),
@@ -143,7 +141,8 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Catégorie supprimée.')),
+        SnackBar(
+            content: Text(AppLocalizations.of(context).categoryAdminDeleted)),
       );
     } catch (_) {
       if (!mounted) {
@@ -151,9 +150,9 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Échec de la suppression de la catégorie.'),
-        ),
+        SnackBar(
+            content:
+                Text(AppLocalizations.of(context).categoryAdminDeleteFailed)),
       );
     }
   }
@@ -180,7 +179,8 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Catégorie mise à jour.')),
+        SnackBar(
+            content: Text(AppLocalizations.of(context).categoryAdminUpdated)),
       );
     } catch (_) {
       if (!mounted) {
@@ -188,9 +188,9 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Échec de la mise à jour de la catégorie.'),
-        ),
+        SnackBar(
+            content:
+                Text(AppLocalizations.of(context).categoryAdminUpdateFailed)),
       );
     }
   }
@@ -225,9 +225,9 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Échec de la mise à jour de l’ordre des catégories.'),
-        ),
+        SnackBar(
+            content:
+                Text(AppLocalizations.of(context).categoryAdminReorderFailed)),
       );
     }
   }
@@ -241,23 +241,23 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Modifier la catégorie'),
+          title: Text(AppLocalizations.of(context).categoryAdminEditTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: labelController,
-                decoration: const InputDecoration(
-                  labelText: 'Libellé',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context).categoryAdminLabel,
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: selectedIconKey,
-                decoration: const InputDecoration(
-                  labelText: 'Icône',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context).categoryAdminIcon,
+                  border: const OutlineInputBorder(),
                 ),
                 items: _categoryIconChoices
                     .map(
@@ -284,7 +284,7 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
           actions: [
             TextButton(
               onPressed: isSaving ? null : () => Navigator.of(context).pop(),
-              child: const Text('Annuler'),
+              child: Text(AppLocalizations.of(context).boCommonCancel),
             ),
             FilledButton(
               onPressed: isSaving
@@ -305,7 +305,11 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
                         Navigator.of(context).pop();
                       }
                     },
-              child: Text(isSaving ? 'Enregistrement...' : 'Enregistrer'),
+              child: Text(
+                isSaving
+                    ? AppLocalizations.of(context).boCommonSaving
+                    : AppLocalizations.of(context).boCommonSave,
+              ),
             ),
           ],
         ),
@@ -371,7 +375,6 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
 
   IconData _iconFromKey(String key) {
     for (final choice in _categoryIconChoices) {
-      print('Comparing choice.key: ${choice.key} with key: $key');
       if (choice.key == key) {
         return choice.icon;
       }
@@ -387,13 +390,15 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Catégories'),
+        title: Text(l10n.categoryAdminTitle),
         actions: [
           IconButton(
-            tooltip: 'Retour BO',
+            tooltip: l10n.boCommonBackToBo,
             onPressed: () => context.go('/back-office'),
             icon: const Icon(Icons.dashboard_customize_outlined),
           ),
@@ -412,21 +417,21 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
               ),
               borderRadius: BorderRadius.circular(28),
             ),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Catégories de services',
-                  style: TextStyle(
+                  l10n.categoryAdminHeroTitle,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 26,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
-                  'Gérez les catégories visibles sur l’accueil et dans le formulaire de demande, sans passer par la console Firebase.',
-                  style: TextStyle(color: Colors.white70, height: 1.4),
+                  l10n.categoryAdminHeroBody,
+                  style: const TextStyle(color: Colors.white70, height: 1.4),
                 ),
               ],
             ),
@@ -443,25 +448,26 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Ajouter une catégorie',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                Text(
+                  l10n.categoryAdminAddTitle,
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 14),
                 TextField(
                   controller: _labelController,
-                  decoration: const InputDecoration(
-                    labelText: 'Libellé',
-                    hintText: 'Ex. Climatisation',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l10n.categoryAdminLabel,
+                    hintText: l10n.categoryAdminLabelHint,
+                    border: const OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _selectedIconKey,
-                  decoration: const InputDecoration(
-                    labelText: 'Icône',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l10n.categoryAdminIcon,
+                    border: const OutlineInputBorder(),
                   ),
                   items: _categoryIconChoices
                       .map(
@@ -503,7 +509,9 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
                           )
                         : const Icon(Icons.add_circle_outline),
                     label: Text(
-                      _isSubmitting ? 'Ajout...' : 'Ajouter la catégorie',
+                      _isSubmitting
+                          ? l10n.categoryAdminAdding
+                          : l10n.categoryAdminAddAction,
                     ),
                   ),
                 ),
@@ -567,7 +575,10 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      'Position ${index + 1} • Icône : ${categories[index].iconKey}',
+                                      l10n.categoryAdminPositionIcon(
+                                        index + 1,
+                                        categories[index].iconKey,
+                                      ),
                                       style: const TextStyle(
                                         color: AppColors.muted,
                                       ),
@@ -576,7 +587,7 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
                                 ),
                               ),
                               IconButton(
-                                tooltip: 'Monter',
+                                tooltip: l10n.boCommonMoveUp,
                                 onPressed: index == 0
                                     ? null
                                     : () => _reorderCategory(
@@ -587,7 +598,7 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
                                 icon: const Icon(Icons.keyboard_arrow_up),
                               ),
                               IconButton(
-                                tooltip: 'Descendre',
+                                tooltip: l10n.boCommonMoveDown,
                                 onPressed: index == categories.length - 1
                                     ? null
                                     : () => _reorderCategory(
@@ -598,7 +609,7 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
                                 icon: const Icon(Icons.keyboard_arrow_down),
                               ),
                               IconButton(
-                                tooltip: 'Modifier',
+                                tooltip: l10n.boCommonEdit,
                                 onPressed: () => _showEditCategoryDialog(
                                   categories[index],
                                 ),
@@ -608,7 +619,7 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
                                 ),
                               ),
                               IconButton(
-                                tooltip: 'Supprimer',
+                                tooltip: l10n.boCommonDelete,
                                 onPressed: () =>
                                     _deleteCategory(categories[index].id),
                                 icon: const Icon(
@@ -637,20 +648,21 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          Icon(Icons.category_outlined, size: 42, color: AppColors.primary),
-          SizedBox(height: 12),
+          const Icon(Icons.category_outlined,
+              size: 42, color: AppColors.primary),
+          const SizedBox(height: 12),
           Text(
-            'Aucune catégorie configurée',
+            AppLocalizations.of(context).categoryAdminEmptyTitle,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
-            'Ajoutez votre première catégorie pour alimenter l’accueil et le formulaire de demande.',
+            AppLocalizations.of(context).categoryAdminEmptyBody,
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.muted, height: 1.4),
+            style: const TextStyle(color: AppColors.muted, height: 1.4),
           ),
         ],
       ),
@@ -665,20 +677,21 @@ class _CategoryAdminPageState extends State<CategoryAdminPage> {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          Icon(Icons.cloud_off_outlined, size: 42, color: AppColors.danger),
-          SizedBox(height: 12),
+          const Icon(Icons.cloud_off_outlined,
+              size: 42, color: AppColors.danger),
+          const SizedBox(height: 12),
           Text(
-            'Firebase indisponible',
+            AppLocalizations.of(context).categoryAdminOfflineTitle,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
-            'La gestion des catégories nécessite une connexion Firebase active.',
+            AppLocalizations.of(context).categoryAdminOfflineBody,
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.muted, height: 1.4),
+            style: const TextStyle(color: AppColors.muted, height: 1.4),
           ),
         ],
       ),

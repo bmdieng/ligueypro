@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/services/pro_subscription_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class ProSubscriptionPage extends StatefulWidget {
   const ProSubscriptionPage({super.key});
@@ -20,21 +21,20 @@ class _ProSubscriptionPageState extends State<ProSubscriptionPage> {
     if (!mounted) return;
     setState(() => _isSubmitting = false);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-            'Abonnement Pro simulé activé. Branchez ensuite votre moyen d’encaissement réel.'),
-      ),
+      SnackBar(
+          content: Text(AppLocalizations.of(context).proSubscriptionActivated)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final selectedPlan = ProSubscriptionService.plans.firstWhere(
       (plan) => plan.id == _selectedPlanId,
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Abonnement Pro')),
+      appBar: AppBar(title: Text(l10n.proSubscriptionTitle)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -47,21 +47,21 @@ class _ProSubscriptionPageState extends State<ProSubscriptionPage> {
                 ),
                 borderRadius: BorderRadius.circular(24),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Recevez des demandes et envoyez des offres',
-                    style: TextStyle(
+                    l10n.proSubscriptionHeroTitle,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
-                    'L’abonnement remplace le paiement client dans l’app. Les professionnels paient pour recevoir des opportunités et répondre avec leurs offres.',
-                    style: TextStyle(color: Colors.white70, height: 1.4),
+                    l10n.proSubscriptionHeroBody,
+                    style: const TextStyle(color: Colors.white70, height: 1.4),
                   ),
                 ],
               ),
@@ -110,7 +110,7 @@ class _ProSubscriptionPageState extends State<ProSubscriptionPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '${plan.leadsPerMonth} demandes incluses par mois',
+                          l10n.proSubscriptionLeadsIncluded(plan.leadsPerMonth),
                           style: const TextStyle(color: AppColors.muted),
                         ),
                         const SizedBox(height: 10),
@@ -147,7 +147,7 @@ class _ProSubscriptionPageState extends State<ProSubscriptionPage> {
                     color: AppColors.primary.withValues(alpha: 0.18)),
               ),
               child: Text(
-                'Plan choisi : ${selectedPlan.name}. Les professionnels abonnés peuvent recevoir les demandes et proposer leurs offres sans encaissement client dans l’application.',
+                l10n.proSubscriptionSelectedPlan(selectedPlan.name),
                 style: const TextStyle(height: 1.45),
               ),
             ),
@@ -170,7 +170,7 @@ class _ProSubscriptionPageState extends State<ProSubscriptionPage> {
                     child: CircularProgressIndicator(
                         strokeWidth: 2, color: Colors.white),
                   )
-                : Text('Choisir ${selectedPlan.name}'),
+                : Text(l10n.proSubscriptionChoosePlan(selectedPlan.name)),
           ),
         ),
       ),

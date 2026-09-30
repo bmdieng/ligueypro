@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/services/app_preferences_service.dart';
 import '../../../core/network/firebase_bootstrap.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/service_category_card.dart';
 
 class _HomeCategory {
@@ -163,18 +164,18 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  String _statusLabel(String status) {
+  String _statusLabel(String status, AppLocalizations l10n) {
     switch (status) {
       case 'accepted':
-        return 'Acceptée';
+        return l10n.homeStatusAccepted;
       case 'awaiting_offers':
-        return 'En attente d’offres';
+        return l10n.homeStatusAwaitingOffers;
       case 'in_progress':
-        return 'En cours';
+        return l10n.homeStatusInProgress;
       case 'completed':
-        return 'Terminée';
+        return l10n.homeStatusCompleted;
       default:
-        return 'En attente';
+        return l10n.homeStatusPending;
     }
   }
 
@@ -290,19 +291,24 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  static const _defaultHeroContent = _HomeHeroContent(
-    title: 'Besoin d’un pro tout de suite ?',
-    subtitle:
-        'Déposez votre demande en moins d’une minute et recevez une réponse rapide.',
-    primaryCtaLabel: 'Demande urgente',
-    secondaryCtaLabel: 'Voir les pros',
-  );
+  static _HomeHeroContent _defaultHeroContent(AppLocalizations l10n) {
+    return _HomeHeroContent(
+      title: l10n.homeDefaultHeroTitle,
+      subtitle: l10n.homeDefaultHeroSubtitle,
+      primaryCtaLabel: l10n.homeDefaultHeroPrimaryCta,
+      secondaryCtaLabel: l10n.homeDefaultHeroSecondaryCta,
+    );
+  }
 
-  static _HomeHeroContent _heroContentFromRoot(Object? root) {
+  static _HomeHeroContent _heroContentFromRoot(
+    Object? root,
+    AppLocalizations l10n,
+  ) {
     final home = root is Map ? root['home'] : null;
     final hero = home is Map ? home['hero'] : null;
+    final defaultHeroContent = _defaultHeroContent(l10n);
     if (hero is! Map) {
-      return _defaultHeroContent;
+      return defaultHeroContent;
     }
 
     String resolveText(String key, String fallback) {
@@ -314,15 +320,15 @@ class _HomePageState extends State<HomePage> {
     }
 
     return _HomeHeroContent(
-      title: resolveText('title', _defaultHeroContent.title),
-      subtitle: resolveText('subtitle', _defaultHeroContent.subtitle),
+      title: resolveText('title', defaultHeroContent.title),
+      subtitle: resolveText('subtitle', defaultHeroContent.subtitle),
       primaryCtaLabel: resolveText(
         'primaryCtaLabel',
-        _defaultHeroContent.primaryCtaLabel,
+        defaultHeroContent.primaryCtaLabel,
       ),
       secondaryCtaLabel: resolveText(
         'secondaryCtaLabel',
-        _defaultHeroContent.secondaryCtaLabel,
+        defaultHeroContent.secondaryCtaLabel,
       ),
     );
   }
@@ -375,9 +381,12 @@ class _HomePageState extends State<HomePage> {
     return '$count';
   }
 
-  static String _formatAverageResponse(double? minutes) {
+  static String _formatAverageResponse(
+    double? minutes,
+    AppLocalizations l10n,
+  ) {
     if (minutes == null) {
-      return 'N/A';
+      return l10n.homeMetricNotAvailable;
     }
     if (minutes < 60) {
       return '${minutes.round()} min';
@@ -387,22 +396,28 @@ class _HomePageState extends State<HomePage> {
     return '${hours.toStringAsFixed(hours >= 10 ? 0 : 1)} h';
   }
 
-  static String _formatAverageRating(_HomeMetrics metrics) {
+  static String _formatAverageRating(
+    _HomeMetrics metrics,
+    AppLocalizations l10n,
+  ) {
     if (metrics.averageRating == null) {
-      return 'N/A';
+      return l10n.homeMetricNotAvailable;
     }
     return '${metrics.averageRating!.toStringAsFixed(1)}/5';
   }
 
-  static String? _formatReviewsCount(int count) {
+  static String? _formatReviewsCount(int count, AppLocalizations l10n) {
     if (count <= 0) {
       return null;
     }
-    return count == 1 ? '1 avis' : '$count avis';
+    return l10n.homeReviewsCount(count);
   }
 
   Widget _buildCategories(
-      BuildContext context, List<_HomeCategory> categories) {
+    BuildContext context,
+    AppLocalizations l10n,
+    List<_HomeCategory> categories,
+  ) {
     if (categories.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(24),
@@ -411,20 +426,21 @@ class _HomePageState extends State<HomePage> {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
         ),
-        child: const Column(
+        child: Column(
           children: [
-            Icon(Icons.category_outlined, size: 40, color: AppColors.primary),
-            SizedBox(height: 12),
+            const Icon(Icons.category_outlined,
+                size: 40, color: AppColors.primary),
+            const SizedBox(height: 12),
             Text(
-              'Aucune catégorie disponible',
+              l10n.homeCategoriesEmptyTitle,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
-              'Ajoutez des catégories dans home/categories sur Firebase pour alimenter l’accueil.',
+              l10n.homeCategoriesEmptyDescription,
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.muted, height: 1.4),
+              style: const TextStyle(color: AppColors.muted, height: 1.4),
             ),
           ],
         ),
@@ -462,9 +478,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _submitSearch(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final query = _searchController.text.trim();
     if (query.isEmpty) {
-      context.push('/services/Recherche');
+      context.push('/services/${Uri.encodeComponent(l10n.homeSearchFallback)}');
       return;
     }
 
@@ -480,6 +497,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -507,9 +526,10 @@ class _HomePageState extends State<HomePage> {
                       ? _categoriesFromSnapshot(root['home']?['categories'])
                       : const <_HomeCategory>[];
                   final metrics = _metricsFromRoot(root);
-                  final heroContent = _heroContentFromRoot(root);
+                  final heroContent = _heroContentFromRoot(root, l10n);
                   return _buildContent(
                     context,
+                    l10n,
                     categories,
                     metrics,
                     heroContent,
@@ -518,6 +538,7 @@ class _HomePageState extends State<HomePage> {
               )
             : _buildContent(
                 context,
+                l10n,
                 const <_HomeCategory>[],
                 const _HomeMetrics(
                   verifiedProfessionalsCount: 0,
@@ -525,22 +546,23 @@ class _HomePageState extends State<HomePage> {
                   averageRating: null,
                   reviewsCount: 0,
                 ),
-                _defaultHeroContent,
+                _defaultHeroContent(l10n),
               ),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: 0,
-        destinations: const [
+        destinations: [
           NavigationDestination(
               icon: Icon(Icons.home_outlined),
               selectedIcon: Icon(Icons.home),
-              label: 'Accueil'),
+              label: l10n.homeNavHome),
           NavigationDestination(
-              icon: Icon(Icons.receipt_long_outlined), label: 'Demandes'),
+              icon: Icon(Icons.receipt_long_outlined),
+              label: l10n.homeNavRequests),
           NavigationDestination(
-              icon: Icon(Icons.groups_outlined), label: 'Pros'),
+              icon: Icon(Icons.groups_outlined), label: l10n.homeNavPros),
           NavigationDestination(
-              icon: Icon(Icons.person_outline), label: 'Profil'),
+              icon: Icon(Icons.person_outline), label: l10n.homeNavProfile),
         ],
         onDestinationSelected: (index) {
           if (index == 3) context.push('/profile');
@@ -553,6 +575,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildContent(
     BuildContext context,
+    AppLocalizations l10n,
     List<_HomeCategory> categories,
     _HomeMetrics metrics,
     _HomeHeroContent heroContent,
@@ -560,11 +583,10 @@ class _HomePageState extends State<HomePage> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text('Bonjour 👋',
-            style: TextStyle(fontSize: 25, fontWeight: FontWeight.w800)),
+        Text(l10n.homeGreeting,
+            style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w800)),
         const SizedBox(height: 4),
-        const Text('De quel service avez-vous besoin ?',
-            style: TextStyle(color: AppColors.muted)),
+        Text(l10n.homeQuestion, style: const TextStyle(color: AppColors.muted)),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(18),
@@ -627,19 +649,19 @@ class _HomePageState extends State<HomePage> {
         Row(
           children: [
             _buildTrustMetric(
-              'Pros vérifiés',
+              l10n.homeMetricVerifiedPros,
               _formatProfessionalsCount(metrics.verifiedProfessionalsCount),
             ),
             const SizedBox(width: 10),
             _buildTrustMetric(
-              'Réponse moyenne',
-              _formatAverageResponse(metrics.averageResponseMinutes),
+              l10n.homeMetricAverageResponse,
+              _formatAverageResponse(metrics.averageResponseMinutes, l10n),
             ),
             const SizedBox(width: 10),
             _buildTrustMetric(
-              'Note moyenne',
-              _formatAverageRating(metrics),
-              helper: _formatReviewsCount(metrics.reviewsCount),
+              l10n.homeMetricAverageRating,
+              _formatAverageRating(metrics, l10n),
+              helper: _formatReviewsCount(metrics.reviewsCount, l10n),
             ),
           ],
         ),
@@ -648,7 +670,7 @@ class _HomePageState extends State<HomePage> {
           controller: _searchController,
           onSubmitted: (_) => _submitSearch(context),
           decoration: InputDecoration(
-            hintText: 'Rechercher un service...',
+            hintText: l10n.homeSearchHint,
             prefixIcon: const Icon(Icons.search),
             suffixIcon: IconButton(
               icon: const Icon(Icons.search),
@@ -671,9 +693,9 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Dernière demande',
+                        l10n.homeRecentRequestTitle,
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.w800),
                       ),
@@ -687,7 +709,7 @@ class _HomePageState extends State<HomePage> {
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text(
-                        _statusLabel(_recentRequest!.status),
+                        _statusLabel(_recentRequest!.status, l10n),
                         style: TextStyle(
                           color: _statusColor(_recentRequest!.status),
                           fontWeight: FontWeight.w700,
@@ -721,8 +743,8 @@ class _HomePageState extends State<HomePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Offre retenue',
+                        Text(
+                          l10n.homeAcceptedOfferTitle,
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
                             color: AppColors.navy,
@@ -735,12 +757,16 @@ class _HomePageState extends State<HomePage> {
                         ),
                         if (_recentRequest!.acceptedOfferPrice != null)
                           Text(
-                            'Prix accepté : ${_recentRequest!.acceptedOfferPrice}',
+                            l10n.homeAcceptedPrice(
+                              _recentRequest!.acceptedOfferPrice!,
+                            ),
                             style: const TextStyle(color: AppColors.muted),
                           ),
                         if (_recentRequest!.acceptedOfferEta != null)
                           Text(
-                            'Délai confirmé : ${_recentRequest!.acceptedOfferEta}',
+                            l10n.homeConfirmedEta(
+                              _recentRequest!.acceptedOfferEta!,
+                            ),
                             style: const TextStyle(color: AppColors.muted),
                           ),
                       ],
@@ -753,7 +779,7 @@ class _HomePageState extends State<HomePage> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => context.push('/my-requests'),
-                        child: const Text('Suivre ma demande'),
+                        child: Text(l10n.homeTrackRequest),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -762,7 +788,7 @@ class _HomePageState extends State<HomePage> {
                         onPressed: () => context.push('/request'),
                         style: FilledButton.styleFrom(
                             backgroundColor: AppColors.navy),
-                        child: const Text('Nouvelle demande'),
+                        child: Text(l10n.homeNewRequest),
                       ),
                     ),
                   ],
@@ -772,10 +798,10 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
         const SizedBox(height: 22),
-        const Text('Services populaires',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+        Text(l10n.homePopularServices,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
         const SizedBox(height: 12),
-        _buildCategories(context, categories),
+        _buildCategories(context, l10n, categories),
         const SizedBox(height: 28),
         Container(
           padding: const EdgeInsets.all(18),
@@ -785,18 +811,17 @@ class _HomePageState extends State<HomePage> {
             ),
             borderRadius: BorderRadius.circular(22),
           ),
-          child: const Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Besoin d’aide ?',
-                  style: TextStyle(
+              Text(l10n.homeNeedHelpTitle,
+                  style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.w800)),
-              SizedBox(height: 8),
-              Text(
-                  'Décrivez votre problème. LigueyPro AI vous aide à trouver le bon professionnel.',
-                  style: TextStyle(color: Colors.white70)),
+              const SizedBox(height: 8),
+              Text(l10n.homeNeedHelpDescription,
+                  style: const TextStyle(color: Colors.white70)),
             ],
           ),
         ),
@@ -807,7 +832,7 @@ class _HomePageState extends State<HomePage> {
               child: OutlinedButton.icon(
                 onPressed: () => context.push('/presentation'),
                 icon: const Icon(Icons.play_circle_outline),
-                label: const Text('Voir la présentation'),
+                label: Text(l10n.homeSeePresentation),
               ),
             ),
             const SizedBox(width: 12),
@@ -816,7 +841,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () => context.push('/request'),
                 style: FilledButton.styleFrom(backgroundColor: AppColors.navy),
                 icon: const Icon(Icons.assignment_turned_in_outlined),
-                label: const Text('Créer une demande'),
+                label: Text(l10n.homeNewRequest),
               ),
             ),
           ],

@@ -3,6 +3,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../core/services/app_preferences_service.dart';
 import '../../core/theme/app_colors.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 class PresentationPage extends StatefulWidget {
   const PresentationPage({super.key});
@@ -80,9 +81,11 @@ class _PresentationPageState extends State<PresentationPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Présentation de l’application'),
+        title: Text(l10n.presentationTitle),
       ),
       body: SafeArea(
         child: ListView(
@@ -94,10 +97,10 @@ class _PresentationPageState extends State<PresentationPage> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Trouvez le bon service près de chez vous',
+            Text(
+              l10n.presentationSubtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.muted, fontSize: 16),
+              style: const TextStyle(color: AppColors.muted, fontSize: 16),
             ),
             const SizedBox(height: 20),
             Container(
@@ -140,43 +143,41 @@ class _PresentationPageState extends State<PresentationPage> {
                     )
                   : Container(
                       color: const Color(0xFFF4F7FB),
-                      child: const Center(
+                      child: Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.videocam_outlined,
+                            const Icon(Icons.videocam_outlined,
                                 size: 48, color: AppColors.primary),
-                            SizedBox(height: 12),
-                            Text('Vidéo de présentation',
-                                style: TextStyle(fontWeight: FontWeight.w700)),
+                            const SizedBox(height: 12),
+                            Text(l10n.presentationVideoLabel,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w700)),
                           ],
                         ),
                       ),
                     ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Pourquoi LigueyPro 2.0 ?',
+            Text(
+              l10n.presentationWhyTitle,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 12),
-            const _FeatureItem(
+            _FeatureItem(
               icon: Icons.search,
-              title: 'Recherche rapide',
-              description:
-                  'Trouvez un service adapté à votre besoin en quelques secondes.',
+              title: l10n.presentationFeatureFastSearchTitle,
+              description: l10n.presentationFeatureFastSearchDescription,
             ),
-            const _FeatureItem(
+            _FeatureItem(
               icon: Icons.star,
-              title: 'Professionnels fiables',
-              description:
-                  'Consultez les avis, les évaluations et les profils disponibles.',
+              title: l10n.presentationFeatureReliableProsTitle,
+              description: l10n.presentationFeatureReliableProsDescription,
             ),
-            const _FeatureItem(
+            _FeatureItem(
               icon: Icons.notifications_active,
-              title: 'Suivi simple',
-              description:
-                  'Suivez vos demandes et recevez des notifications utiles.',
+              title: l10n.presentationFeatureSimpleTrackingTitle,
+              description: l10n.presentationFeatureSimpleTrackingDescription,
             ),
           ],
         ),

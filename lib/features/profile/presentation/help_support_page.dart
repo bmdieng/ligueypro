@@ -1,67 +1,64 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/generated/app_localizations.dart';
+
 class HelpSupportPage extends StatelessWidget {
   const HelpSupportPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Aide et support')),
+      appBar: AppBar(title: Text(l10n.profileHelpSupport)),
       body: ListView(
         padding: const EdgeInsets.all(16),
-        children: const [
+        children: [
           Text(
-            'Comment ça marche',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+            l10n.helpSupportHowItWorks,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           _HelpCard(
             icon: Icons.search,
-            title: 'Trouver un service',
-            description:
-                'Choisissez une catégorie ou utilisez la recherche pour trouver le bon professionnel près de chez vous.',
+            title: l10n.helpSupportFindServiceTitle,
+            description: l10n.helpSupportFindServiceDescription,
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           _HelpCard(
             icon: Icons.edit_note,
-            title: 'Créer une demande',
-            description:
-                'Décrivez votre besoin, choisissez la catégorie et précisez l’urgence, votre localisation et votre numéro de téléphone.',
+            title: l10n.helpSupportCreateRequestTitle,
+            description: l10n.helpSupportCreateRequestDescription,
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           _HelpCard(
             icon: Icons.notifications_active,
-            title: 'Suivre votre demande',
-            description:
-                'Consultez les demandes dans “Mes demandes” pour voir l’état et l’ordre d’urgence des interventions.',
+            title: l10n.helpSupportTrackRequestTitle,
+            description: l10n.helpSupportTrackRequestDescription,
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Text(
-            'Questions fréquentes',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+            l10n.helpSupportFaqTitle,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           _FaqItem(
-            question: 'Comment puis-je modifier une demande ?',
-            answer:
-                'Rendez-vous dans la liste de vos demandes et sélectionnez la demande concernée pour vérifier ou corriger les informations.',
-          ),
-          _FaqItem(
-            question: 'Que faire si je ne reçois pas de réponse ?',
-            answer:
-                'Vous pouvez relancer votre demande, vérifier l’urgence sélectionnée et confirmer votre numéro de téléphone pour être recontacté.',
+            question: l10n.helpSupportFaqEditQuestion,
+            answer: l10n.helpSupportFaqEditAnswer,
           ),
           _FaqItem(
-            question: 'Comment contacter l’assistance ?',
-            answer:
-                'Vous pouvez nous écrire via le support de l’application ou appeler le centre d’assistance disponible dans votre région.',
+            question: l10n.helpSupportFaqNoReplyQuestion,
+            answer: l10n.helpSupportFaqNoReplyAnswer,
           ),
-          SizedBox(height: 20),
+          _FaqItem(
+            question: l10n.helpSupportFaqContactQuestion,
+            answer: l10n.helpSupportFaqContactAnswer,
+          ),
+          const SizedBox(height: 20),
           _HelpCard(
             icon: Icons.support_agent,
-            title: 'Besoin d’accompagnement ?',
-            description:
-                'Notre équipe peut vous aider pour la création d’une demande, le suivi ou la résolution d’un problème technique.',
+            title: l10n.helpSupportNeedHelpTitle,
+            description: l10n.helpSupportNeedHelpDescription,
           ),
         ],
       ),

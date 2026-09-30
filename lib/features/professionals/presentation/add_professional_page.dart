@@ -7,6 +7,7 @@ import '../../../core/network/firebase_bootstrap.dart';
 import '../../../core/services/pro_subscription_service.dart';
 import '../../../core/services/professional_admin_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class AddProfessionalPage extends StatefulWidget {
   const AddProfessionalPage({super.key});
@@ -80,6 +81,7 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
   }
 
   Future<void> _saveProfessional() async {
+    final l10n = AppLocalizations.of(context);
     final name = _nameController.text.trim();
     final location = _locationController.text.trim();
     final price = _priceController.text.trim();
@@ -87,16 +89,14 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
 
     if (_selectedService.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Aucun service disponible pour le moment.'),
-        ),
+        SnackBar(content: Text(l10n.addProfessionalNoService)),
       );
       return;
     }
 
     if (name.isEmpty || location.isEmpty || price.isEmpty || phone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez remplir tous les champs.')),
+        SnackBar(content: Text(l10n.addProfessionalFillAll)),
       );
       return;
     }
@@ -116,7 +116,7 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
         'rating': '⭐ 0.0',
         'ratingAverage': 0.0,
         'reviewsCount': 0,
-        'distance': 'À confirmer',
+        'distance': l10n.serviceSearchDefaultPrice,
         'verified': false,
         'availableNow': _availableNow,
         'subscribed': _isSubscribed,
@@ -124,7 +124,7 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
         'canReceiveRequests': _isSubscribed,
         'canSendOffers': _isSubscribed,
         'responseTime': _responseTimeController.text.trim().isEmpty
-            ? 'Réponse rapide'
+            ? l10n.serviceSearchDefaultResponseTime
             : _responseTimeController.text.trim(),
         'completedJobs': 0,
         'reviews': {},
@@ -156,7 +156,7 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Professionnel ajouté avec succès.')),
+        SnackBar(content: Text(l10n.addProfessionalSuccess)),
       );
 
       _nameController.clear();
@@ -169,8 +169,7 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Échec de l’ajout du professionnel. Réessayez.')),
+        SnackBar(content: Text(l10n.addProfessionalSaveFailed)),
       );
     } finally {
       if (mounted) {
@@ -191,23 +190,24 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Ajouter un professionnel')),
+      appBar: AppBar(title: Text(l10n.profileAddProfessional)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            const Text(
-              'Informations du professionnel',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+            Text(
+              l10n.addProfessionalInfoTitle,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Nom du professionnel',
-                prefixIcon: Icon(Icons.person_outline),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.addProfessionalNameLabel,
+                prefixIcon: const Icon(Icons.person_outline),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),
@@ -216,7 +216,7 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
                   ? _selectedService
                   : null,
               decoration: InputDecoration(
-                labelText: 'Service',
+                labelText: l10n.addProfessionalServiceLabel,
                 border: const OutlineInputBorder(),
                 suffixIcon: _isLoadingServices
                     ? const Padding(
@@ -244,40 +244,40 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
             const SizedBox(height: 16),
             TextField(
               controller: _locationController,
-              decoration: const InputDecoration(
-                labelText: 'Zone d’intervention',
-                prefixIcon: Icon(Icons.location_on_outlined),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.addProfessionalLocationLabel,
+                prefixIcon: const Icon(Icons.location_on_outlined),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _priceController,
-              decoration: const InputDecoration(
-                labelText: 'Prix / Tarification',
-                prefixIcon: Icon(Icons.payments_outlined),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.addProfessionalPriceLabel,
+                prefixIcon: const Icon(Icons.payments_outlined),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Téléphone',
-                prefixIcon: Icon(Icons.phone_outlined),
-                hintText: '+221 77 000 00 00',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.addProfessionalPhoneLabel,
+                prefixIcon: const Icon(Icons.phone_outlined),
+                hintText: l10n.addProfessionalPhoneHint,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _responseTimeController,
-              decoration: const InputDecoration(
-                labelText: 'Délai de réponse estimé',
-                prefixIcon: Icon(Icons.bolt_outlined),
-                hintText: 'Ex. Répond en moins de 15 min',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.addProfessionalResponseLabel,
+                prefixIcon: const Icon(Icons.bolt_outlined),
+                hintText: l10n.addProfessionalResponseHint,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
@@ -285,9 +285,8 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
               value: _availableNow,
               onChanged: (value) => setState(() => _availableNow = value),
               contentPadding: EdgeInsets.zero,
-              title: const Text('Disponible immédiatement'),
-              subtitle:
-                  const Text('Visible comme disponible dans les résultats.'),
+              title: Text(l10n.addProfessionalAvailableNowTitle),
+              subtitle: Text(l10n.addProfessionalAvailableNowSubtitle),
             ),
             const SizedBox(height: 8),
             // Container(
@@ -361,7 +360,7 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white),
                     )
-                  : const Text('Enregistrer le professionnel'),
+                  : Text(l10n.addProfessionalSave),
             ),
           ],
         ),

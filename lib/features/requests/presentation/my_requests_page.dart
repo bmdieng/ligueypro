@@ -1,9 +1,11 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/network/firebase_bootstrap.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class _RequestItem {
   const _RequestItem({
@@ -52,12 +54,10 @@ class MyRequestsPage extends StatefulWidget {
 }
 
 class _MyRequestsPageState extends State<MyRequestsPage> {
-  static const String _allTypes = 'Tous les types';
-  static const String _allCategories = 'Toutes les categories';
   static const int _pageSize = 20;
 
-  String _selectedType = _allTypes;
-  String _selectedCategory = _allCategories;
+  String? _selectedType;
+  String? _selectedCategory;
   _RequestDateSort _dateSort = _RequestDateSort.newestFirst;
   int _visibleRequestCount = _pageSize;
   final ScrollController _scrollController = ScrollController();
@@ -152,22 +152,22 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
     }
   }
 
-  static String _statusLabel(String status) {
+  static String _statusLabel(String status, AppLocalizations l10n) {
     switch (status) {
       case 'accepted':
-        return 'Acceptée';
+        return l10n.requestsStatusAccepted;
       case 'awaiting_offers':
-        return 'En attente d’offres';
+        return l10n.requestsStatusAwaitingOffers;
       case 'en_route':
-        return 'En route';
+        return l10n.requestsStatusEnRoute;
       case 'in_progress':
-        return 'En cours';
+        return l10n.requestsStatusInProgress;
       case 'completed':
-        return 'Terminée';
+        return l10n.requestsStatusCompleted;
       case 'cancelled':
-        return 'Annulée';
+        return l10n.requestsStatusCancelled;
       default:
-        return 'En attente';
+        return l10n.requestsStatusPending;
     }
   }
 
@@ -208,29 +208,36 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
     }
   }
 
-  static String _offersStatusLabel(String offersStatus) {
+  static String _offersStatusLabel(
+    String offersStatus,
+    AppLocalizations l10n,
+  ) {
     switch (offersStatus) {
       case 'accepted':
-        return 'Offre acceptée';
+        return l10n.requestsOffersAccepted;
       case 'closed':
-        return 'Appel d’offres clos';
+        return l10n.requestsOffersClosed;
       default:
-        return 'Offres ouvertes';
+        return l10n.requestsOffersOpen;
     }
   }
 
-  List<String> _typeOptions(List<_RequestItem> requests) {
+  List<String> _typeOptions(
+      List<_RequestItem> requests, AppLocalizations l10n) {
     final options = requests
-        .map((request) => _statusLabel(request.status))
+        .map((request) => _statusLabel(request.status, l10n))
         .where((status) => status.trim().isNotEmpty)
         .toSet()
         .toList()
       ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
 
-    return <String>[_allTypes, ...options];
+    return <String>[l10n.requestsAllTypes, ...options];
   }
 
-  List<String> _categoryOptions(List<_RequestItem> requests) {
+  List<String> _categoryOptions(
+    List<_RequestItem> requests,
+    AppLocalizations l10n,
+  ) {
     final options = requests
         .map((request) => request.service)
         .where((service) => service.trim().isNotEmpty)
@@ -238,14 +245,19 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
         .toList()
       ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
 
-    return <String>[_allCategories, ...options];
+    return <String>[l10n.requestsAllCategories, ...options];
   }
 
-  List<_RequestItem> _applyFilters(List<_RequestItem> requests) {
+  List<_RequestItem> _applyFilters(
+    List<_RequestItem> requests,
+    AppLocalizations l10n,
+  ) {
     final filtered = requests.where((request) {
-      final matchesType = _selectedType == _allTypes ||
-          _statusLabel(request.status) == _selectedType;
-      final matchesCategory = _selectedCategory == _allCategories ||
+      final matchesType = _selectedType == l10n.requestsAllTypes ||
+          _selectedType == null ||
+          _statusLabel(request.status, l10n) == _selectedType;
+      final matchesCategory = _selectedCategory == l10n.requestsAllCategories ||
+          _selectedCategory == null ||
           request.service == _selectedCategory;
       return matchesType && matchesCategory;
     }).toList();
@@ -261,12 +273,14 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
   void _syncSelectedFilterValues(
     List<String> typeOptions,
     List<String> categoryOptions,
+    AppLocalizations l10n,
   ) {
-    if (!typeOptions.contains(_selectedType)) {
-      _selectedType = _allTypes;
+    if (_selectedType == null || !typeOptions.contains(_selectedType)) {
+      _selectedType = l10n.requestsAllTypes;
     }
-    if (!categoryOptions.contains(_selectedCategory)) {
-      _selectedCategory = _allCategories;
+    if (_selectedCategory == null ||
+        !categoryOptions.contains(_selectedCategory)) {
+      _selectedCategory = l10n.requestsAllCategories;
     }
   }
 
@@ -302,6 +316,7 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
   }
 
   Widget _buildFilters(
+    AppLocalizations l10n,
     List<String> typeOptions,
     List<String> categoryOptions,
   ) {
@@ -316,16 +331,16 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Filtres',
+          Text(
+            l10n.requestsFilterTitle,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 14),
           DropdownButtonFormField<String>(
             initialValue: _selectedType,
-            decoration: const InputDecoration(
-              labelText: 'Type de demande',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l10n.requestsFilterTypeLabel,
+              border: const OutlineInputBorder(),
             ),
             items: typeOptions
                 .map(
@@ -345,9 +360,9 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             initialValue: _selectedCategory,
-            decoration: const InputDecoration(
-              labelText: 'Categorie',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l10n.requestsFilterCategoryLabel,
+              border: const OutlineInputBorder(),
             ),
             items: categoryOptions
                 .map(
@@ -367,18 +382,18 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
           const SizedBox(height: 12),
           DropdownButtonFormField<_RequestDateSort>(
             initialValue: _dateSort,
-            decoration: const InputDecoration(
-              labelText: 'Tri par date',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l10n.requestsFilterDateLabel,
+              border: const OutlineInputBorder(),
             ),
-            items: const [
+            items: [
               DropdownMenuItem<_RequestDateSort>(
                 value: _RequestDateSort.newestFirst,
-                child: Text('Plus recentes d\'abord'),
+                child: Text(l10n.requestsSortNewest),
               ),
               DropdownMenuItem<_RequestDateSort>(
                 value: _RequestDateSort.oldestFirst,
-                child: Text('Plus anciennes d\'abord'),
+                child: Text(l10n.requestsSortOldest),
               ),
             ],
             onChanged: (value) {
@@ -393,7 +408,10 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
     );
   }
 
-  Widget _buildLoadingMoreIndicator({required bool visible}) {
+  Widget _buildLoadingMoreIndicator(
+    AppLocalizations l10n, {
+    required bool visible,
+  }) {
     if (!visible) {
       return const SizedBox.shrink();
     }
@@ -402,16 +420,16 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          SizedBox(
+        children: [
+          const SizedBox(
             width: 18,
             height: 18,
             child: CircularProgressIndicator(strokeWidth: 2.2),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Text(
-            'Chargement des demandes...',
-            style: TextStyle(
+            l10n.requestsLoading,
+            style: const TextStyle(
               color: AppColors.muted,
               fontWeight: FontWeight.w600,
             ),
@@ -421,7 +439,11 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
     );
   }
 
-  Widget _buildRequestCard(BuildContext context, _RequestItem request) {
+  Widget _buildRequestCard(
+    BuildContext context,
+    AppLocalizations l10n,
+    _RequestItem request,
+  ) {
     return Card(
       elevation: 0,
       color: Colors.white,
@@ -471,7 +493,7 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
-                _statusLabel(request.status),
+                _statusLabel(request.status, l10n),
                 style: TextStyle(
                   color: _statusColor(request.status),
                   fontWeight: FontWeight.w700,
@@ -525,20 +547,25 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
             ),
             const SizedBox(height: 10),
             Text(
-              'Créée le ${request.createdAt.day}/${request.createdAt.month}/${request.createdAt.year}',
+              l10n.requestsCreatedOn(
+                DateFormat.yMd(l10n.localeName).format(request.createdAt),
+              ),
               style: const TextStyle(fontSize: 12, color: AppColors.muted),
             ),
             const SizedBox(height: 8),
             Text(
-              '${_offersStatusLabel(request.offersStatus)} • ${request.offersCount} offre(s)',
+              l10n.requestsOffersCountSummary(
+                _offersStatusLabel(request.offersStatus, l10n),
+                request.offersCount,
+              ),
               style: const TextStyle(
                 color: AppColors.navy,
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Règlement direct entre client et professionnel après choix de l’offre.',
+            Text(
+              l10n.requestsDirectPaymentAfterOffer,
               style: TextStyle(color: AppColors.muted),
             ),
             if (request.acceptedProfessionalName != null) ...[
@@ -555,8 +582,8 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Professionnel retenu',
+                    Text(
+                      l10n.requestsChosenProfessional,
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         color: AppColors.navy,
@@ -569,12 +596,16 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                     ),
                     if (request.acceptedOfferPrice != null)
                       Text(
-                        'Prix accepté : ${request.acceptedOfferPrice}',
+                        l10n.requestsAcceptedPrice(
+                          request.acceptedOfferPrice!,
+                        ),
                         style: const TextStyle(color: AppColors.muted),
                       ),
                     if (request.acceptedOfferEta != null)
                       Text(
-                        'Délai confirmé : ${request.acceptedOfferEta}',
+                        l10n.requestsConfirmedEta(
+                          request.acceptedOfferEta!,
+                        ),
                         style: const TextStyle(color: AppColors.muted),
                       ),
                     if (request.acceptedProfessionalId != null) ...[
@@ -584,7 +615,7 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                           '/professional/${Uri.encodeComponent(request.acceptedProfessionalId!)}',
                         ),
                         icon: const Icon(Icons.person_search_outlined),
-                        label: const Text('Voir le profil'),
+                        label: Text(l10n.requestsViewProfile),
                       ),
                     ],
                   ],
@@ -605,7 +636,7 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                         'urgency': request.urgency,
                       },
                     ),
-                    child: const Text('Voir les offres'),
+                    child: Text(l10n.requestsViewOffers),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -614,7 +645,7 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                     onPressed: () => context.push('/request'),
                     style:
                         FilledButton.styleFrom(backgroundColor: AppColors.navy),
-                    child: const Text('Nouvelle demande'),
+                    child: Text(l10n.homeNewRequest),
                   ),
                 ),
               ],
@@ -626,9 +657,11 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
   }
 
   Widget _buildList(
+    BuildContext context,
     List<_RequestItem> requests, {
     required bool isWaiting,
   }) {
+    final l10n = AppLocalizations.of(context);
     if (_isLoadingMore && !isWaiting) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) {
@@ -638,13 +671,13 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
       });
     }
 
-    final typeOptions = _typeOptions(requests);
-    final categoryOptions = _categoryOptions(requests);
-    _syncSelectedFilterValues(typeOptions, categoryOptions);
+    final typeOptions = _typeOptions(requests, l10n);
+    final categoryOptions = _categoryOptions(requests, l10n);
+    _syncSelectedFilterValues(typeOptions, categoryOptions, l10n);
 
-    final filteredRequests = _applyFilters(requests);
-    final hasActiveFilters =
-        _selectedType != _allTypes || _selectedCategory != _allCategories;
+    final filteredRequests = _applyFilters(requests, l10n);
+    final hasActiveFilters = _selectedType != l10n.requestsAllTypes ||
+        _selectedCategory != l10n.requestsAllCategories;
     final canLoadMore = _canLoadMore(requests);
 
     if (requests.isEmpty) {
@@ -652,14 +685,13 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
         controller: _scrollController,
         padding: const EdgeInsets.all(16),
         children: [
-          _buildFilters(typeOptions, categoryOptions),
+          _buildFilters(l10n, typeOptions, categoryOptions),
           const SizedBox(height: 16),
-          const _EmptyRequestsState(
-            title: 'Aucune demande envoyee',
-            message:
-                'Vos demandes apparaitront ici avec leur statut, leurs offres et leur historique.',
+          _EmptyRequestsState(
+            title: l10n.requestsEmptyTitle,
+            message: l10n.requestsEmptyMessage,
           ),
-          _buildLoadingMoreIndicator(visible: _isLoadingMore),
+          _buildLoadingMoreIndicator(l10n, visible: _isLoadingMore),
         ],
       );
     }
@@ -669,15 +701,15 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
         controller: _scrollController,
         padding: const EdgeInsets.all(16),
         children: [
-          _buildFilters(typeOptions, categoryOptions),
+          _buildFilters(l10n, typeOptions, categoryOptions),
           const SizedBox(height: 16),
           _EmptyRequestsState(
-            title: 'Aucun resultat pour ces filtres',
+            title: l10n.requestsNoFilterResultsTitle,
             message: hasActiveFilters
-                ? 'Modifiez le type, la categorie ou le tri pour afficher d\'autres demandes.'
-                : 'Aucune demande disponible pour le moment.',
+                ? l10n.requestsNoFilterResultsMessage
+                : l10n.requestsNoRequestsAvailable,
           ),
-          _buildLoadingMoreIndicator(visible: _isLoadingMore),
+          _buildLoadingMoreIndicator(l10n, visible: _isLoadingMore),
         ],
       );
     }
@@ -690,15 +722,15 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
           index == 0 ? const SizedBox(height: 16) : const SizedBox(height: 12),
       itemBuilder: (context, index) {
         if (index == 0) {
-          return _buildFilters(typeOptions, categoryOptions);
+          return _buildFilters(l10n, typeOptions, categoryOptions);
         }
 
         if (index == filteredRequests.length + 1) {
-          return _buildLoadingMoreIndicator(visible: _isLoadingMore);
+          return _buildLoadingMoreIndicator(l10n, visible: _isLoadingMore);
         }
 
         final request = filteredRequests[index - 1];
-        return _buildRequestCard(context, request);
+        return _buildRequestCard(context, l10n, request);
       },
     );
   }
@@ -706,7 +738,7 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Mes demandes')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).requestsMyTitle)),
       body: SafeArea(
         child: FirebaseBootstrap.isReady
             ? StreamBuilder<DatabaseEvent>(
@@ -714,6 +746,7 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     return _buildList(
+                      context,
                       const [],
                       isWaiting:
                           snapshot.connectionState == ConnectionState.waiting,
@@ -723,13 +756,14 @@ class _MyRequestsPageState extends State<MyRequestsPage> {
                   final requests =
                       _requestsFromSnapshot(snapshot.data?.snapshot.value);
                   return _buildList(
+                    context,
                     requests,
                     isWaiting:
                         snapshot.connectionState == ConnectionState.waiting,
                   );
                 },
               )
-            : _buildList(const [], isWaiting: false),
+            : _buildList(context, const [], isWaiting: false),
       ),
     );
   }

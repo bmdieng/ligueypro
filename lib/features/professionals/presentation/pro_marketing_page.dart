@@ -3,12 +3,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/services/pro_subscription_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class ProMarketingPage extends StatelessWidget {
   const ProMarketingPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final width = MediaQuery.sizeOf(context).width;
     final compact = width < 920;
 
@@ -38,60 +40,53 @@ class ProMarketingPage extends StatelessWidget {
                   ),
             const SizedBox(height: 18),
             _SectionCard(
-              title: 'Pourquoi s’abonner',
-              subtitle:
-                  'Le modèle LigueyPro remplace le paiement client dans l’application par une logique simple d’abonnement professionnel.',
+              title: l10n.proMarketingWhyTitle,
+              subtitle: l10n.proMarketingWhySubtitle,
               child: compact
-                  ? const Column(
+                  ? Column(
                       children: [
                         _ValueCard(
                           icon: Icons.campaign_outlined,
-                          title: 'Recevoir des demandes ciblées',
-                          description:
-                              'Accédez aux demandes liées à votre métier et à votre zone d’intervention.',
+                          title: l10n.proMarketingValueLeadsTitle,
+                          description: l10n.proMarketingValueLeadsBody,
                         ),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         _ValueCard(
                           icon: Icons.local_offer_outlined,
-                          title: 'Envoyer des offres claires',
-                          description:
-                              'Répondez avec vos tarifs, délais et un message rassurant pour augmenter votre conversion.',
+                          title: l10n.proMarketingValueOffersTitle,
+                          description: l10n.proMarketingValueOffersBody,
                         ),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         _ValueCard(
                           icon: Icons.analytics_outlined,
-                          title: 'Piloter votre performance',
-                          description:
-                              'Suivez vos offres, vos gains et vos indicateurs dans un back-office sécurisé.',
+                          title: l10n.proMarketingValuePerformanceTitle,
+                          description: l10n.proMarketingValuePerformanceBody,
                         ),
                       ],
                     )
-                  : const Row(
+                  : Row(
                       children: [
                         Expanded(
                           child: _ValueCard(
                             icon: Icons.campaign_outlined,
-                            title: 'Recevoir des demandes ciblées',
-                            description:
-                                'Accédez aux demandes liées à votre métier et à votre zone d’intervention.',
+                            title: l10n.proMarketingValueLeadsTitle,
+                            description: l10n.proMarketingValueLeadsBody,
                           ),
                         ),
                         SizedBox(width: 12),
                         Expanded(
                           child: _ValueCard(
                             icon: Icons.local_offer_outlined,
-                            title: 'Envoyer des offres claires',
-                            description:
-                                'Répondez avec vos tarifs, délais et un message rassurant pour augmenter votre conversion.',
+                            title: l10n.proMarketingValueOffersTitle,
+                            description: l10n.proMarketingValueOffersBody,
                           ),
                         ),
                         SizedBox(width: 12),
                         Expanded(
                           child: _ValueCard(
                             icon: Icons.analytics_outlined,
-                            title: 'Piloter votre performance',
-                            description:
-                                'Suivez vos offres, vos gains et vos indicateurs dans un back-office sécurisé.',
+                            title: l10n.proMarketingValuePerformanceTitle,
+                            description: l10n.proMarketingValuePerformanceBody,
                           ),
                         ),
                       ],
@@ -99,9 +94,8 @@ class ProMarketingPage extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             _SectionCard(
-              title: 'Plans professionnels',
-              subtitle:
-                  'Choisissez un niveau d’engagement adapté à votre volume de demandes et à votre ambition commerciale.',
+              title: l10n.proMarketingPlansTitle,
+              subtitle: l10n.proMarketingPlansSubtitle,
               child: compact
                   ? Column(
                       children: [
@@ -158,35 +152,36 @@ class ProMarketingPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(28),
               ),
               child: compact
-                  ? const Column(
+                  ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Prêt à activer votre profil pro ?',
-                          style: TextStyle(
+                          l10n.proMarketingCtaTitle,
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 24,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
-                          'Ajoutez votre profil, choisissez votre abonnement et accédez ensuite à votre back-office sécurisé pour traiter les demandes.',
-                          style: TextStyle(color: Colors.white70, height: 1.4),
+                          l10n.proMarketingCtaBody,
+                          style: const TextStyle(
+                              color: Colors.white70, height: 1.4),
                         ),
-                        SizedBox(height: 16),
-                        _ProBottomActions(),
+                        const SizedBox(height: 16),
+                        const _ProBottomActions(),
                       ],
                     )
-                  : const Row(
+                  : Row(
                       children: [
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Prêt à activer votre profil pro ?',
-                                style: TextStyle(
+                                l10n.proMarketingCtaTitle,
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 24,
                                   fontWeight: FontWeight.w900,
@@ -222,6 +217,8 @@ class _HeaderBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       decoration: BoxDecoration(
@@ -241,14 +238,14 @@ class _HeaderBar extends StatelessWidget {
                   children: [
                     OutlinedButton(
                       onPressed: () => context.go('/'),
-                      child: const Text('Accueil'),
+                      child: Text(l10n.proMarketingHome),
                     ),
                     FilledButton(
                       onPressed: () => context.go('/back-office'),
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.navy,
                       ),
-                      child: const Text('Back-office'),
+                      child: Text(l10n.landingNavBackOffice),
                     ),
                   ],
                 ),
@@ -259,7 +256,7 @@ class _HeaderBar extends StatelessWidget {
                 const Expanded(child: _BrandTag()),
                 OutlinedButton(
                   onPressed: () => context.go('/'),
-                  child: const Text('Accueil'),
+                  child: Text(l10n.proMarketingHome),
                 ),
                 const SizedBox(width: 10),
                 FilledButton(
@@ -267,7 +264,7 @@ class _HeaderBar extends StatelessWidget {
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.navy,
                   ),
-                  child: const Text('Back-office'),
+                  child: Text(l10n.landingNavBackOffice),
                 ),
               ],
             ),
@@ -280,17 +277,19 @@ class _BrandTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    final l10n = AppLocalizations.of(context);
+
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'LigueyPro pour les professionnels',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+          l10n.proMarketingTitle,
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(
-          'Leads, offres, abonnement et back-office sécurisé',
-          style: TextStyle(color: AppColors.muted),
+          l10n.proMarketingSubtitle,
+          style: const TextStyle(color: AppColors.muted),
         ),
       ],
     );
@@ -302,6 +301,8 @@ class _ProHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
@@ -321,18 +322,18 @@ class _ProHeroCard extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(999),
             ),
-            child: const Text(
-              'Abonnement pro + conversion',
-              style: TextStyle(
+            child: Text(
+              l10n.proMarketingHeroBadge,
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
               ),
             ),
           ),
           const SizedBox(height: 18),
-          const Text(
-            'Recevez plus d’opportunités qualifiées et répondez plus vite que vos concurrents.',
-            style: TextStyle(
+          Text(
+            l10n.proMarketingHeroTitle,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 34,
               fontWeight: FontWeight.w900,
@@ -340,31 +341,31 @@ class _ProHeroCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          const Text(
-            'LigueyPro permet aux professionnels abonnés de capter des demandes réelles, d’émettre des offres structurées et de piloter leur activité avec des indicateurs simples.',
-            style: TextStyle(color: Colors.white70, height: 1.45),
+          Text(
+            l10n.proMarketingHeroBody,
+            style: const TextStyle(color: Colors.white70, height: 1.45),
           ),
           const SizedBox(height: 22),
-          const Row(
+          Row(
             children: [
               Expanded(
                 child: _HeroMetric(
                   value: '80',
-                  label: 'leads mensuels sur le plan Pro',
+                  label: l10n.proMarketingMetricLeads,
                 ),
               ),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Expanded(
                 child: _HeroMetric(
                   value: '4',
-                  label: 'chiffres pour protéger le BO',
+                  label: l10n.proMarketingMetricSecurity,
                 ),
               ),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Expanded(
                 child: _HeroMetric(
                   value: '1',
-                  label: 'workflow simple d’acquisition',
+                  label: l10n.proMarketingMetricWorkflow,
                 ),
               ),
             ],
@@ -413,6 +414,8 @@ class _ProActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
@@ -423,32 +426,32 @@ class _ProActionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Démarrer en 3 étapes',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+          Text(
+            l10n.proMarketingGetStartedTitle,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Créez votre profil, activez votre abonnement, puis traitez vos demandes depuis le BO.',
-            style: TextStyle(color: AppColors.muted, height: 1.4),
+          Text(
+            l10n.proMarketingGetStartedBody,
+            style: const TextStyle(color: AppColors.muted, height: 1.4),
           ),
           const SizedBox(height: 18),
-          const _StepTile(
+          _StepTile(
             step: '1',
-            title: 'Ajouter votre profil',
-            body: 'Renseignez votre service, votre zone et vos coordonnées.',
+            title: l10n.proMarketingStep1Title,
+            body: l10n.proMarketingStep1Body,
           ),
           const SizedBox(height: 12),
-          const _StepTile(
+          _StepTile(
             step: '2',
-            title: 'Choisir un plan',
-            body: 'Activez un abonnement adapté à votre volume de leads.',
+            title: l10n.proMarketingStep2Title,
+            body: l10n.proMarketingStep2Body,
           ),
           const SizedBox(height: 12),
-          const _StepTile(
+          _StepTile(
             step: '3',
-            title: 'Piloter vos offres',
-            body: 'Suivez vos réponses, vos attributions et votre conversion.',
+            title: l10n.proMarketingStep3Title,
+            body: l10n.proMarketingStep3Body,
           ),
           const SizedBox(height: 18),
           SizedBox(
@@ -460,7 +463,7 @@ class _ProActionCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 15),
               ),
               icon: const Icon(Icons.person_add_alt_1_outlined),
-              label: const Text('Laisser mes coordonnées'),
+              label: Text(l10n.proMarketingLeaveDetails),
             ),
           ),
           const SizedBox(height: 10),
@@ -469,7 +472,7 @@ class _ProActionCard extends StatelessWidget {
             child: OutlinedButton.icon(
               onPressed: () => context.go('/pro-subscription'),
               icon: const Icon(Icons.workspace_premium_outlined),
-              label: const Text('Voir les abonnements'),
+              label: Text(l10n.proMarketingSeeSubscriptions),
             ),
           ),
         ],
@@ -545,6 +548,8 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -628,6 +633,8 @@ class _PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -650,9 +657,9 @@ class _PlanCard extends StatelessWidget {
                 color: AppColors.primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(999),
               ),
-              child: const Text(
-                'Le plus équilibré',
-                style: TextStyle(
+              child: Text(
+                l10n.proMarketingBalanced,
+                style: const TextStyle(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w800,
                   fontSize: 12,
@@ -675,7 +682,7 @@ class _PlanCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '${plan.leadsPerMonth} demandes par mois',
+            l10n.proMarketingRequestsPerMonth(plan.leadsPerMonth),
             style: const TextStyle(color: AppColors.muted),
           ),
           const SizedBox(height: 14),
@@ -708,7 +715,11 @@ class _PlanCard extends StatelessWidget {
                 backgroundColor:
                     highlighted ? AppColors.primary : AppColors.navy,
               ),
-              child: Text('Choisir ${plan.name}'),
+              child: Text(
+                AppLocalizations.of(context).proSubscriptionChoosePlan(
+                  plan.name,
+                ),
+              ),
             ),
           ),
         ],
@@ -722,6 +733,8 @@ class _ProBottomActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       children: [
         SizedBox(
@@ -734,7 +747,7 @@ class _ProBottomActions extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 15),
             ),
             icon: const Icon(Icons.person_add_alt_1_outlined),
-            label: const Text('Laisser mes coordonnées'),
+            label: Text(l10n.proMarketingLeaveDetails),
           ),
         ),
         const SizedBox(height: 10),
@@ -748,7 +761,7 @@ class _ProBottomActions extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 15),
             ),
             icon: const Icon(Icons.admin_panel_settings_outlined),
-            label: const Text('Accéder au BO sécurisé'),
+            label: Text(l10n.landingSecureBo),
           ),
         ),
       ],

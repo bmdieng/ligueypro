@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -35,8 +36,10 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Mon profil')),
+      appBar: AppBar(title: Text(l10n.profileTitle)),
       body: ListView(
         children: [
           const SizedBox(height: 24),
@@ -51,44 +54,45 @@ class ProfilePage extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(24),
             ),
-            child: const Column(
+            child: Column(
               children: [
-                CircleAvatar(radius: 42, child: Icon(Icons.person, size: 42)),
-                SizedBox(height: 10),
+                const CircleAvatar(
+                    radius: 42, child: Icon(Icons.person, size: 42)),
+                const SizedBox(height: 10),
                 Text(
-                  'Mon compte',
-                  style: TextStyle(
+                  l10n.profileAccountTitle,
+                  style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
                   ),
                 ),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 Text(
-                  'Gérez vos demandes, vos préférences et votre espace pro.',
+                  l10n.profileAccountSubtitle,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white70),
+                  style: const TextStyle(color: Colors.white70),
                 ),
               ],
             ),
           ),
-          _buildSectionTitle('DEMANDES'),
+          _buildSectionTitle(l10n.profileSectionRequests),
           _buildGroup([
             ListTile(
               leading: const Icon(Icons.add_task_outlined),
-              title: const Text('Nouvelle demande',
+              title: Text(l10n.profileNewRequest,
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               onTap: () => context.push('/request'),
             ),
             const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.receipt_long_outlined),
-              title: const Text('Mes demandes',
+              title: Text(l10n.profileMyRequests,
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               onTap: () => context.push('/my-requests'),
             ),
           ]),
-          _buildSectionTitle('RÉSEAU PRO'),
+          _buildSectionTitle(l10n.profileSectionProNetwork),
           _buildGroup([
             // const ListTile(
             //   leading: Icon(Icons.favorite_border),
@@ -101,14 +105,14 @@ class ProfilePage extends StatelessWidget {
             // const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.person_add_alt_1_outlined),
-              title: const Text('Ajouter un professionnel',
+              title: Text(l10n.profileAddProfessional,
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               onTap: () => context.push('/add-professional'),
             ),
             const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.group_outlined),
-              title: const Text('Tous les professionnels',
+              title: Text(l10n.profileAllProfessionals,
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               onTap: () => context.push('/all-professionals'),
             ),
@@ -139,41 +143,41 @@ class ProfilePage extends StatelessWidget {
             //   onTap: () => context.push('/pro-sent-offers'),
             // ),
           ]),
-          _buildSectionTitle('APPLICATION'),
+          _buildSectionTitle(l10n.profileSectionApplication),
           _buildGroup([
             ListTile(
               leading: const Icon(Icons.play_circle_outline),
-              title: const Text('Présentation de l’application',
+              title: Text(l10n.profilePresentation,
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               onTap: () => context.push('/presentation'),
             ),
             const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.notifications_none),
-              title: const Text('Notifications',
+              title: Text(l10n.commonNotifications,
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               onTap: () => context.push('/notifications'),
             ),
             const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.settings_outlined),
-              title: const Text('Paramètres',
+              title: Text(l10n.profileSettingsShort,
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               onTap: () => context.push('/settings'),
             ),
           ]),
-          _buildSectionTitle('SUPPORT'),
+          _buildSectionTitle(l10n.profileSectionSupport),
           _buildGroup([
             ListTile(
               leading: const Icon(Icons.help_outline),
-              title: const Text('Aide et support',
+              title: Text(l10n.profileHelpSupport,
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               onTap: () => context.push('/help-support'),
             ),
             const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.description_outlined),
-              title: const Text('CGU',
+              title: Text(l10n.profileTerms,
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               onTap: () => context.push('/cgu'),
             ),

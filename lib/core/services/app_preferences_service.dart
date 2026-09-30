@@ -107,15 +107,16 @@ class RecentRequestSummary {
 class AppPreferencesService {
   AppPreferencesService._();
 
+  static const String _appLanguageCodeKey = 'settings.app_language_code';
   static const String _autoPlayPresentationKey =
       'settings.auto_play_presentation';
   static const String _recentRequestKey = 'home.recent_request';
   static const String _currentProfessionalKey = 'pro.current_professional';
-    static const String _lastHandledNotificationKey =
+  static const String _lastHandledNotificationKey =
       'notifications.last_handled_key';
   static const String _backOfficeUnlockedUntilKey =
       'bo.security.unlocked_until';
-    static const String _backOfficeAccessCodePath =
+  static const String _backOfficeAccessCodePath =
       'security/backoffice/access_code';
 
   static const Duration _backOfficeSessionDuration = Duration(minutes: 30);
@@ -138,9 +139,8 @@ class AppPreferencesService {
     }
 
     try {
-      final snapshot = await FirebaseDatabase.instance
-          .ref(_backOfficeAccessCodePath)
-          .get();
+      final snapshot =
+          await FirebaseDatabase.instance.ref(_backOfficeAccessCodePath).get();
       return _normalizeBackOfficeAccessCode(snapshot.value);
     } catch (_) {
       return null;
@@ -150,6 +150,20 @@ class AppPreferencesService {
   static Future<bool> getAutoPlayPresentation() async {
     final preferences = await SharedPreferences.getInstance();
     return preferences.getBool(_autoPlayPresentationKey) ?? true;
+  }
+
+  static Future<String?> getAppLanguageCode() async {
+    final preferences = await SharedPreferences.getInstance();
+    final languageCode = preferences.getString(_appLanguageCodeKey);
+    if (languageCode == null || languageCode.isEmpty) {
+      return null;
+    }
+    return languageCode;
+  }
+
+  static Future<void> setAppLanguageCode(String languageCode) async {
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setString(_appLanguageCodeKey, languageCode);
   }
 
   static Future<void> setAutoPlayPresentation(bool value) async {
@@ -267,7 +281,8 @@ class AppPreferencesService {
     }
 
     if (!FirebaseBootstrap.isReady) {
-      throw StateError('Firebase indisponible. Impossible de modifier le code BO.');
+      throw StateError(
+          'Firebase indisponible. Impossible de modifier le code BO.');
     }
 
     await FirebaseDatabase.instance
@@ -278,7 +293,8 @@ class AppPreferencesService {
 
   static Future<void> clearCustomBackOfficeAccessCode() async {
     if (!FirebaseBootstrap.isReady) {
-      throw StateError('Firebase indisponible. Impossible de supprimer le code BO.');
+      throw StateError(
+          'Firebase indisponible. Impossible de supprimer le code BO.');
     }
 
     await FirebaseDatabase.instance.ref(_backOfficeAccessCodePath).remove();

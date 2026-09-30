@@ -1,0 +1,609 @@
+{
+  "@@locale": "en",
+  "appTitle": "LigueyPro 2.0",
+  "splashHeadline": "YOUR SERVICES,",
+  "splashTagline": "CLOSER · SIMPLER",
+  "splashCopyright": "© 2026 LigueyPro 2.0. All rights reserved.",
+  "profileTitle": "My profile",
+  "profileAccountTitle": "My account",
+  "profileAccountSubtitle": "Manage your requests, preferences, and professional space.",
+  "profileSectionRequests": "REQUESTS",
+  "profileNewRequest": "New request",
+  "profileMyRequests": "My requests",
+  "profileSectionProNetwork": "PRO NETWORK",
+  "profileAddProfessional": "Add a professional",
+  "profileAllProfessionals": "All professionals",
+  "profileSectionApplication": "APPLICATION",
+  "profilePresentation": "App presentation",
+  "profileSectionSupport": "SUPPORT",
+  "profileHelpSupport": "Help and support",
+  "profileTerms": "Terms",
+  "profileSettingsShort": "Settings",
+  "commonNotifications": "Notifications",
+  "commonLocation": "Location",
+  "commonLanguage": "Language",
+  "commonVersion": "Version",
+  "commonCancel": "Cancel",
+  "commonSave": "Save",
+  "commonLoading": "Loading...",
+  "settingsTitle": "Application settings",
+  "settingsPreferences": "Preferences",
+  "settingsSubtitle": "Manage the main LigueyPro settings.",
+  "settingsNotificationsSubtitle": "Receive alerts for new requests.",
+  "settingsLocationSubtitle": "Use your position to make requests easier.",
+  "settingsVideoAutoplay": "Video autoplay",
+  "settingsVideoAutoplaySubtitle": "Automatically play the presentation video.",
+  "settingsNotificationsDenied": "Notifications are denied. Allow them in system settings.",
+  "settingsNotificationsDisableInSystem": "Disable notifications in system settings if needed.",
+  "settingsLocationDenied": "Location is denied. Allow it in system settings.",
+  "settingsLocationDisableInSystem": "Disable location in system settings if needed.",
+  "settingsLanguageUpdated": "App language updated.",
+  "settingsLanguageFrenchInterface": "French interface",
+  "settingsLanguageEnglishInterface": "English interface",
+  "settingsBackOfficeHintUnavailable": "BO code unavailable. Check the Firebase key security/backoffice/access_code.",
+  "settingsBackOfficeHintActive": "Active BO code in Firebase: {prefix}- *** (6 digits)",
+  "@settingsBackOfficeHintActive": {
+    "placeholders": {
+      "prefix": {}
+    }
+  },
+  "settingsBackOfficeSecurity": "Back-office security",
+  "settingsBackOfficeStatusOpen": "Unlocked",
+  "settingsBackOfficeStatusLocked": "Locked",
+  "settingsBackOfficeChangeCode": "Change BO code",
+  "settingsBackOfficeCodeUnavailable": "Firebase BO code not loaded",
+  "settingsBackOfficeCodeActive": "Active code: {code}",
+  "@settingsBackOfficeCodeActive": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "settingsBackOfficeLockTitle": "Lock back office",
+  "settingsBackOfficeLockSubtitle": "Immediately end the current BO session",
+  "settingsBackOfficeLockedNow": "Back office locked immediately.",
+  "settingsBackOfficeDialogTitle": "Back-office code",
+  "settingsBackOfficeDialogDescription": "Set a 6-digit code to protect back-office access.",
+  "settingsBackOfficeNewCode": "New code",
+  "settingsSixDigits": "6 digits",
+  "settingsBackOfficeCodeInvalid": "The BO code must contain exactly 6 digits.",
+  "settingsBackOfficeCodeSaved": "Firebase BO code saved. The session has been locked again.",
+  "notificationsHeaderCount": "{count, plural, =0{No alerts for the moment.} =1{1 notification available.} other{{count} notifications available.}}",
+  "@notificationsHeaderCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationsManagePermissions": "Manage permissions",
+  "notificationsEmptyTitle": "No notifications to display",
+  "notificationsEmptyDescription": "New requests and important alerts will appear here in real time.",
+  "notificationsFirebaseUnavailable": "Notifications are not available until Firebase is initialized.",
+  "notificationsLoadError": "Unable to load notifications right now.",
+  "notificationsDefaultRequestTitle": "New request",
+  "notificationsDefaultRequestBody": "A request has been submitted.",
+  "notificationsDefaultCategory": "Uncategorized",
+  "helpSupportHowItWorks": "How it works",
+  "helpSupportFindServiceTitle": "Find a service",
+  "helpSupportFindServiceDescription": "Choose a category or use search to find the right professional near you.",
+  "helpSupportCreateRequestTitle": "Create a request",
+  "helpSupportCreateRequestDescription": "Describe your need, choose the category, and specify urgency, location, and phone number.",
+  "helpSupportTrackRequestTitle": "Track your request",
+  "helpSupportTrackRequestDescription": "Check My requests to see the status and urgency order of interventions.",
+  "helpSupportFaqTitle": "Frequently asked questions",
+  "helpSupportFaqEditQuestion": "How can I edit a request?",
+  "helpSupportFaqEditAnswer": "Go to your requests list and select the relevant request to review or correct the information.",
+  "helpSupportFaqNoReplyQuestion": "What if I don’t receive a response?",
+  "helpSupportFaqNoReplyAnswer": "You can relaunch your request, verify the selected urgency, and confirm your phone number to be contacted again.",
+  "helpSupportFaqContactQuestion": "How can I contact support?",
+  "helpSupportFaqContactAnswer": "You can write to us through the in-app support or call the assistance center available in your region.",
+  "helpSupportNeedHelpTitle": "Need assistance?",
+  "helpSupportNeedHelpDescription": "Our team can help you create a request, track it, or resolve a technical issue.",
+  "cguTitle": "Terms and conditions of use",
+  "cguIntro": "Welcome to LigueyPro. By using this application, you accept these terms and conditions.",
+  "cguSection1Title": "1. Purpose",
+  "cguSection1Body": "The application aims to connect users with service professionals available in their geographic area.",
+  "cguSection2Title": "2. Use of the service",
+  "cguSection2Body": "You agree to provide accurate information, including your location, phone number, and description of your need. You must use the application responsibly and in compliance with the law.",
+  "cguSection3Title": "3. Requests and professionals",
+  "cguSection3Body": "Submitted requests are transmitted to available professionals. Availability, pricing, and timelines may vary depending on the provider’s actual conditions and the request itself.",
+  "cguSection4Title": "4. Responsibilities",
+  "cguSection4Body": "The application serves only as a matchmaking platform. LigueyPro is not directly responsible for services performed by professionals, achieved results, or any disputes between users and providers.",
+  "cguSection5Title": "5. Personal data",
+  "cguSection5Body": "Collected data, including phone number and location, is used to facilitate matchmaking and request tracking. It must be processed in compliance with data protection regulations.",
+  "cguSection6Title": "6. Changes",
+  "cguSection6Body": "We may modify these terms at any time. Significant changes will be indicated in the application or through available channels.",
+  "cguConclusion": "By continuing to use the application, you confirm that you have read and accepted these terms.",
+  "homeNavHome": "Home",
+  "homeNavRequests": "Requests",
+  "homeNavPros": "Pros",
+  "homeNavProfile": "Profile",
+  "homeGreeting": "Hello 👋",
+  "homeQuestion": "What service do you need?",
+  "homeDefaultHeroTitle": "Need a pro right away?",
+  "homeDefaultHeroSubtitle": "Submit your request in less than a minute and get a quick response.",
+  "homeDefaultHeroPrimaryCta": "Urgent request",
+  "homeDefaultHeroSecondaryCta": "See pros",
+  "homeMetricVerifiedPros": "Verified pros",
+  "homeMetricAverageResponse": "Average response",
+  "homeMetricAverageRating": "Average rating",
+  "homeMetricNotAvailable": "N/A",
+  "homeReviewsCount": "{count, plural, =1{1 review} other{{count} reviews}}",
+  "@homeReviewsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeCategoriesEmptyTitle": "No categories available",
+  "homeCategoriesEmptyDescription": "Add categories under home/categories in Firebase to populate the home screen.",
+  "homeSearchFallback": "Search",
+  "homeSearchHint": "Search for a service...",
+  "homeRecentRequestTitle": "Latest request",
+  "homeAcceptedOfferTitle": "Selected offer",
+  "homeAcceptedPrice": "Accepted price: {price}",
+  "@homeAcceptedPrice": {
+    "placeholders": {
+      "price": {}
+    }
+  },
+  "homeConfirmedEta": "Confirmed timeline: {eta}",
+  "@homeConfirmedEta": {
+    "placeholders": {
+      "eta": {}
+    }
+  },
+  "homeTrackRequest": "Track my request",
+  "homeNewRequest": "New request",
+  "homePopularServices": "Popular services",
+  "homeNeedHelpTitle": "Need help?",
+  "homeNeedHelpDescription": "Describe your problem. LigueyPro AI helps you find the right professional.",
+  "homeSeePresentation": "See presentation",
+  "homeStatusAccepted": "Accepted",
+  "homeStatusAwaitingOffers": "Awaiting offers",
+  "homeStatusInProgress": "In progress",
+  "homeStatusCompleted": "Completed",
+  "homeStatusPending": "Pending",
+  "presentationTitle": "Application presentation",
+  "presentationSubtitle": "Find the right service near you",
+  "presentationVideoLabel": "Presentation video",
+  "presentationWhyTitle": "Why LigueyPro 2.0?",
+  "presentationFeatureFastSearchTitle": "Fast search",
+  "presentationFeatureFastSearchDescription": "Find a service that fits your need in seconds.",
+  "presentationFeatureReliableProsTitle": "Reliable professionals",
+  "presentationFeatureReliableProsDescription": "Browse reviews, ratings, and available profiles.",
+  "presentationFeatureSimpleTrackingTitle": "Simple tracking",
+  "presentationFeatureSimpleTrackingDescription": "Track your requests and receive useful notifications.",
+  "requestPageTitle": "New request",
+  "requestPageDescribeNeed": "Describe your need",
+  "requestNeedDescription": "Please describe your need.",
+  "requestNeedPhone": "Please enter your phone number.",
+  "requestNoServiceAvailable": "No service is available right now.",
+  "requestDialogSentTitle": "Request sent",
+  "requestDialogSentBody": "Your request has been published. Subscribed professionals can now receive it and send you their offers.",
+  "requestDialogViewMyRequests": "See my requests",
+  "requestSaveFailed": "Failed to save request. Please try again.",
+  "requestFirebaseNoService": "No service available in Firebase.",
+  "requestServiceTypeLabel": "Service type",
+  "requestSummaryTitle": "Summary of your request",
+  "requestSummaryService": "Service: {service}",
+  "@requestSummaryService": {
+    "placeholders": {
+      "service": {}
+    }
+  },
+  "requestSummaryUrgency": "Urgency: {urgency}",
+  "@requestSummaryUrgency": {
+    "placeholders": {
+      "urgency": {}
+    }
+  },
+  "requestSummaryNoService": "Unavailable",
+  "requestSummaryImproveMatching": "Add a clear description to improve matching.",
+  "requestDirectPaymentNotice": "Direct payment: the client then pays the professional outside the app after receiving offers.",
+  "requestUrgencyTitle": "Urgency",
+  "requestDescriptionTitle": "Description",
+  "requestDescriptionHint": "Example: My air conditioner is no longer cooling…",
+  "requestPhoneLabel": "Phone number",
+  "requestPhoneHint": "+221 77 123 45 67",
+  "requestLocationLabel": "Location",
+  "requestLocationHint": "Your address or neighborhood",
+  "requestPublish": "Publish request",
+  "requestDefaultLocation": "Dakar, Senegal",
+  "requestUnknownLocation": "Location not provided",
+  "requestsMyTitle": "My requests",
+  "requestsAllTypes": "All types",
+  "requestsAllCategories": "All categories",
+  "requestsFilterTitle": "Filters",
+  "requestsFilterTypeLabel": "Request type",
+  "requestsFilterCategoryLabel": "Category",
+  "requestsFilterDateLabel": "Sort by date",
+  "requestsSortNewest": "Newest first",
+  "requestsSortOldest": "Oldest first",
+  "requestsLoading": "Loading requests...",
+  "requestsStatusAccepted": "Accepted",
+  "requestsStatusAwaitingOffers": "Awaiting offers",
+  "requestsStatusEnRoute": "On the way",
+  "requestsStatusInProgress": "In progress",
+  "requestsStatusCompleted": "Completed",
+  "requestsStatusCancelled": "Cancelled",
+  "requestsStatusPending": "Pending",
+  "requestsOffersAccepted": "Offer accepted",
+  "requestsOffersClosed": "Bidding closed",
+  "requestsOffersOpen": "Offers open",
+  "requestsCreatedOn": "Created on {date}",
+  "@requestsCreatedOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "requestsOffersCountSummary": "{status} • {count} offer(s)",
+  "@requestsOffersCountSummary": {
+    "placeholders": {
+      "status": {},
+      "count": {}
+    }
+  },
+  "requestsDirectPaymentAfterOffer": "Direct payment between client and professional after choosing the offer.",
+  "requestsChosenProfessional": "Selected professional",
+  "requestsAcceptedPrice": "Accepted price: {price}",
+  "@requestsAcceptedPrice": {
+    "placeholders": {
+      "price": {}
+    }
+  },
+  "requestsConfirmedEta": "Confirmed timeline: {eta}",
+  "@requestsConfirmedEta": {
+    "placeholders": {
+      "eta": {}
+    }
+  },
+  "requestsViewProfile": "View profile",
+  "requestsViewOffers": "View offers",
+  "requestsEmptyTitle": "No request sent",
+  "requestsEmptyMessage": "Your requests will appear here with their status, offers, and history.",
+  "requestsNoFilterResultsTitle": "No result for these filters",
+  "requestsNoFilterResultsMessage": "Change the type, category, or sorting to display other requests.",
+  "requestsNoRequestsAvailable": "No request available right now.",
+  "requestOffersTitle": "Received offers",
+  "requestOffersAcceptedMessage": "Offer from {name} accepted. Payment is then made directly.",
+  "@requestOffersAcceptedMessage": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "requestOffersEmptyTitle": "No offers received yet",
+  "requestOffersEmptyMessage": "Subscribed professionals will see your request and will soon be able to propose their prices and timelines.",
+  "requestOffersBadgeAccepted": "Offer accepted",
+  "requestOffersBadgeHighlighted": "Highlighted offer",
+  "requestOffersCallPro": "Call the pro",
+  "requestOffersContact": "Contact",
+  "requestOffersRetained": "Selected offer",
+  "requestOffersAlreadyAssigned": "Already assigned",
+  "requestOffersValidating": "Validating...",
+  "requestOffersChooseThis": "Choose this offer",
+  "serviceSearchTitle": "Search",
+  "serviceSearchAdd": "Add",
+  "serviceSearchNearby": "Nearby professionals",
+  "serviceSearchResultsFor": "Results for \"{query}\"",
+  "@serviceSearchResultsFor": {
+    "placeholders": {
+      "query": {}
+    }
+  },
+  "serviceSearchFilterDescription": "Filter the most reliable, available, and top-rated profiles.",
+  "serviceSearchFilterAll": "All",
+  "serviceSearchFilterVerified": "Verified",
+  "serviceSearchFilterAvailable": "Available",
+  "serviceSearchFilterTopRated": "Top rated",
+  "serviceSearchBadgeVerified": "Verified",
+  "serviceSearchBadgeAvailable": "Available",
+  "serviceSearchSee": "View",
+  "serviceSearchEmptyTitle": "No professional found",
+  "serviceSearchEmptyMessage": "No profile matches this search in Firebase right now.",
+  "serviceSearchDefaultPrice": "To be confirmed",
+  "serviceSearchDefaultResponseTime": "Quick response",
+  "addProfessionalInfoTitle": "Professional information",
+  "addProfessionalNoService": "No service available right now.",
+  "addProfessionalFillAll": "Please fill in all fields.",
+  "addProfessionalSuccess": "Professional added successfully.",
+  "addProfessionalSaveFailed": "Failed to add professional. Please try again.",
+  "addProfessionalNameLabel": "Professional name",
+  "addProfessionalServiceLabel": "Service",
+  "addProfessionalLocationLabel": "Service area",
+  "addProfessionalPriceLabel": "Price / Pricing",
+  "addProfessionalPhoneLabel": "Phone",
+  "addProfessionalPhoneHint": "+221 77 000 00 00",
+  "addProfessionalResponseLabel": "Estimated response time",
+  "addProfessionalResponseHint": "Example: Replies within 15 min",
+  "addProfessionalAvailableNowTitle": "Available immediately",
+  "addProfessionalAvailableNowSubtitle": "Shown as available in results.",
+  "addProfessionalSave": "Save professional",
+  "professionalPageTitle": "Professional profile",
+  "professionalRequestService": "Request a service",
+  "professionalWhatsappUnavailable": "WhatsApp is not available on this device.",
+  "professionalReviewNoComment": "No comment",
+  "professionalNoReviewsYet": "No reviews yet",
+  "professionalJustNow": "just now",
+  "professionalMinutesAgo": "{minutes} min ago",
+  "@professionalMinutesAgo": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "professionalHoursAgo": "{hours} h ago",
+  "@professionalHoursAgo": {
+    "placeholders": {
+      "hours": {}
+    }
+  },
+  "professionalDaysAgo": "{days} d ago",
+  "@professionalDaysAgo": {
+    "placeholders": {
+      "days": {}
+    }
+  },
+  "professionalTrust": "Trust",
+  "professionalTrustVerified": "Verified badge",
+  "professionalTrustStandard": "Standard profile",
+  "professionalInterventions": "Jobs",
+  "professionalInterventionsCount": "{count} completed",
+  "@professionalInterventionsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "professionalResponse": "Response",
+  "professionalChooseRating": "Please choose a rating.",
+  "professionalNotFoundForRating": "Professional not found to save the rating.",
+  "professionalThanksForRating": "Thanks for your {rating}/5 rating.",
+  "@professionalThanksForRating": {
+    "placeholders": {
+      "rating": {}
+    }
+  },
+  "professionalRatingSaveFailed": "Failed to save rating. Please try again.",
+  "professionalNotFoundTitle": "Profile not found",
+  "professionalNotFoundMessage": "This professional is not in Firebase or is no longer available.",
+  "professionalLoading": "Loading...",
+  "professionalDefaultBadge": "Professional",
+  "professionalVerifiedBadge": "Verified profile",
+  "professionalSubscribedBadge": "Pro subscriber",
+  "professionalAvailableBadge": "Available now",
+  "professionalSubscriptionInfo": "This professional is subscribed to the {plan} plan and can receive your requests and send you offers.",
+  "@professionalSubscriptionInfo": {
+    "placeholders": {
+      "plan": {}
+    }
+  },
+  "professionalInfoSection": "Information",
+  "professionalLocationSubtitle": "Service area",
+  "professionalServiceSubtitle": "Main service",
+  "professionalPriceSubtitle": "Pricing indication",
+  "professionalCall": "Call",
+  "professionalWhatsapp": "WhatsApp",
+  "professionalRecentReviews": "Recent reviews",
+  "professionalNoRecentReviews": "No recent review available for this professional.",
+  "professionalRateTitle": "Rate this professional",
+  "professionalReviewLabel": "Your review",
+  "professionalReviewHint": "Describe your experience...",
+  "professionalValidateRating": "Submit rating",
+  "professionalUnknownLocation": "Location not provided",
+  "professionalUnknownPrice": "Price to be confirmed",
+  "professionalUnknownService": "Service not provided",
+  "professionalUnknownResponse": "Response time not provided",
+  "proSubscriptionTitle": "Pro subscription",
+  "proSubscriptionActivated": "Simulated Pro subscription activated. Then connect your real payment method.",
+  "proSubscriptionHeroTitle": "Receive requests and send offers",
+  "proSubscriptionHeroBody": "The subscription replaces in-app customer payment. Professionals pay to receive opportunities and answer with their offers.",
+  "proSubscriptionLeadsIncluded": "{count} requests included per month",
+  "@proSubscriptionLeadsIncluded": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "proSubscriptionSelectedPlan": "Selected plan: {plan}. Subscribed professionals can receive requests and send offers without in-app customer payment.",
+  "@proSubscriptionSelectedPlan": {
+    "placeholders": {
+      "plan": {}
+    }
+  },
+  "proSubscriptionChoosePlan": "Choose {plan}",
+  "@proSubscriptionChoosePlan": {
+    "placeholders": {
+      "plan": {}
+    }
+  },
+  "landingWhyTitle": "Why LigueyPro",
+  "landingWhySubtitle": "A local marketplace designed to accelerate the connection between clients and subscribed professionals.",
+  "landingFeatureExpressTitle": "Express request",
+  "landingFeatureExpressBody": "The client publishes their need in seconds with urgency, area, and phone number.",
+  "landingFeatureOffersTitle": "Comparable offers",
+  "landingFeatureOffersBody": "Subscribed pros reply with price, timeline, and a personalized message.",
+  "landingFeatureBackOfficeTitle": "Secure back office",
+  "landingFeatureBackOfficeBody": "The back office helps manage requests, offers, and commercial performance.",
+  "landingMetricsTitle": "Key metrics",
+  "landingMetricsSubtitle": "Real figures from Firebase reflecting the volume and quality of LigueyPro activity.",
+  "landingMetricActivePros": "Active professionals",
+  "landingMetricPublishedRequests": "Published requests",
+  "landingMetricSentOffers": "Sent offers",
+  "landingMetricAverageRating": "Average rating",
+  "landingMetricAverageRatingWithReviews": "Average rating ({count} reviews)",
+  "@landingMetricAverageRatingWithReviews": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "landingSwitchAppTitle": "Move to the app",
+  "landingSwitchAppBody": "Browse services, publish a request, or open your secure professional back office.",
+  "landingNavProfessionals": "Professionals",
+  "landingNavPresentation": "Presentation",
+  "landingNavBackOffice": "Back office",
+  "landingBrandSubtitle": "Senegalese services marketplace and professional back office",
+  "landingHeroBadge": "Client + Professional + Back office",
+  "landingHeroCompactTitle": "The right pro, faster.",
+  "landingHeroWideTitle": "Publish a request, compare offers, and run your operations from a secure back office.",
+  "landingHeroBody": "LigueyPro connects everyday needs to {subscribedCount} subscribed professional(s), with {offersCount} offer(s) already sent and an average response time of {responseTime}.",
+  "@landingHeroBody": {
+    "placeholders": {
+      "subscribedCount": {},
+      "offersCount": {},
+      "responseTime": {}
+    }
+  },
+  "landingHeroServicesCovered": "services covered",
+  "landingHeroVerifiedPros": "verified pros",
+  "landingHeroSubscribedPros": "subscribed pros",
+  "landingQuickAccessTitle": "Quick access",
+  "landingQuickAccessSubtitle": "Choose your path depending on your role or current objective.",
+  "landingAccessBrowseTitle": "Browse the app",
+  "landingAccessBrowseSubtitle": "Discover services and publish a request.",
+  "landingAccessBecomeProTitle": "Become a professional",
+  "landingAccessBecomeProSubtitle": "Discover subscriptions and leave your contact details.",
+  "landingAccessBackOfficeTitle": "Open the back office",
+  "landingAccessBackOfficeSubtitle": "Protected access to leads, offers, and statistics.",
+  "landingAccessPresentationTitle": "See the presentation",
+  "landingAccessPresentationSubtitle": "Understand how LigueyPro works.",
+  "landingEnterApp": "Enter the app",
+  "landingSecureBo": "Access the secure back office",
+  "landingNotAvailable": "N/A",
+  "proMarketingTitle": "LigueyPro for professionals",
+  "proMarketingSubtitle": "Leads, offers, subscription, and secure back office",
+  "proMarketingHome": "Home",
+  "proMarketingHeroBadge": "Pro subscription + conversion",
+  "proMarketingHeroTitle": "Receive more qualified opportunities and respond faster than your competitors.",
+  "proMarketingHeroBody": "LigueyPro helps subscribed professionals capture real requests, send structured offers, and manage their activity with simple metrics.",
+  "proMarketingMetricLeads": "monthly leads on the Pro plan",
+  "proMarketingMetricSecurity": "digits protecting the back office",
+  "proMarketingMetricWorkflow": "simple acquisition workflow",
+  "proMarketingWhyTitle": "Why subscribe",
+  "proMarketingWhySubtitle": "The LigueyPro model replaces in-app client payment with a simple professional subscription model.",
+  "proMarketingValueLeadsTitle": "Receive targeted requests",
+  "proMarketingValueLeadsBody": "Access requests related to your trade and your service area.",
+  "proMarketingValueOffersTitle": "Send clear offers",
+  "proMarketingValueOffersBody": "Reply with your prices, timelines, and a reassuring message to improve conversion.",
+  "proMarketingValuePerformanceTitle": "Track your performance",
+  "proMarketingValuePerformanceBody": "Follow your offers, revenue, and indicators in a secure back office.",
+  "proMarketingPlansTitle": "Professional plans",
+  "proMarketingPlansSubtitle": "Choose an engagement level that fits your request volume and commercial ambition.",
+  "proMarketingCtaTitle": "Ready to activate your pro profile?",
+  "proMarketingCtaBody": "Add your profile, choose your subscription, and then access your secure back office to process requests.",
+  "proMarketingGetStartedTitle": "Get started in 3 steps",
+  "proMarketingGetStartedBody": "Create your profile, activate your subscription, then handle your requests from the back office.",
+  "proMarketingStep1Title": "Add your profile",
+  "proMarketingStep1Body": "Enter your service, your area, and your contact details.",
+  "proMarketingStep2Title": "Choose a plan",
+  "proMarketingStep2Body": "Activate a subscription matching your lead volume.",
+  "proMarketingStep3Title": "Manage your offers",
+  "proMarketingStep3Body": "Track your replies, assignments, and conversion.",
+  "proMarketingLeaveDetails": "Leave my contact details",
+  "proMarketingSeeSubscriptions": "See subscriptions",
+  "proMarketingBalanced": "Most balanced",
+  "proMarketingRequestsPerMonth": "{count} requests per month",
+  "@proMarketingRequestsPerMonth": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "boAccessLoadingHint": "Loading access code...",
+  "boAccessInvalidCode": "Invalid code. Check the back-office code and try again.",
+  "boAccessDescription": "The back office lets you manage requests, your offers, and the active professional. Access is limited to a secure 30-minute session.",
+  "boAccessSession": "30 min session",
+  "boAccessPrivate": "Private access",
+  "boAccessUnlockTitle": "Unlock back office",
+  "boAccessCodeLabel": "Back-office code",
+  "boAccessCodeHint": "Enter 6 digits",
+  "boCommonUnlock": "Unlock",
+  "categoryAdminLabelRequired": "Enter a category label.",
+  "categoryAdminFirebaseUnavailable": "Firebase is not available right now.",
+  "categoryAdminCreated": "Category added.",
+  "categoryAdminCreateFailed": "Failed to add category.",
+  "categoryAdminDeleteTitle": "Delete category",
+  "categoryAdminDeleteBody": "This action will remove the category from the home screen and request form.",
+  "categoryAdminDeleted": "Category deleted.",
+  "categoryAdminDeleteFailed": "Failed to delete category.",
+  "categoryAdminUpdated": "Category updated.",
+  "categoryAdminUpdateFailed": "Failed to update category.",
+  "categoryAdminReorderFailed": "Failed to update category order.",
+  "categoryAdminEditTitle": "Edit category",
+  "categoryAdminLabel": "Label",
+  "categoryAdminIcon": "Icon",
+  "categoryAdminTitle": "Categories",
+  "boCommonBackToBo": "Back to BO",
+  "categoryAdminHeroTitle": "Service categories",
+  "categoryAdminHeroBody": "Manage categories visible on the home screen and in the request form without using the Firebase console.",
+  "categoryAdminAddTitle": "Add a category",
+  "categoryAdminLabelHint": "Example: Air conditioning",
+  "categoryAdminAdding": "Adding...",
+  "categoryAdminAddAction": "Add category",
+  "boCommonMoveUp": "Move up",
+  "boCommonMoveDown": "Move down",
+  "boCommonEdit": "Edit",
+  "boCommonDelete": "Delete",
+  "categoryAdminPositionIcon": "Position {position} • Icon: {icon}",
+  "@categoryAdminPositionIcon": {
+    "placeholders": {
+      "position": {},
+      "icon": {}
+    }
+  },
+  "categoryAdminEmptyTitle": "No category configured",
+  "categoryAdminEmptyBody": "Add your first category to feed the home screen and request form.",
+  "categoryAdminOfflineTitle": "Firebase unavailable",
+  "categoryAdminOfflineBody": "Category management requires an active Firebase connection.",
+  "boCommonCancel": "Cancel",
+  "boCommonSave": "Save",
+  "boCommonSaving": "Saving...",
+  "requestAdminStatusUpdated": "Request status updated.",
+  "requestAdminEditTitle": "Edit request",
+  "requestAdminService": "Service",
+  "requestAdminUrgency": "Urgency",
+  "requestAdminDescription": "Description",
+  "requestAdminLocation": "Location",
+  "requestAdminPhone": "Phone",
+  "requestAdminOffersCount": "Number of offers",
+  "requestAdminStatus": "Status",
+  "requestAdminOffersStatus": "Offers status",
+  "requestAdminOffersStatusOpen": "Open",
+  "requestAdminOffersStatusAccepted": "Accepted",
+  "requestAdminOffersStatusClosed": "Closed",
+  "requestAdminRequiredFields": "All main fields must be filled in.",
+  "requestAdminUpdated": "Request updated.",
+  "requestAdminUpdateFailed": "Update failed.",
+  "requestAdminDeleteTitle": "Delete request",
+  "requestAdminDeleteBody": "Delete the {service} request from {location}?",
+  "@requestAdminDeleteBody": {
+    "placeholders": {
+      "service": {},
+      "location": {}
+    }
+  },
+  "requestAdminDeleted": "Request deleted.",
+  "requestAdminDeleteFailed": "Deletion failed.",
+  "requestAdminPhoneValue": "Phone: {phone}",
+  "@requestAdminPhoneValue": {
+    "placeholders": {
+      "phone": {}
+    }
+  },
+  "requestAdminOffersValue": "Offers: {count} • {status}",
+  "@requestAdminOffersValue": {
+    "placeholders": {
+      "count": {},
+      "status": {}
+    }
+  },
+  "requestAdminRelaunch": "Relaunch",
+  "requestAdminTitle": "Back-office requests",
+  "requestAdminFirebaseUnavailable": "Firebase unavailable",
+  "requestAdminHeroEyebrow": "Request management",
+  "requestAdminHeroCount": "{count} request(s) recorded",
+  "@requestAdminHeroCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "requestAdminHeroBody": "Edit or delete client requests stored in /requests.",
+  "requestAdminEmpty": "No request is available in Firebase yet."
+}

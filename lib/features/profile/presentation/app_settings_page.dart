@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/localization/app_locale_controller.dart';
 import '../../../core/services/app_permission_service.dart';
 import '../../../core/services/app_preferences_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class AppSettingsPage extends StatefulWidget {
   const AppSettingsPage({super.key});
@@ -15,7 +17,7 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
   bool _notificationsEnabled = false;
   bool _locationEnabled = false;
   bool _autoPlayPresentation = true;
-  bool _loadingPermissions = true;
+  bool _loadingPermissions = false;
   bool _backOfficeUnlocked = false;
   String? _customBackOfficeCode;
   String _backOfficeHint = 'Chargement de la sécurité BO...';
@@ -26,7 +28,16 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
     _loadSettings();
   }
 
+  String _buildBackOfficeHint(String code, AppLocalizations l10n) {
+    if (code.isEmpty) {
+      return l10n.settingsBackOfficeHintUnavailable;
+    }
+
+    return l10n.settingsBackOfficeHintActive(code.substring(0, 3));
+  }
+
   Future<void> _loadSettings() async {
+    final l10n = AppLocalizations.of(context);
     final notificationsEnabled =
         await AppPermissionService.isNotificationEnabled();
     final locationEnabled = await AppPermissionService.isLocationEnabled();
@@ -34,8 +45,8 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
         await AppPreferencesService.getAutoPlayPresentation();
     final customBackOfficeCode =
         await AppPreferencesService.getCustomBackOfficeAccessCode();
-    final backOfficeHint =
-        await AppPreferencesService.getBackOfficeAccessHint();
+    final backOfficeCode =
+        await AppPreferencesService.getBackOfficeAccessCode();
     final backOfficeUnlocked =
         await AppPreferencesService.isBackOfficeUnlocked();
 
@@ -46,48 +57,48 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
       _locationEnabled = locationEnabled;
       _autoPlayPresentation = autoPlayPresentation;
       _customBackOfficeCode = customBackOfficeCode;
-      _backOfficeHint = backOfficeHint;
+      _backOfficeHint = _buildBackOfficeHint(backOfficeCode, l10n);
       _backOfficeUnlocked = backOfficeUnlocked;
       _loadingPermissions = false;
     });
   }
 
   Future<void> _handleNotificationToggle(bool value) async {
+    final l10n = AppLocalizations.of(context);
+
     if (value) {
       final granted =
           await AppPermissionService.requestNotificationPermission();
       if (!mounted) return;
       setState(() => _notificationsEnabled = granted);
       if (!granted) {
-        _showSettingsHint(
-            'Les notifications sont refusées. Autorisez-les dans les réglages système.');
+        _showSettingsHint(l10n.settingsNotificationsDenied);
       }
       return;
     }
 
     await AppPermissionService.openSystemSettings();
     if (!mounted) return;
-    _showSettingsHint(
-        'Désactivez les notifications dans les réglages système si nécessaire.');
+    _showSettingsHint(l10n.settingsNotificationsDisableInSystem);
     await _loadSettings();
   }
 
   Future<void> _handleLocationToggle(bool value) async {
+    final l10n = AppLocalizations.of(context);
+
     if (value) {
       final granted = await AppPermissionService.requestLocationPermission();
       if (!mounted) return;
       setState(() => _locationEnabled = granted);
       if (!granted) {
-        _showSettingsHint(
-            'La localisation est refusée. Autorisez-la dans les réglages système.');
+        _showSettingsHint(l10n.settingsLocationDenied);
       }
       return;
     }
 
     await AppPermissionService.openSystemSettings();
     if (!mounted) return;
-    _showSettingsHint(
-        'Désactivez la localisation dans les réglages système si nécessaire.');
+    _showSettingsHint(l10n.settingsLocationDisableInSystem);
     await _loadSettings();
   }
 
@@ -96,7 +107,60 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
     await AppPreferencesService.setAutoPlayPresentation(value);
   }
 
+  Future<void> _handleLanguageSelection() async {
+    final localeController = AppLocaleScope.of(context);
+    final locale = await showModalBottomSheet<Locale>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        final l10n = AppLocalizations.of(context);
+
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: AppLocaleController.supportedLocales.map((locale) {
+              final isSelected =
+                  locale.languageCode == localeController.locale.languageCode;
+              return ListTile(
+                leading: Icon(
+                  isSelected
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
+                ),
+                title: Text(AppLocaleController.nativeLabel(locale)),
+                subtitle: Text(
+                  locale.languageCode == 'fr'
+                      ? l10n.settingsLanguageFrenchInterface
+                      : l10n.settingsLanguageEnglishInterface,
+                ),
+                onTap: () => Navigator.of(context).pop(locale),
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+
+    if (locale == null || !mounted) {
+      return;
+    }
+
+    await localeController.setLocale(locale);
+    if (!mounted) {
+      return;
+    }
+
+    await _loadSettings();
+    if (!mounted) {
+      return;
+    }
+
+    final l10n = AppLocalizations.of(context);
+    _showSettingsHint(l10n.settingsLanguageUpdated);
+  }
+
   Future<void> _showBackOfficeCodeDialog() async {
+    final l10n = AppLocalizations.of(context);
     final controller = TextEditingController(text: _customBackOfficeCode ?? '');
     var isSaving = false;
 
@@ -106,14 +170,16 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
         return StatefulBuilder(
           builder: (context, setLocalState) {
             return AlertDialog(
-              title: const Text('Code du back-office'),
+              title: Text(
+                l10n.settingsBackOfficeDialogTitle,
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Définissez un code à 6 chiffres pour protéger l’accès au BO.',
-                    style: TextStyle(color: AppColors.muted, height: 1.4),
+                  Text(
+                    l10n.settingsBackOfficeDialogDescription,
+                    style: const TextStyle(color: AppColors.muted, height: 1.4),
                   ),
                   const SizedBox(height: 16),
                   TextField(
@@ -121,10 +187,10 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                     keyboardType: TextInputType.number,
                     maxLength: 6,
                     obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Nouveau code',
-                      hintText: '6 chiffres',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.settingsBackOfficeNewCode,
+                      hintText: l10n.settingsSixDigits,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                 ],
@@ -133,7 +199,7 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                 TextButton(
                   onPressed:
                       isSaving ? null : () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Annuler'),
+                  child: Text(l10n.commonCancel),
                 ),
                 FilledButton(
                   onPressed: isSaving
@@ -142,9 +208,9 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                           final code = controller.text.trim();
                           if (code.length != 6 || int.tryParse(code) == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
+                              SnackBar(
                                 content: Text(
-                                  'Le code BO doit contenir exactement 6 chiffres.',
+                                  l10n.settingsBackOfficeCodeInvalid,
                                 ),
                               ),
                             );
@@ -159,7 +225,7 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                             Navigator.of(dialogContext).pop();
                             await _loadSettings();
                             _showSettingsHint(
-                              'Code BO Firebase enregistré. La session a été reverrouillée.',
+                              l10n.settingsBackOfficeCodeSaved,
                             );
                           } catch (error) {
                             setLocalState(() => isSaving = false);
@@ -171,7 +237,7 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                             );
                           }
                         },
-                  child: const Text('Enregistrer'),
+                  child: Text(l10n.commonSave),
                 ),
               ],
             );
@@ -182,10 +248,12 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
   }
 
   Future<void> _lockBackOfficeNow() async {
+    final l10n = AppLocalizations.of(context);
+
     await AppPreferencesService.lockBackOffice();
     if (!mounted) return;
     await _loadSettings();
-    _showSettingsHint('Back-office verrouillé immédiatement.');
+    _showSettingsHint(l10n.settingsBackOfficeLockedNow);
   }
 
   void _showSettingsHint(String message) {
@@ -196,20 +264,25 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final localeController = AppLocaleScope.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Paramètres de l’application')),
+      appBar: AppBar(
+        title: Text(l10n.settingsTitle),
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            const Text(
-              'Préférences',
+            Text(
+              l10n.settingsPreferences,
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Gérez les réglages principaux de LigueyPro.',
-              style: TextStyle(color: AppColors.muted),
+            Text(
+              l10n.settingsSubtitle,
+              style: const TextStyle(color: AppColors.muted),
             ),
             const SizedBox(height: 20),
             if (_loadingPermissions)
@@ -229,9 +302,8 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                     value: _notificationsEnabled,
                     onChanged:
                         _loadingPermissions ? null : _handleNotificationToggle,
-                    title: const Text('Notifications'),
-                    subtitle: const Text(
-                        'Recevoir les alertes sur les nouvelles demandes.'),
+                    title: Text(l10n.commonNotifications),
+                    subtitle: Text(l10n.settingsNotificationsSubtitle),
                     secondary: const Icon(Icons.notifications_active_outlined),
                   ),
                   const Divider(height: 1),
@@ -239,18 +311,16 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                     value: _locationEnabled,
                     onChanged:
                         _loadingPermissions ? null : _handleLocationToggle,
-                    title: const Text('Localisation'),
-                    subtitle: const Text(
-                        'Utiliser votre position pour faciliter les demandes.'),
+                    title: Text(l10n.commonLocation),
+                    subtitle: Text(l10n.settingsLocationSubtitle),
                     secondary: const Icon(Icons.location_on_outlined),
                   ),
                   const Divider(height: 1),
                   SwitchListTile(
                     value: _autoPlayPresentation,
                     onChanged: _handleAutoPlayToggle,
-                    title: const Text('Lecture automatique des vidéos'),
-                    subtitle: const Text(
-                        'Lancer automatiquement la vidéo de présentation.'),
+                    title: Text(l10n.settingsVideoAutoplay),
+                    subtitle: Text(l10n.settingsVideoAutoplaySubtitle),
                     secondary: const Icon(Icons.play_circle_outline),
                   ),
                 ],
@@ -263,57 +333,6 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                 borderRadius: BorderRadius.circular(18),
                 side: BorderSide(color: Colors.grey.shade200),
               ),
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.admin_panel_settings_outlined),
-                    title: const Text('Sécurité du back-office'),
-                    subtitle: Text(_backOfficeHint),
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: (_backOfficeUnlocked
-                                ? AppColors.success
-                                : AppColors.navy)
-                            .withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        _backOfficeUnlocked ? 'Ouvert' : 'Verrouillé',
-                        style: TextStyle(
-                          color: _backOfficeUnlocked
-                              ? AppColors.success
-                              : AppColors.navy,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.pin_outlined),
-                    title: const Text('Modifier le code BO'),
-                    subtitle: Text(
-                      _customBackOfficeCode == null
-                          ? 'Code BO Firebase non chargé'
-                          : 'Code actif : $_customBackOfficeCode',
-                    ),
-                    onTap: _showBackOfficeCodeDialog,
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.lock_outline),
-                    title: const Text('Verrouiller le back-office'),
-                    subtitle: const Text(
-                      'Couper immédiatement la session BO en cours',
-                    ),
-                    onTap: _backOfficeUnlocked ? _lockBackOfficeNow : null,
-                  ),
-                ],
-              ),
             ),
             const SizedBox(height: 20),
             Card(
@@ -323,17 +342,21 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                 side: BorderSide(color: Colors.grey.shade200),
               ),
               child: Column(
-                children: const [
+                children: [
                   ListTile(
-                    leading: Icon(Icons.language_outlined),
-                    title: Text('Langue'),
-                    subtitle: Text('Français'),
+                    leading: const Icon(Icons.language_outlined),
+                    title: Text(l10n.commonLanguage),
+                    subtitle: Text(
+                      AppLocaleController.nativeLabel(localeController.locale),
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: _handleLanguageSelection,
                   ),
-                  Divider(height: 1),
+                  const Divider(height: 1),
                   ListTile(
-                    leading: Icon(Icons.info_outline),
-                    title: Text('Version'),
-                    subtitle: Text('LigueyPro 2.0.0'),
+                    leading: const Icon(Icons.info_outline),
+                    title: Text(l10n.commonVersion),
+                    subtitle: const Text('LigueyPro 2.0.0'),
                   ),
                 ],
               ),

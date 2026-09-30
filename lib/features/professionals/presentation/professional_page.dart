@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/network/firebase_bootstrap.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/uri_helpers.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class ProfessionalPage extends StatefulWidget {
   const ProfessionalPage({super.key, required this.id});
@@ -85,10 +86,11 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
                   _location =
                       map['location']?.toString().trim().isNotEmpty == true
                           ? map['location'].toString()
-                          : 'Localisation non renseignée';
+                          : AppLocalizations.of(context)
+                              .professionalUnknownLocation;
                   _price = map['price']?.toString().trim().isNotEmpty == true
                       ? map['price'].toString()
-                      : 'Tarif à confirmer';
+                      : AppLocalizations.of(context).professionalUnknownPrice;
                   _phone = map['phone']?.toString().trim() ?? '';
                   _service =
                       map['service']?.toString().trim().isNotEmpty == true
@@ -97,7 +99,8 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
                   _responseTime =
                       map['responseTime']?.toString().trim().isNotEmpty == true
                           ? map['responseTime'].toString()
-                          : 'Temps de réponse non renseigné';
+                          : AppLocalizations.of(context)
+                              .professionalUnknownResponse;
                   _completedJobs = map['completedJobs'] is num
                       ? (map['completedJobs'] as num).toInt()
                       : 0;
@@ -170,9 +173,9 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('WhatsApp n’est pas disponible sur cet appareil.'),
-      ),
+      SnackBar(
+          content: Text(
+              AppLocalizations.of(context).professionalWhatsappUnavailable)),
     );
   }
 
@@ -218,7 +221,7 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
           id: entry.key.toString(),
           rating: ratingValue,
           comment: (comment == null || comment.isEmpty)
-              ? 'Sans commentaire'
+              ? AppLocalizations.of(context).professionalReviewNoComment
               : comment,
           createdAt: createdAtValue,
         ),
@@ -236,7 +239,7 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
 
   String _formatRatingSummary() {
     if (_reviewsCount == 0) {
-      return 'Aucun avis pour le moment';
+      return AppLocalizations.of(context).professionalNoReviewsYet;
     }
     return '⭐ ${_averageRating.toStringAsFixed(1)} ($_reviewsCount avis)';
   }
@@ -249,15 +252,17 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
     final now = DateTime.now();
     final difference = now.difference(createdAt);
     if (difference.inMinutes < 1) {
-      return 'à l’instant';
+      return AppLocalizations.of(context).professionalJustNow;
     }
     if (difference.inHours < 1) {
-      return 'il y a ${difference.inMinutes} min';
+      return AppLocalizations.of(context)
+          .professionalMinutesAgo(difference.inMinutes);
     }
     if (difference.inDays < 1) {
-      return 'il y a ${difference.inHours} h';
+      return AppLocalizations.of(context)
+          .professionalHoursAgo(difference.inHours);
     }
-    return 'il y a ${difference.inDays} j';
+    return AppLocalizations.of(context).professionalDaysAgo(difference.inDays);
   }
 
   Widget _buildTrustItem(IconData icon, String title, String subtitle) {
@@ -294,7 +299,9 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
     final review = _reviewController.text.trim();
     if (_selectedRating == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez choisir une note.')),
+        SnackBar(
+            content:
+                Text(AppLocalizations.of(context).professionalChooseRating)),
       );
       return;
     }
@@ -302,9 +309,9 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
     final professionalRef = _professionalRef;
     if (professionalRef == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content:
-                Text('Professionnel introuvable pour enregistrer la note.')),
+        SnackBar(
+            content: Text(
+                AppLocalizations.of(context).professionalNotFoundForRating)),
       );
       return;
     }
@@ -314,7 +321,9 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
       final reviewRef = professionalRef.child('reviews').push();
       await reviewRef.set({
         'rating': submittedRating,
-        'comment': review.isEmpty ? 'Sans commentaire' : review,
+        'comment': review.isEmpty
+            ? AppLocalizations.of(context).professionalReviewNoComment
+            : review,
         'createdAt': ServerValue.timestamp,
       });
 
@@ -356,14 +365,19 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                'Merci pour votre note de ${submittedRating.toStringAsFixed(0)}/5.')),
+          content: Text(
+            AppLocalizations.of(context).professionalThanksForRating(
+              submittedRating.toStringAsFixed(0),
+            ),
+          ),
+        ),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Échec de l’enregistrement de la note. Réessayez.')),
+        SnackBar(
+            content: Text(
+                AppLocalizations.of(context).professionalRatingSaveFailed)),
       );
     }
   }
@@ -376,8 +390,9 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Profil professionnel')),
+      appBar: AppBar(title: Text(l10n.professionalPageTitle)),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -386,7 +401,7 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
             style: FilledButton.styleFrom(
                 backgroundColor: AppColors.navy,
                 padding: const EdgeInsets.all(16)),
-            child: const Text('Demander un service'),
+            child: Text(l10n.professionalRequestService),
           ),
         ),
       ),
@@ -404,23 +419,24 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
                   color: AppColors.primary.withValues(alpha: 0.08),
                 ),
               ),
-              child: const Column(
+              child: Column(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.person_search_outlined,
                     color: AppColors.navy,
                     size: 36,
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   Text(
-                    'Profil introuvable',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                    l10n.professionalNotFoundTitle,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w800),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
-                    'Ce professionnel n’est pas présent dans Firebase ou n’est plus disponible.',
-                    style: TextStyle(color: AppColors.muted, height: 1.4),
+                    l10n.professionalNotFoundMessage,
+                    style: const TextStyle(color: AppColors.muted, height: 1.4),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -437,13 +453,17 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
           ),
           const SizedBox(height: 6),
           Text(
-            _isLoading ? 'Chargement...' : _formatRatingSummary(),
+            _isLoading ? l10n.professionalLoading : _formatRatingSummary(),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Center(
             child: Chip(
-              label: Text(_service.isEmpty ? 'Professionnel' : '✓ $_service'),
+              label: Text(
+                _service.isEmpty
+                    ? l10n.professionalDefaultBadge
+                    : '✓ $_service',
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -453,25 +473,37 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
             runSpacing: 8,
             children: [
               if (_verified)
-                _ProBadge(label: 'Profil vérifié', color: AppColors.success),
+                _ProBadge(
+                    label: l10n.professionalVerifiedBadge,
+                    color: AppColors.success),
               if (_subscribed)
-                _ProBadge(label: 'Abonné Pro', color: AppColors.navy),
+                _ProBadge(
+                    label: l10n.professionalSubscribedBadge,
+                    color: AppColors.navy),
               if (_availableNow)
                 _ProBadge(
-                    label: 'Disponible maintenant', color: AppColors.primary),
+                    label: l10n.professionalAvailableBadge,
+                    color: AppColors.primary),
               _ProBadge(label: _responseTime, color: AppColors.navy),
             ],
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              _buildTrustItem(Icons.verified_user_outlined, 'Confiance',
-                  _verified ? 'Badge vérifié' : 'Profil standard'),
+              _buildTrustItem(
+                  Icons.verified_user_outlined,
+                  l10n.professionalTrust,
+                  _verified
+                      ? l10n.professionalTrustVerified
+                      : l10n.professionalTrustStandard),
               const SizedBox(width: 10),
-              _buildTrustItem(Icons.work_history_outlined, 'Interventions',
-                  '$_completedJobs réalisées'),
+              _buildTrustItem(
+                  Icons.work_history_outlined,
+                  l10n.professionalInterventions,
+                  l10n.professionalInterventionsCount(_completedJobs)),
               const SizedBox(width: 10),
-              _buildTrustItem(Icons.bolt_outlined, 'Réponse', _responseTime),
+              _buildTrustItem(Icons.bolt_outlined, l10n.professionalResponse,
+                  _responseTime),
             ],
           ),
           const SizedBox(height: 10),
@@ -485,28 +517,31 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
                     Border.all(color: AppColors.navy.withValues(alpha: 0.14)),
               ),
               child: Text(
-                'Ce professionnel est abonné au plan ${_subscriptionPlan.toUpperCase()} et peut recevoir vos demandes puis vous émettre des offres.',
+                l10n.professionalSubscriptionInfo(
+                  _subscriptionPlan.toUpperCase(),
+                ),
                 style: const TextStyle(height: 1.4),
               ),
             ),
           const Divider(height: 32),
-          const Text('Informations',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+          Text(l10n.professionalInfoSection,
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
           const SizedBox(height: 12),
           ListTile(
             leading: const Icon(Icons.location_on_outlined),
             title: Text(_location),
-            subtitle: const Text('Zone d’intervention'),
+            subtitle: Text(l10n.professionalLocationSubtitle),
           ),
           ListTile(
             leading: const Icon(Icons.work_outline),
             title: Text(_service),
-            subtitle: const Text('Service principal'),
+            subtitle: Text(l10n.professionalServiceSubtitle),
           ),
           ListTile(
             leading: const Icon(Icons.payments_outlined),
             title: Text(_price),
-            subtitle: const Text('Indication tarifaire'),
+            subtitle: Text(l10n.professionalPriceSubtitle),
           ),
           Row(
             children: [
@@ -515,7 +550,7 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
                   onPressed:
                       _notFound || _phone.trim().isEmpty ? null : _launchPhone,
                   icon: const Icon(Icons.phone_outlined),
-                  label: const Text('Appeler'),
+                  label: Text(l10n.professionalCall),
                 ),
               ),
               const SizedBox(width: 12),
@@ -527,14 +562,15 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
                   style: FilledButton.styleFrom(
                       backgroundColor: AppColors.success),
                   icon: const Icon(Icons.chat_outlined),
-                  label: const Text('WhatsApp'),
+                  label: Text(l10n.professionalWhatsapp),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          const Text('Avis récents',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+          Text(l10n.professionalRecentReviews,
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
           const SizedBox(height: 10),
           if (_recentReviews.isEmpty)
             Container(
@@ -546,9 +582,9 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
                   color: AppColors.primary.withValues(alpha: 0.08),
                 ),
               ),
-              child: const Text(
-                'Aucun avis récent disponible pour ce professionnel.',
-                style: TextStyle(color: AppColors.muted, height: 1.4),
+              child: Text(
+                l10n.professionalNoRecentReviews,
+                style: const TextStyle(color: AppColors.muted, height: 1.4),
               ),
             )
           else
@@ -586,8 +622,9 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
               ],
             ),
           const SizedBox(height: 20),
-          const Text('Noter ce professionnel',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+          Text(l10n.professionalRateTitle,
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
           const SizedBox(height: 10),
           Row(
             children: List.generate(5, (index) {
@@ -608,10 +645,10 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
           TextField(
             controller: _reviewController,
             maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Votre avis',
-              hintText: 'Décrivez votre expérience...',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l10n.professionalReviewLabel,
+              hintText: l10n.professionalReviewHint,
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 12),
@@ -620,7 +657,7 @@ class _ProfessionalPageState extends State<ProfessionalPage> {
             style: FilledButton.styleFrom(
                 backgroundColor: AppColors.navy,
                 padding: const EdgeInsets.all(14)),
-            child: const Text('Valider la note'),
+            child: Text(l10n.professionalValidateRating),
           ),
         ],
       ),

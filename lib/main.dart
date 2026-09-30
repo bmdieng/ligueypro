@@ -4,19 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/app.dart';
+import 'core/localization/app_locale_controller.dart';
 import 'core/network/firebase_bootstrap.dart';
+import 'core/services/app_preferences_service.dart';
 import 'core/services/request_notification_service.dart';
+import 'l10n/generated/app_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final firebaseReady = await FirebaseBootstrap.initialize();
   debugPrint('Firebase ready: $firebaseReady');
   await RequestNotificationService.initialize();
-  runApp(const AppBootstrapper());
+  final savedLanguageCode = await AppPreferencesService.getAppLanguageCode();
+  final localeController = AppLocaleController(
+    AppLocaleController.fromLanguageCode(savedLanguageCode),
+  );
+  runApp(AppBootstrapper(localeController: localeController));
 }
 
 class AppBootstrapper extends StatefulWidget {
-  const AppBootstrapper({super.key});
+  const AppBootstrapper({required this.localeController, super.key});
+
+  final AppLocaleController localeController;
 
   @override
   State<AppBootstrapper> createState() => _AppBootstrapperState();
@@ -40,12 +49,20 @@ class _AppBootstrapperState extends State<AppBootstrapper> {
   @override
   Widget build(BuildContext context) {
     if (_showSplash) {
-      return const ProviderScope(
-        child: _LaunchSplash(),
+      return ProviderScope(
+        child: AppLocaleScope(
+          controller: widget.localeController,
+          child: const _LaunchSplash(),
+        ),
       );
     }
 
-    return const ProviderScope(child: LigueyProApp());
+    return ProviderScope(
+      child: AppLocaleScope(
+        controller: widget.localeController,
+        child: LigueyProApp(localeController: widget.localeController),
+      ),
+    );
   }
 }
 
@@ -59,141 +76,131 @@ class _LaunchSplash extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localeController = AppLocaleScope.of(context);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      locale: localeController.locale,
+      supportedLocales: AppLocaleController.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       theme: ThemeData(
         useMaterial3: true,
         scaffoldBackgroundColor: navy,
       ),
-      home: Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                navy,
-                Color(0xFF06264A),
-                navyLight,
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Stack(
-              children: [
-                Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // =====================================================
-                      // LOGO : STATIQUE
-                      // =====================================================
-                      Container(
-                        width: 330,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(28),
-                          boxShadow: [
-                            BoxShadow(
-                              color: gold.withValues(alpha: 0.20),
-                              blurRadius: 45,
-                              spreadRadius: 2,
-                              offset: const Offset(0, 18),
-                            ),
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.22),
-                              blurRadius: 30,
-                              offset: const Offset(0, 12),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(18),
-                          child: Image.asset(
-                            'assets/ligueyPro2.0_.png',
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
+      home: Builder(
+        builder: (context) {
+          final l10n = AppLocalizations.of(context);
 
-                      const SizedBox(height: 42),
-
-                      // =====================================================
-                      // LIGNE DÉCORATIVE : STATIQUE
-                      // =====================================================
-                      Container(
-                        width: 90,
-                        height: 3,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          gradient: const LinearGradient(
-                            colors: [
-                              Colors.transparent,
-                              gold,
-                              Colors.transparent,
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      const Text(
-                        'VOS SERVICES,',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 2.4,
-                        ),
-                      ),
-
-                      const SizedBox(height: 5),
-
-                      const Text(
-                        'PLUS PROCHES · PLUS SIMPLES',
-                        style: TextStyle(
-                          color: Color(0xFFD8B57A),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 1.4,
-                        ),
-                      ),
-
-                      const SizedBox(height: 38),
-
-                      // =====================================================
-                      // SEULE ANIMATION : BARRE DE CHARGEMENT
-                      // =====================================================
-                      const _GoldProgressBar(),
-                    ],
-                  ),
+          return Scaffold(
+            body: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    navy,
+                    Color(0xFF06264A),
+                    navyLight,
+                  ],
                 ),
-
-                // =====================================================
-                // MENTION DE COPYRIGHT : STATIQUE, EN BAS DE L'ÉCRAN
-                // =====================================================
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 24,
-                  child: Center(
-                    child: Text(
-                      '© 2026 LigueyPro 2.0. Tous droits réservés.',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.45),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 1.0,
+              ),
+              child: SafeArea(
+                child: Stack(
+                  children: [
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 330,
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(28),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: gold.withValues(alpha: 0.20),
+                                  blurRadius: 45,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 18),
+                                ),
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.22),
+                                  blurRadius: 30,
+                                  offset: const Offset(0, 12),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(18),
+                              child: Image.asset(
+                                'assets/ligueyPro2.0_.png',
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 42),
+                          Container(
+                            width: 90,
+                            height: 3,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Colors.transparent,
+                                  gold,
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          Text(
+                            l10n.splashHeadline,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 2.4,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            l10n.splashTagline,
+                            style: const TextStyle(
+                              color: Color(0xFFD8B57A),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: 38),
+                          const _GoldProgressBar(),
+                        ],
                       ),
                     ),
-                  ),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 24,
+                      child: Center(
+                        child: Text(
+                          l10n.splashCopyright,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.45),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

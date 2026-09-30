@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/network/firebase_bootstrap.dart';
 import '../../../core/services/offer_marketplace_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class RequestAdminPage extends StatefulWidget {
   const RequestAdminPage({super.key});
@@ -24,14 +25,18 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Statut de la demande mis à jour.')),
+      SnackBar(
+          content:
+              Text(AppLocalizations.of(context).requestAdminStatusUpdated)),
     );
   }
 
   Future<void> _editRequest(MarketplaceRequestItem request) async {
+    final l10n = AppLocalizations.of(context);
     final serviceController = TextEditingController(text: request.service);
     final urgencyController = TextEditingController(text: request.urgency);
-    final descriptionController = TextEditingController(text: request.description);
+    final descriptionController =
+        TextEditingController(text: request.description);
     final locationController = TextEditingController(text: request.location);
     final phoneController = TextEditingController(text: request.phone);
 
@@ -44,7 +49,7 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => AlertDialog(
-          title: const Text('Modifier la demande'),
+          title: Text(l10n.requestAdminEditTitle),
           content: SizedBox(
             width: 560,
             child: SingleChildScrollView(
@@ -53,49 +58,49 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
                 children: [
                   TextField(
                     controller: serviceController,
-                    decoration: const InputDecoration(
-                      labelText: 'Service',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.requestAdminService,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: urgencyController,
-                    decoration: const InputDecoration(
-                      labelText: 'Urgence',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.requestAdminUrgency,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: descriptionController,
                     maxLines: 4,
-                    decoration: const InputDecoration(
-                      labelText: 'Description',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.requestAdminDescription,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: locationController,
-                    decoration: const InputDecoration(
-                      labelText: 'Localisation',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.requestAdminLocation,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: phoneController,
-                    decoration: const InputDecoration(
-                      labelText: 'Téléphone',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.requestAdminPhone,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: 'Nombre d’offres',
+                      labelText: l10n.requestAdminOffersCount,
                       border: const OutlineInputBorder(),
                       hintText: offersCount.toString(),
                     ),
@@ -109,17 +114,29 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     initialValue: selectedStatus,
-                    decoration: const InputDecoration(
-                      labelText: 'Statut',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.requestAdminStatus,
+                      border: const OutlineInputBorder(),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'pending', child: Text('En attente')),
-                      DropdownMenuItem(value: 'awaiting_offers', child: Text('En attente d’offres')),
-                      DropdownMenuItem(value: 'accepted', child: Text('Acceptée')),
-                      DropdownMenuItem(value: 'in_progress', child: Text('En cours')),
-                      DropdownMenuItem(value: 'completed', child: Text('Terminée')),
-                      DropdownMenuItem(value: 'cancelled', child: Text('Annulée')),
+                    items: [
+                      DropdownMenuItem(
+                          value: 'pending',
+                          child: Text(l10n.requestsStatusPending)),
+                      DropdownMenuItem(
+                          value: 'awaiting_offers',
+                          child: Text(l10n.requestsStatusAwaitingOffers)),
+                      DropdownMenuItem(
+                          value: 'accepted',
+                          child: Text(l10n.requestsStatusAccepted)),
+                      DropdownMenuItem(
+                          value: 'in_progress',
+                          child: Text(l10n.requestsStatusInProgress)),
+                      DropdownMenuItem(
+                          value: 'completed',
+                          child: Text(l10n.requestsStatusCompleted)),
+                      DropdownMenuItem(
+                          value: 'cancelled',
+                          child: Text(l10n.requestsStatusCancelled)),
                     ],
                     onChanged: (value) {
                       if (value != null) {
@@ -130,14 +147,20 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     initialValue: selectedOffersStatus,
-                    decoration: const InputDecoration(
-                      labelText: 'Statut des offres',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.requestAdminOffersStatus,
+                      border: const OutlineInputBorder(),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 'open', child: Text('Ouvert')),
-                      DropdownMenuItem(value: 'accepted', child: Text('Accepté')),
-                      DropdownMenuItem(value: 'closed', child: Text('Fermé')),
+                    items: [
+                      DropdownMenuItem(
+                          value: 'open',
+                          child: Text(l10n.requestAdminOffersStatusOpen)),
+                      DropdownMenuItem(
+                          value: 'accepted',
+                          child: Text(l10n.requestAdminOffersStatusAccepted)),
+                      DropdownMenuItem(
+                          value: 'closed',
+                          child: Text(l10n.requestAdminOffersStatusClosed)),
                     ],
                     onChanged: (value) {
                       if (value != null) {
@@ -151,8 +174,9 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
           ),
           actions: [
             TextButton(
-              onPressed: isSaving ? null : () => Navigator.of(dialogContext).pop(),
-              child: const Text('Annuler'),
+              onPressed:
+                  isSaving ? null : () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.boCommonCancel),
             ),
             FilledButton(
               onPressed: isSaving
@@ -164,9 +188,14 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
                       final location = locationController.text.trim();
                       final phone = phoneController.text.trim();
 
-                      if (service.isEmpty || urgency.isEmpty || description.isEmpty || location.isEmpty || phone.isEmpty) {
+                      if (service.isEmpty ||
+                          urgency.isEmpty ||
+                          description.isEmpty ||
+                          location.isEmpty ||
+                          phone.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Tous les champs principaux doivent être remplis.')),
+                          SnackBar(
+                              content: Text(l10n.requestAdminRequiredFields)),
                         );
                         return;
                       }
@@ -187,18 +216,19 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
                         if (!context.mounted) return;
                         Navigator.of(dialogContext).pop();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Demande mise à jour.')),
+                          SnackBar(content: Text(l10n.requestAdminUpdated)),
                         );
                       } catch (_) {
                         if (!context.mounted) return;
                         setDialogState(() => isSaving = false);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Échec de la mise à jour.')),
+                          SnackBar(
+                              content: Text(l10n.requestAdminUpdateFailed)),
                         );
                       }
                     },
               style: FilledButton.styleFrom(backgroundColor: AppColors.navy),
-              child: Text(isSaving ? 'Enregistrement...' : 'Enregistrer'),
+              child: Text(isSaving ? l10n.boCommonSaving : l10n.boCommonSave),
             ),
           ],
         ),
@@ -216,17 +246,22 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Supprimer la demande'),
-        content: Text('Supprimer la demande ${request.service} de ${request.location} ?'),
+        title: Text(AppLocalizations.of(context).requestAdminDeleteTitle),
+        content: Text(
+          AppLocalizations.of(context).requestAdminDeleteBody(
+            request.service,
+            request.location,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Annuler'),
+            child: Text(AppLocalizations.of(context).boCommonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
-            child: const Text('Supprimer'),
+            child: Text(AppLocalizations.of(context).boCommonDelete),
           ),
         ],
       ),
@@ -238,12 +273,15 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
       await OfferMarketplaceService.deleteRequest(request.id);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Demande supprimée.')),
+        SnackBar(
+            content: Text(AppLocalizations.of(context).requestAdminDeleted)),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Échec de la suppression.')),
+        SnackBar(
+            content:
+                Text(AppLocalizations.of(context).requestAdminDeleteFailed)),
       );
     }
   }
@@ -263,30 +301,33 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
     }
   }
 
-  String _statusLabel(String status) {
+  String _statusLabel(String status, AppLocalizations l10n) {
     switch (status) {
       case 'accepted':
-        return 'Acceptée';
+        return l10n.requestsStatusAccepted;
       case 'awaiting_offers':
-        return 'En attente d’offres';
+        return l10n.requestsStatusAwaitingOffers;
       case 'in_progress':
-        return 'En cours';
+        return l10n.requestsStatusInProgress;
       case 'completed':
-        return 'Terminée';
+        return l10n.requestsStatusCompleted;
       case 'cancelled':
-        return 'Annulée';
+        return l10n.requestsStatusCancelled;
       default:
-        return 'En attente';
+        return l10n.requestsStatusPending;
     }
   }
 
-  Widget _buildCard(MarketplaceRequestItem request) {
+  Widget _buildCard(BuildContext context, MarketplaceRequestItem request) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: _statusColor(request.status).withValues(alpha: 0.16)),
+        border: Border.all(
+            color: _statusColor(request.status).withValues(alpha: 0.16)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,28 +338,40 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(request.service, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                    Text(request.service,
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 4),
-                    Text('${request.urgency} • ${request.location}', style: const TextStyle(color: AppColors.muted)),
+                    Text('${request.urgency} • ${request.location}',
+                        style: const TextStyle(color: AppColors.muted)),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: _statusColor(request.status).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: Text(_statusLabel(request.status), style: TextStyle(color: _statusColor(request.status), fontWeight: FontWeight.w700)),
+                child: Text(_statusLabel(request.status, l10n),
+                    style: TextStyle(
+                        color: _statusColor(request.status),
+                        fontWeight: FontWeight.w700)),
               ),
             ],
           ),
           const SizedBox(height: 10),
-          Text(request.description, style: const TextStyle(color: AppColors.text, height: 1.45)),
+          Text(request.description,
+              style: const TextStyle(color: AppColors.text, height: 1.45)),
           const SizedBox(height: 8),
-          Text('Téléphone : ${request.phone}', style: const TextStyle(color: AppColors.muted)),
+          Text(l10n.requestAdminPhoneValue(request.phone),
+              style: const TextStyle(color: AppColors.muted)),
           const SizedBox(height: 8),
-          Text('Offres : ${request.offersCount} • ${request.offersStatus}', style: const TextStyle(color: AppColors.muted)),
+          Text(
+              l10n.requestAdminOffersValue(
+                  request.offersCount, request.offersStatus),
+              style: const TextStyle(color: AppColors.muted)),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
@@ -327,12 +380,12 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
               OutlinedButton.icon(
                 onPressed: () => _updateStatus(request.id, 'awaiting_offers'),
                 icon: const Icon(Icons.mark_email_unread_outlined),
-                label: const Text('Relancer'),
+                label: Text(l10n.requestAdminRelaunch),
               ),
               OutlinedButton.icon(
                 onPressed: () => _editRequest(request),
                 icon: const Icon(Icons.edit_outlined),
-                label: const Text('Modifier'),
+                label: Text(l10n.boCommonEdit),
               ),
               OutlinedButton.icon(
                 onPressed: () => _deleteRequest(request),
@@ -341,7 +394,7 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
                   side: const BorderSide(color: AppColors.danger),
                 ),
                 icon: const Icon(Icons.delete_outline),
-                label: const Text('Supprimer'),
+                label: Text(l10n.boCommonDelete),
               ),
             ],
           ),
@@ -352,20 +405,22 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Demandes BO'),
+        title: Text(l10n.requestAdminTitle),
         actions: [
           IconButton(
-            tooltip: 'Retour BO',
+            tooltip: l10n.boCommonBackToBo,
             onPressed: () => context.go('/back-office'),
             icon: const Icon(Icons.dashboard_customize_outlined),
           ),
         ],
       ),
       body: !FirebaseBootstrap.isReady
-          ? const Center(child: Text('Firebase indisponible'))
+          ? Center(child: Text(l10n.requestAdminFirebaseUnavailable))
           : StreamBuilder<DatabaseEvent>(
               stream: FirebaseDatabase.instance.ref('requests').onValue,
               builder: (context, snapshot) {
@@ -380,7 +435,11 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [AppColors.navy, Color(0xFF154972), AppColors.primary],
+                          colors: [
+                            AppColors.navy,
+                            Color(0xFF154972),
+                            AppColors.primary
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -389,11 +448,19 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Gestion des demandes', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w700)),
+                          Text(l10n.requestAdminHeroEyebrow,
+                              style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontWeight: FontWeight.w700)),
                           const SizedBox(height: 8),
-                          Text('${requests.length} demande(s) enregistrée(s)', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900)),
+                          Text(l10n.requestAdminHeroCount(requests.length),
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w900)),
                           const SizedBox(height: 6),
-                          const Text('Modifiez ou supprimez les demandes clients stockées dans /requests.', style: TextStyle(color: Colors.white70)),
+                          Text(l10n.requestAdminHeroBody,
+                              style: const TextStyle(color: Colors.white70)),
                         ],
                       ),
                     ),
@@ -404,18 +471,19 @@ class _RequestAdminPageState extends State<RequestAdminPage> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(22),
-                          border: Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
+                          border: Border.all(
+                              color: AppColors.primary.withValues(alpha: 0.08)),
                         ),
-                        child: const Text(
-                          'Aucune demande n’est encore disponible dans Firebase.',
-                          style: TextStyle(color: AppColors.muted),
+                        child: Text(
+                          l10n.requestAdminEmpty,
+                          style: const TextStyle(color: AppColors.muted),
                         ),
                       )
                     else
                       ...requests.map(
                         (request) => Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: _buildCard(request),
+                          child: _buildCard(context, request),
                         ),
                       ),
                   ],
