@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/network/firebase_bootstrap.dart';
 import '../../../core/services/app_preferences_service.dart';
 import '../../../core/services/offer_marketplace_service.dart';
+import '../../../core/services/professional_admin_service.dart';
 import '../../../core/theme/app_colors.dart';
 
 class BackOfficeDashboardPage extends StatefulWidget {
@@ -145,6 +146,9 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
     final requests = root is Map
         ? OfferMarketplaceService.requestsFromSnapshot(root['requests'])
       : const <MarketplaceRequestItem>[];
+    final allProfessionals = ProfessionalAdminService.professionalsFromRoot(root);
+    final subscribedProfessionals =
+        allProfessionals.where((professional) => professional.subscribed).toList();
     final currentProfessionalOffers =
         OfferMarketplaceService.sentOffersFromRoot(
       root,
@@ -164,6 +168,13 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
     final currentProfessionalAcceptedOffers =
         currentProfessionalOffers.where((offer) => offer.isAccepted).length;
     final leaderboard = _buildLeaderboard(allOffers);
+    final planBreakdown = <String, int>{};
+    for (final professional in subscribedProfessionals) {
+      final key = professional.subscriptionPlan == 'none'
+          ? 'non-assigné'
+          : professional.subscriptionPlan;
+      planBreakdown.update(key, (value) => value + 1, ifAbsent: () => 1);
+    }
 
     return Center(
       child: ConstrainedBox(
@@ -372,6 +383,29 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                       label: const Text('Categories & Offres'),
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () => context.go('/admin-professionals'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.navy,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size.fromHeight(38),
+                        padding: const EdgeInsets.symmetric(vertical: 9),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        visualDensity: VisualDensity.compact,
+                        textStyle: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      icon: const Icon(Icons.workspace_premium_outlined, size: 16),
+                      label: const Text('Souscriptions Pro'),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -402,18 +436,97 @@ class _BackOfficeDashboardPageState extends State<BackOfficeDashboardPage> {
                   icon: Icons.verified_outlined,
                 ),
                 _MetricCard(
-                  title: 'Offres envoyées',
-                  value: '${currentProfessionalOffers.length}',
+                  title: 'Abonnés Pro',
+                  value: '${subscribedProfessionals.length}',
                   accent: AppColors.primary,
-                  icon: Icons.local_offer_outlined,
+                  icon: Icons.workspace_premium_outlined,
                 ),
                 _MetricCard(
                   title: 'Offres retenues',
                   value: '$currentProfessionalAcceptedOffers',
                   accent: AppColors.success,
-                  icon: Icons.workspace_premium_outlined,
+                  icon: Icons.local_offer_outlined,
                 ),
               ],
+            ),
+            const SizedBox(height: 14),
+            _SectionCard(
+              title: 'Souscriptions Pro actives',
+              subtitle: subscribedProfessionals.isEmpty
+                  ? 'Aucun professionnel n’a encore souscrit au pack Pro.'
+                  : 'Suivi des abonnements actifs et des plans sélectionnés.',
+              icon: Icons.subscriptions_outlined,
+              content: subscribedProfessionals.isEmpty
+                  ? const Text(
+                      'Les souscriptions Pro apparaîtront ici dès qu’un professionnel valide un abonnement.',
+                      style: TextStyle(color: AppColors.muted, height: 1.4),
+                    )
+                  : Column(
+                      children: [
+                        for (final entry in planBreakdown.entries)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: _SubscriptionRow(
+                              label: entry.key.toUpperCase(),
+                              value: '${entry.value}',
+                            ),
+                          ),
+                        const SizedBox(height: 8),
+                        ...subscribedProfessionals.map(
+                          (professional) => Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.background,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        professional.name,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${professional.service} • ${professional.location}',
+                                        style: const TextStyle(
+                                          color: AppColors.muted,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.navy.withValues(alpha: 0.10),
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  child: Text(
+                                    professional.subscriptionPlan.toUpperCase(),
+                                    style: const TextStyle(
+                                      color: AppColors.navy,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
             ),
             const SizedBox(height: 14),
             _SectionCard(
@@ -593,6 +706,46 @@ class _ProfessionalPerformance {
       planLabel: planLabel,
       offersCount: offersCount ?? this.offersCount,
       acceptedCount: acceptedCount ?? this.acceptedCount,
+    );
+  }
+}
+
+class _SubscriptionRow extends StatelessWidget {
+  const _SubscriptionRow({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Text(
+            value,
+            style: const TextStyle(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -876,16 +1029,12 @@ class _SectionCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.icon,
-    this.actionLabel,
-    this.onTap,
     this.content,
   });
 
   final String title;
   final String subtitle;
   final IconData icon;
-  final String? actionLabel;
-  final VoidCallback? onTap;
   final Widget? content;
 
   @override
@@ -939,29 +1088,6 @@ class _SectionCard extends StatelessWidget {
           if (content != null) ...[
             const SizedBox(height: 12),
             content!,
-          ],
-          if (actionLabel != null && onTap != null) ...[
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: onTap,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.navy,
-                  minimumSize: const Size.fromHeight(42),
-                  padding: const EdgeInsets.symmetric(vertical: 11),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                icon: const Icon(Icons.arrow_forward_outlined, size: 18),
-                label: Text(actionLabel!),
-              ),
-            ),
           ],
         ],
       ),

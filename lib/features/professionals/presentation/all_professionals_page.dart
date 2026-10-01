@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/firebase_bootstrap.dart';
+import '../../../core/services/professional_admin_service.dart';
 import '../../../core/theme/app_colors.dart';
 
 class _ProfessionalSummary {
@@ -36,38 +37,53 @@ class AllProfessionalsPage extends StatelessWidget {
     final professionals = <_ProfessionalSummary>[];
 
     if (snapshotValue is Map) {
-      for (final categoryEntry in snapshotValue.entries) {
-        final categoryMap = categoryEntry.value;
-        if (categoryMap is Map) {
-          for (final professionalEntry in categoryMap.entries) {
-            final value = professionalEntry.value;
-            if (value is Map) {
-              final name = value['name']?.toString();
-              if (name == null || name.trim().isEmpty) {
-                continue;
+      final publicationSettings =
+          ProfessionalAdminService.publicationSettingsFromRoot(snapshotValue);
+      final professionalsRoot = snapshotValue['professionals'];
+
+      if (professionalsRoot is Map) {
+        for (final categoryEntry in professionalsRoot.entries) {
+          final categoryMap = categoryEntry.value;
+          if (categoryMap is Map) {
+            for (final professionalEntry in categoryMap.entries) {
+              final value = professionalEntry.value;
+              if (value is Map) {
+                final name = value['name']?.toString();
+                if (name == null || name.trim().isEmpty) {
+                  continue;
+                }
+
+                final eligible = ProfessionalAdminService
+                    .isProfessionalEligibleForPublicDirectory(
+                  Map<String, dynamic>.from(value),
+                  settings: publicationSettings,
+                );
+                if (!eligible) {
+                  continue;
+                }
+
+                final ratingAverage = value['ratingAverage'] is num
+                    ? (value['ratingAverage'] as num).toDouble()
+                    : _parseRating(value['rating']?.toString());
+                final reviewsCount = value['reviewsCount'] is num
+                    ? (value['reviewsCount'] as num).toInt()
+                    : 0;
+
+                professionals.add(
+                  _ProfessionalSummary(
+                    id: professionalEntry.key.toString(),
+                    name: name,
+                    service: value['service']?.toString() ??
+                        categoryEntry.key.toString(),
+                    location: value['location']?.toString() ?? 'Dakar',
+                    price: value['price']?.toString() ?? 'À confirmer',
+                    ratingAverage: ratingAverage,
+                    reviewsCount: reviewsCount,
+                    verified: value['verified'] == true,
+                    availableNow: value['availableNow'] != false,
+                  ),
+                );
               }
-
-              final ratingAverage = value['ratingAverage'] is num
-                  ? (value['ratingAverage'] as num).toDouble()
-                  : _parseRating(value['rating']?.toString());
-              final reviewsCount = value['reviewsCount'] is num
-                  ? (value['reviewsCount'] as num).toInt()
-                  : 0;
-
-              professionals.add(
-                _ProfessionalSummary(
-                  id: professionalEntry.key.toString(),
-                  name: name,
-                  service: value['service']?.toString() ??
-                      categoryEntry.key.toString(),
-                  location: value['location']?.toString() ?? 'Dakar',
-                  price: value['price']?.toString() ?? 'À confirmer',
-                  ratingAverage: ratingAverage,
-                  reviewsCount: reviewsCount,
-                  verified: value['verified'] == true,
-                  availableNow: value['availableNow'] != false,
-                ),
-              );
             }
           }
         }
@@ -92,7 +108,7 @@ class AllProfessionalsPage extends StatelessWidget {
       body: SafeArea(
         child: FirebaseBootstrap.isReady
             ? StreamBuilder<DatabaseEvent>(
-                stream: FirebaseDatabase.instance.ref('professionals').onValue,
+                stream: FirebaseDatabase.instance.ref().onValue,
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     return _buildList(const []);

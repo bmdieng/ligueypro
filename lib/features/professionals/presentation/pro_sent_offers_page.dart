@@ -41,6 +41,7 @@ class _ProSentOffersPageState extends State<ProSentOffersPage> {
       phone: professional.phone,
       service: professional.service,
       planLabel: professional.planLabel,
+      isSubscribed: true,
     );
     await AppPreferencesService.setCurrentProfessional(summary);
     if (!mounted) return;

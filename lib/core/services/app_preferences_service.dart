@@ -12,6 +12,7 @@ class CurrentProfessionalSummary {
     required this.phone,
     required this.service,
     required this.planLabel,
+    this.isSubscribed = false,
   });
 
   final String professionalId;
@@ -19,6 +20,9 @@ class CurrentProfessionalSummary {
   final String phone;
   final String service;
   final String planLabel;
+  final bool isSubscribed;
+
+  bool get isPro => isSubscribed;
 
   Map<String, dynamic> toJson() => {
         'professionalId': professionalId,
@@ -26,6 +30,7 @@ class CurrentProfessionalSummary {
         'phone': phone,
         'service': service,
         'planLabel': planLabel,
+        'isSubscribed': isSubscribed,
       };
 
   factory CurrentProfessionalSummary.fromJson(Map<String, dynamic> json) {
@@ -34,7 +39,11 @@ class CurrentProfessionalSummary {
       name: json['name']?.toString() ?? 'Professionnel',
       phone: json['phone']?.toString() ?? '+221 77 000 00 00',
       service: json['service']?.toString() ?? 'Service',
-      planLabel: json['planLabel']?.toString() ?? 'pro',
+      planLabel: json['planLabel']?.toString() ?? 'none',
+      isSubscribed: json['isSubscribed'] == true ||
+          json['subscribed'] == true ||
+          (json['planLabel']?.toString() ?? '').toLowerCase() != 'none' &&
+              (json['planLabel']?.toString() ?? '').trim().isNotEmpty,
     );
   }
 }

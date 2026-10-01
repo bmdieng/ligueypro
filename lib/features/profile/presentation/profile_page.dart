@@ -116,15 +116,14 @@ class ProfilePage extends StatelessWidget {
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               onTap: () => context.push('/all-professionals'),
             ),
-            // const Divider(height: 1),
-            // ListTile(
-            //   leading: const Icon(Icons.workspace_premium_outlined),
-            //   title: const Text('Abonnement Pro',
-            //       maxLines: 1, overflow: TextOverflow.ellipsis),
-            //   subtitle:
-            //       const Text('Recevoir les demandes et émettre des offres'),
-            //   onTap: () => context.push('/pro-subscription'),
-            // ),
+            const Divider(height: 1),
+            ListTile(
+              leading: const Icon(Icons.workspace_premium_outlined),
+              title: const Text('Mon compte pro',
+                  maxLines: 1, overflow: TextOverflow.ellipsis),
+              subtitle: const Text('Crédits, boost et statut du profil'),
+              onTap: () => context.push('/pro-account'),
+            ),
             // const Divider(height: 1),
             // ListTile(
             //   leading: const Icon(Icons.admin_panel_settings_outlined),

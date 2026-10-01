@@ -12,13 +12,14 @@ import '../features/professionals/presentation/all_professionals_page.dart';
 import '../features/professionals/presentation/back_office_access_page.dart';
 import '../features/professionals/presentation/category_admin_page.dart';
 import '../features/professionals/presentation/back_office_dashboard_page.dart';
+import '../features/professionals/presentation/offer_admin_page.dart';
 import '../features/professionals/presentation/professionals_admin_page.dart';
 import '../features/professionals/presentation/pro_leads_page.dart';
-import '../features/professionals/presentation/pro_marketing_page.dart';
 import '../features/professionals/presentation/pro_lead_capture_page.dart';
 import '../features/professionals/presentation/pro_leads_admin_page.dart';
 import '../features/professionals/presentation/pro_sent_offers_page.dart';
 import '../features/professionals/presentation/pro_subscription_page.dart';
+import '../features/professionals/presentation/pro_account_page.dart';
 import '../features/profile/presentation/app_settings_page.dart';
 import '../features/profile/presentation/cgu_page.dart';
 import '../features/profile/presentation/help_support_page.dart';
@@ -27,18 +28,48 @@ import '../features/profile/presentation/profile_page.dart';
 import '../features/requests/presentation/my_requests_page.dart';
 import '../features/requests/presentation/request_offers_page.dart';
 
+const defaultWebInitialLocation = '/back-office';
+const defaultMobileInitialLocation = '/app';
+
+String getInitialLocation() {
+  return kIsWeb ? defaultWebInitialLocation : defaultMobileInitialLocation;
+}
+
 String? resolveWebRedirect(String path) {
-  const backOfficeRoutes = {
+  const protectedBackOfficeRoutes = {
+    '/',
     '/back-office',
     '/admin-requests',
     '/admin-categories',
     '/admin-professionals',
+    '/admin-offers',
     '/admin-pro-leads',
+  };
+
+  const publicWebRoutes = {
+    '/app',
+    '/presentation',
+    '/profile',
+    '/request',
+    '/my-requests',
+    '/settings',
+    '/notifications',
+    '/help-support',
+    '/cgu',
+    '/add-professional',
+    '/all-professionals',
+    '/for-pros',
+    '/for-pros/apply',
+    '/pro-subscription',
+    '/pro-account',
     '/pro-leads',
     '/pro-sent-offers',
   };
 
-  if (backOfficeRoutes.contains(path)) {
+  if (protectedBackOfficeRoutes.contains(path) ||
+      publicWebRoutes.contains(path) ||
+      path.startsWith('/services/') ||
+      path.startsWith('/professional/')) {
     return null;
   }
 
@@ -46,7 +77,7 @@ String? resolveWebRedirect(String path) {
 }
 
 final appRouter = GoRouter(
-  initialLocation: kIsWeb ? '/back-office' : '/app',
+  initialLocation: getInitialLocation(),
   redirect: (context, state) {
     if (!kIsWeb) {
       return null;
@@ -109,7 +140,10 @@ final appRouter = GoRouter(
     GoRoute(
         path: '/pro-subscription',
         builder: (_, __) => const ProSubscriptionPage()),
-    GoRoute(path: '/for-pros', builder: (_, __) => const ProMarketingPage()),
+    GoRoute(
+        path: '/pro-account',
+        builder: (_, __) => const ProAccountPage()),
+    GoRoute(path: '/for-pros', builder: (_, __) => const ProSubscriptionPage()),
     GoRoute(
         path: '/for-pros/apply',
         builder: (_, __) => const ProLeadCapturePage()),
@@ -135,6 +169,14 @@ final appRouter = GoRouter(
         targetRoute: '/admin-professionals',
         title: 'Accès sécurisé aux professionnels',
         child: ProfessionalsAdminPage(),
+      ),
+    ),
+    GoRoute(
+      path: '/admin-offers',
+      builder: (_, __) => const SecureBackOfficeRoute(
+        targetRoute: '/admin-offers',
+        title: 'Accès sécurisé aux offres',
+        child: OfferAdminPage(),
       ),
     ),
     GoRoute(

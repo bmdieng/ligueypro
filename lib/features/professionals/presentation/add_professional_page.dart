@@ -1,6 +1,5 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/services/app_preferences_service.dart';
 import '../../../core/network/firebase_bootstrap.dart';
@@ -29,9 +28,9 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
   );
 
   String _selectedService = '';
-  String _selectedPlanId = ProSubscriptionService.plans.first.id;
+  final String _selectedPlanId = ProSubscriptionService.plans.first.id;
   bool _availableNow = true;
-  bool _isSubscribed = false;
+  final bool _isSubscribed = false;
   bool _isSaving = false;
 
   @override
@@ -142,17 +141,16 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
         await ref.set(professionalData);
       }
 
-      if (_isSubscribed) {
-        await AppPreferencesService.setCurrentProfessional(
-          CurrentProfessionalSummary(
-            professionalId: professionalId,
-            name: name,
-            phone: phone,
-            service: _selectedService,
-            planLabel: _selectedPlanId,
-          ),
-        );
-      }
+      await AppPreferencesService.setCurrentProfessional(
+        CurrentProfessionalSummary(
+          professionalId: professionalId,
+          name: name,
+          phone: phone,
+          service: _selectedService,
+          planLabel: _isSubscribed ? _selectedPlanId : 'none',
+          isSubscribed: _isSubscribed,
+        ),
+      );
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -212,7 +210,7 @@ class _AddProfessionalPageState extends State<AddProfessionalPage> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _serviceOptions.contains(_selectedService)
+              initialValue: _serviceOptions.contains(_selectedService)
                   ? _selectedService
                   : null,
               decoration: InputDecoration(

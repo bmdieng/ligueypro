@@ -40,6 +40,7 @@ class _ProLeadsPageState extends State<ProLeadsPage> {
       phone: professional.phone,
       service: professional.service,
       planLabel: professional.planLabel,
+      isSubscribed: true,
     );
     await AppPreferencesService.setCurrentProfessional(summary);
     if (!mounted) return;

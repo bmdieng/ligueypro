@@ -1,6 +1,10 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/services/app_preferences_service.dart';
 import '../../../core/services/pro_subscription_service.dart';
+import '../../../core/services/professional_credit_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/generated/app_localizations.dart';
 
@@ -12,25 +16,116 @@ class ProSubscriptionPage extends StatefulWidget {
 }
 
 class _ProSubscriptionPageState extends State<ProSubscriptionPage> {
-  String _selectedPlanId = ProSubscriptionService.plans[1].id;
+  List<ProSubscriptionPlan> _plans = ProSubscriptionService.defaultPlans;
+  String _selectedPlanId = ProSubscriptionService.defaultPlans.first.id;
   bool _isSubmitting = false;
+  CurrentProfessionalSummary? _currentProfessional;
+
+  @override
+  void initState() {
+    super.initState();
+    _seedDefaultOffersIfNeeded();
+    _loadPlans();
+    _loadCurrentProfessional();
+  }
+
+  Future<void> _seedDefaultOffersIfNeeded() async {
+    await ProSubscriptionService.ensureDefaultOffersInFirebase();
+  }
+
+  Future<void> _loadCurrentProfessional() async {
+    final summary = await AppPreferencesService.getCurrentProfessional();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _currentProfessional = summary;
+    });
+  }
+
+  Future<void> _loadPlans() async {
+    final snapshot = await FirebaseDatabase.instance.ref().get();
+    if (!mounted) {
+      return;
+    }
+
+    final configuredPlans = ProSubscriptionService.plansFromRoot(snapshot.value);
+    setState(() {
+      _plans = configuredPlans;
+      _selectedPlanId = configuredPlans.first.id;
+    });
+  }
 
   Future<void> _activatePlan() async {
-    setState(() => _isSubmitting = true);
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-    if (!mounted) return;
-    setState(() => _isSubmitting = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text(AppLocalizations.of(context).proSubscriptionActivated)),
+    final selectedPlan = _plans.firstWhere(
+      (plan) => plan.id == _selectedPlanId,
+      orElse: () => _plans.first,
     );
+
+    if (_currentProfessional == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Aucun profil professionnel actif. Sélectionnez votre compte pour continuer.'),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      await ProfessionalCreditService.createPaymentRequest(
+        professionalId: _currentProfessional!.professionalId,
+        professionalName: _currentProfessional!.name,
+        professionalService: _currentProfessional!.service,
+        offerId: selectedPlan.id,
+        amountFcfa: selectedPlan.priceFcfa,
+        paymentMethod: selectedPlan.paymentMethod,
+      );
+
+      final paymentDeepLink = ProSubscriptionService.buildPaymentDeepLink(
+        paymentMethod: selectedPlan.paymentMethod,
+        amountFcfa: selectedPlan.priceFcfa,
+        professionalName: _currentProfessional!.name,
+      );
+      final fallbackUrl = ProSubscriptionService.buildPaymentFallbackUrl(
+        paymentMethod: selectedPlan.paymentMethod,
+        amountFcfa: selectedPlan.priceFcfa,
+      );
+
+      if (await canLaunchUrl(paymentDeepLink)) {
+        await launchUrl(paymentDeepLink, mode: LaunchMode.externalApplication);
+      } else if (await canLaunchUrl(fallbackUrl)) {
+        await launchUrl(fallbackUrl, mode: LaunchMode.externalApplication);
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Paiement ${selectedPlan.paymentMethod} préparé pour ${selectedPlan.name}. Ouvrez l’application puis confirmez le paiement.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Le paiement n’a pas pu être enregistré. Réessayez.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final selectedPlan = ProSubscriptionService.plans.firstWhere(
+    final selectedPlan = _plans.firstWhere(
       (plan) => plan.id == _selectedPlanId,
+      orElse: () => _plans.first,
     );
 
     return Scaffold(
@@ -51,7 +146,7 @@ class _ProSubscriptionPageState extends State<ProSubscriptionPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    l10n.proSubscriptionHeroTitle,
+                    'Acheter un pack pour recevoir plus de demandes',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -60,14 +155,40 @@ class _ProSubscriptionPageState extends State<ProSubscriptionPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    l10n.proSubscriptionHeroBody,
+                    'Paiement local simple : Orange Money ou Wave. Plus besoin d’une vraie version Pro séparée.',
                     style: const TextStyle(color: Colors.white70, height: 1.4),
+                  ),
+                  const SizedBox(height: 14),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: ProSubscriptionService.paymentOptions
+                        .map(
+                          (method) => Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              method,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            ...ProSubscriptionService.plans.map(
+            ..._plans.map(
               (plan) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: InkWell(
@@ -100,7 +221,7 @@ class _ProSubscriptionPageState extends State<ProSubscriptionPage> {
                               ),
                             ),
                             Text(
-                              '${ProSubscriptionService.formatFcfa(plan.priceFcfa)}/mois',
+                              '${ProSubscriptionService.formatFcfa(plan.priceFcfa)}${plan.billingLabel}',
                               style: const TextStyle(
                                 color: AppColors.navy,
                                 fontWeight: FontWeight.w800,
@@ -146,9 +267,21 @@ class _ProSubscriptionPageState extends State<ProSubscriptionPage> {
                 border: Border.all(
                     color: AppColors.primary.withValues(alpha: 0.18)),
               ),
-              child: Text(
-                l10n.proSubscriptionSelectedPlan(selectedPlan.name),
-                style: const TextStyle(height: 1.45),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Pack sélectionné : ${selectedPlan.name}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${ProSubscriptionService.formatFcfa(selectedPlan.priceFcfa)} • Paiement ${selectedPlan.paymentMethod}',
+                    style: const TextStyle(height: 1.45),
+                  ),
+                ],
               ),
             ),
           ],
@@ -170,7 +303,7 @@ class _ProSubscriptionPageState extends State<ProSubscriptionPage> {
                     child: CircularProgressIndicator(
                         strokeWidth: 2, color: Colors.white),
                   )
-                : Text(l10n.proSubscriptionChoosePlan(selectedPlan.name)),
+                : Text('Payer ${selectedPlan.name} • ${ProSubscriptionService.formatFcfa(selectedPlan.priceFcfa)}'),
           ),
         ),
       ),

@@ -18,6 +18,11 @@ class ProfessionalsAdminPage extends StatelessWidget {
         title: const Text('Professionnels'),
         actions: [
           IconButton(
+            tooltip: 'Offres',
+            onPressed: () => context.go('/admin-offers'),
+            icon: const Icon(Icons.discount_outlined),
+          ),
+          IconButton(
             tooltip: 'Retour BO',
             onPressed: () => context.go('/back-office'),
             icon: const Icon(Icons.dashboard_customize_outlined),

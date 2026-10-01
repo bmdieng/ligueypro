@@ -74,8 +74,164 @@ class ProfessionalAdminItem {
   final DateTime? createdAt;
 }
 
+class PublicationSettings {
+  const PublicationSettings({
+    required this.allowNonProPublication,
+    required this.minCompletedJobs,
+    required this.minReviewsCount,
+    required this.minRatingAverage,
+  });
+
+  final bool allowNonProPublication;
+  final int minCompletedJobs;
+  final int minReviewsCount;
+  final double minRatingAverage;
+
+  static const defaultSettings = PublicationSettings(
+    allowNonProPublication: true,
+    minCompletedJobs: 3,
+    minReviewsCount: 2,
+    minRatingAverage: 4.0,
+  );
+
+  factory PublicationSettings.fromRoot(Object? root) {
+    final settingsRoot = root is Map ? root['settings'] : null;
+    final candidates = <Object?>[
+      settingsRoot is Map ? settingsRoot['publication'] : null,
+      settingsRoot is Map ? settingsRoot['publicationRules'] : null,
+      settingsRoot is Map ? settingsRoot['publicationSettings'] : null,
+      root is Map ? root['publication'] : null,
+      root is Map ? root['publicationRules'] : null,
+      root is Map ? root['publicationSettings'] : null,
+    ];
+
+    for (final candidate in candidates) {
+      if (candidate is Map) {
+        return PublicationSettings.fromJson(candidate);
+      }
+    }
+
+    return defaultSettings;
+  }
+
+  factory PublicationSettings.fromJson(Map<dynamic, dynamic> json) {
+    final allowNonProPublication = json['allowNonProPublication'] == true ||
+        json['allowNonProPublications'] == true ||
+        json['allowNonPro'] == true ||
+        json['allowNonProPublication'] != false;
+
+    final minCompletedJobs = json['minCompletedJobs'] is num
+        ? (json['minCompletedJobs'] as num).toInt()
+        : defaultSettings.minCompletedJobs;
+    final minReviewsCount = json['minReviewsCount'] is num
+        ? (json['minReviewsCount'] as num).toInt()
+        : defaultSettings.minReviewsCount;
+    final minRatingAverage = json['minRatingAverage'] is num
+        ? (json['minRatingAverage'] as num).toDouble()
+        : defaultSettings.minRatingAverage;
+
+    return PublicationSettings(
+      allowNonProPublication: allowNonProPublication,
+      minCompletedJobs: minCompletedJobs,
+      minReviewsCount: minReviewsCount,
+      minRatingAverage: minRatingAverage,
+    );
+  }
+
+  Map<String, Object> toJson() => {
+        'allowNonProPublication': allowNonProPublication,
+        'minCompletedJobs': minCompletedJobs,
+        'minReviewsCount': minReviewsCount,
+        'minRatingAverage': minRatingAverage,
+      };
+
+  PublicationSettings copyWith({
+    bool? allowNonProPublication,
+    int? minCompletedJobs,
+    int? minReviewsCount,
+    double? minRatingAverage,
+  }) => PublicationSettings(
+        allowNonProPublication: allowNonProPublication ?? this.allowNonProPublication,
+        minCompletedJobs: minCompletedJobs ?? this.minCompletedJobs,
+        minReviewsCount: minReviewsCount ?? this.minReviewsCount,
+        minRatingAverage: minRatingAverage ?? this.minRatingAverage,
+      );
+}
+
 class ProfessionalAdminService {
   ProfessionalAdminService._();
+
+  static Map<String, Object> buildSubscriptionState({
+    required bool subscribed,
+    required String subscriptionPlan,
+    int? creditBalance,
+  }) {
+    final normalizedPlan =
+        (subscribed && subscriptionPlan.trim().isNotEmpty)
+            ? subscriptionPlan.trim()
+            : 'none';
+
+    final state = <String, Object>{
+      'subscribed': subscribed,
+      'subscriptionPlan': normalizedPlan,
+      'canReceiveRequests': subscribed,
+      'canSendOffers': subscribed,
+    };
+
+    if (creditBalance != null) {
+      state['creditBalance'] = creditBalance;
+    }
+
+    return state;
+  }
+
+  static PublicationSettings publicationSettingsFromRoot(Object? root) {
+    return PublicationSettings.fromRoot(root);
+  }
+
+  static bool isProfessionalEligibleForPublicDirectory(
+    Map<String, dynamic> professional, {
+    PublicationSettings settings = PublicationSettings.defaultSettings,
+  }) {
+    final subscribed = professional['subscribed'] == true;
+    if (subscribed) {
+      return true;
+    }
+
+    if (!settings.allowNonProPublication) {
+      return false;
+    }
+
+    final verified = professional['verified'] == true;
+    if (!verified) {
+      return false;
+    }
+
+    final completedJobs = professional['completedJobs'] is num
+        ? (professional['completedJobs'] as num).toInt()
+        : 0;
+    final reviewsCount = professional['reviewsCount'] is num
+        ? (professional['reviewsCount'] as num).toInt()
+        : 0;
+    final ratingAverage = professional['ratingAverage'] is num
+        ? (professional['ratingAverage'] as num).toDouble()
+        : _parseRatingAverage(professional['rating']?.toString());
+
+    return completedJobs >= settings.minCompletedJobs &&
+        reviewsCount >= settings.minReviewsCount &&
+        ratingAverage >= settings.minRatingAverage;
+  }
+
+  static double _parseRatingAverage(String? rating) {
+    if (rating == null || rating.trim().isEmpty) {
+      return 0;
+    }
+    final match = RegExp(r'\d+(?:[.,]\d+)?').firstMatch(rating);
+    if (match == null) {
+      return 0;
+    }
+    return double.tryParse(match.group(0)!.replaceAll(',', '.')) ?? 0;
+  }
 
   static List<String> serviceOptionsFromRoot(Object? root) {
     final home = root is Map ? root['home'] : null;
@@ -244,14 +400,16 @@ class ProfessionalAdminService {
       'distance': 'À confirmer',
       'verified': draft.verified,
       'availableNow': draft.availableNow,
-      'subscribed': draft.subscribed,
-      'subscriptionPlan': draft.subscribed ? draft.subscriptionPlan : 'none',
-      'canReceiveRequests': draft.subscribed,
-      'canSendOffers': draft.subscribed,
       'responseTime': draft.responseTime,
       'completedJobs': draft.completedJobs,
       'updatedAt': ServerValue.timestamp,
-    };
+    }..
+      addAll(
+        buildSubscriptionState(
+          subscribed: draft.subscribed,
+          subscriptionPlan: draft.subscriptionPlan,
+        ),
+      );
 
     if (!hasExistingId) {
       payload['reviews'] = <String, Object>{};

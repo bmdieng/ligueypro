@@ -1,0 +1,56 @@
+{
+  "offers": {
+    "starter": {
+      "id": "starter",
+      "name": "Starter",
+      "priceFcfa": 5000,
+      "leadsPerMonth": 10,
+      "billingLabel": "/mois",
+      "paymentMethod": "Orange Money",
+      "features": [
+        "10 demandes incluses par mois",
+        "Profil visible dans les résultats",
+        "Réception des demandes qualifiées"
+      ]
+    },
+    "plus": {
+      "id": "plus",
+      "name": "Plus",
+      "priceFcfa": 12000,
+      "leadsPerMonth": 25,
+      "billingLabel": "/mois",
+      "paymentMethod": "Wave",
+      "features": [
+        "25 demandes incluses par mois",
+        "Mise en avant dans votre ville",
+        "Meilleure visibilité pour capter plus de clients"
+      ]
+    },
+    "premium": {
+      "id": "premium",
+      "name": "Premium",
+      "priceFcfa": 25000,
+      "leadsPerMonth": 60,
+      "billingLabel": "/mois",
+      "paymentMethod": "Orange Money",
+      "features": [
+        "60 demandes incluses par mois",
+        "Priorité dans les résultats",
+        "Support plus réactif et meilleure exposition"
+      ]
+    },
+    "boost": {
+      "id": "boost",
+      "name": "Boost profil",
+      "priceFcfa": 3000,
+      "leadsPerMonth": 7,
+      "billingLabel": "/7 jours",
+      "paymentMethod": "Wave",
+      "features": [
+        "Apparition en tête des résultats",
+        "Visibilité locale pendant 7 jours",
+        "Idéal pour booster une activité rapidement"
+      ]
+    }
+  }
+}
