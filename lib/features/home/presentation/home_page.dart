@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -59,6 +61,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final TextEditingController _searchController = TextEditingController();
   RecentRequestSummary? _recentRequest;
+
+  static const String _firebaseUnavailableMessage =
+    'Le service est momentanément inaccessible. Vérifiez votre connexion Internet.';
+    static const String _firebaseTimeoutMessage =
+      'La connexion au serveur prend trop de temps. Réessayez dans un instant.';
+    static const String _firebaseEmptyMessage =
+      'Les données du serveur sont indisponibles pour le moment.';
 
   static IconData _iconFromKey(String key) {
     switch (key) {
@@ -477,6 +486,42 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildFirebaseStatusMessage(String message) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.danger.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: AppColors.danger.withValues(alpha: 0.18),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 2),
+            child: Icon(
+              Icons.cloud_off_outlined,
+              color: AppColors.danger,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: AppColors.danger,
+                fontWeight: FontWeight.w600,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _submitSearch(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final query = _searchController.text.trim();
@@ -519,9 +564,58 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: FirebaseBootstrap.isReady
             ? StreamBuilder<DatabaseEvent>(
-                stream: FirebaseDatabase.instance.ref().onValue,
+                stream: FirebaseDatabase.instance
+                    .ref()
+                    .onValue
+                    .timeout(
+                      const Duration(seconds: 8),
+                      onTimeout: (sink) => sink.addError(
+                        TimeoutException('firebase-home-timeout'),
+                      ),
+                    ),
                 builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    final message = snapshot.error is TimeoutException
+                        ? _firebaseTimeoutMessage
+                        : _firebaseUnavailableMessage;
+                    return _buildContent(
+                      context,
+                      l10n,
+                      const <_HomeCategory>[],
+                      const _HomeMetrics(
+                        verifiedProfessionalsCount: 0,
+                        averageResponseMinutes: null,
+                        averageRating: null,
+                        reviewsCount: 0,
+                      ),
+                      _defaultHeroContent(l10n),
+                      statusMessage: message,
+                    );
+                  }
+
+                  if (snapshot.connectionState == ConnectionState.waiting &&
+                      !snapshot.hasData) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
                   final root = snapshot.data?.snapshot.value;
+                  if (root == null) {
+                    return _buildContent(
+                      context,
+                      l10n,
+                      const <_HomeCategory>[],
+                      const _HomeMetrics(
+                        verifiedProfessionalsCount: 0,
+                        averageResponseMinutes: null,
+                        averageRating: null,
+                        reviewsCount: 0,
+                      ),
+                      _defaultHeroContent(l10n),
+                      statusMessage: _firebaseEmptyMessage,
+                    );
+                  }
                   final categories = root is Map
                       ? _categoriesFromSnapshot(root['home']?['categories'])
                       : const <_HomeCategory>[];
@@ -547,6 +641,7 @@ class _HomePageState extends State<HomePage> {
                   reviewsCount: 0,
                 ),
                 _defaultHeroContent(l10n),
+                statusMessage: _firebaseUnavailableMessage,
               ),
       ),
       bottomNavigationBar: NavigationBar(
@@ -579,6 +674,7 @@ class _HomePageState extends State<HomePage> {
     List<_HomeCategory> categories,
     _HomeMetrics metrics,
     _HomeHeroContent heroContent,
+    {String? statusMessage}
   ) {
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -587,6 +683,10 @@ class _HomePageState extends State<HomePage> {
             style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w800)),
         const SizedBox(height: 4),
         Text(l10n.homeQuestion, style: const TextStyle(color: AppColors.muted)),
+        if (statusMessage != null) ...[
+          const SizedBox(height: 16),
+          _buildFirebaseStatusMessage(statusMessage),
+        ],
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(18),

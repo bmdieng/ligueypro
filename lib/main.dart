@@ -12,9 +12,6 @@ import 'l10n/generated/app_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final firebaseReady = await FirebaseBootstrap.initialize();
-  debugPrint('Firebase ready: $firebaseReady');
-  await RequestNotificationService.initialize();
   final savedLanguageCode = await AppPreferencesService.getAppLanguageCode();
   final localeController = AppLocaleController(
     AppLocaleController.fromLanguageCode(savedLanguageCode),
@@ -33,41 +30,70 @@ class AppBootstrapper extends StatefulWidget {
 
 class _AppBootstrapperState extends State<AppBootstrapper> {
   bool _showSplash = true;
+  bool _bootstrapInProgress = false;
 
   @override
   void initState() {
     super.initState();
+    unawaited(_bootstrapApp());
+  }
+
+  Future<void> _bootstrapApp() async {
+    if (_bootstrapInProgress) {
+      return;
+    }
+
+    _bootstrapInProgress = true;
+
     unawaited(
-      Future.delayed(const Duration(milliseconds: 1500), () {
-        if (mounted) {
-          setState(() => _showSplash = false);
+      _initializeServices()
+          .timeout(const Duration(seconds: 10))
+          .catchError((error, stackTrace) {
+        debugPrint('Bootstrap services timed out or failed: $error');
+        if (stackTrace is StackTrace) {
+          debugPrintStack(stackTrace: stackTrace);
         }
       }),
     );
+
+    await Future.delayed(const Duration(milliseconds: 1500));
+
+    if (!mounted) {
+      return;
+    }
+    setState(() => _showSplash = false);
+  }
+
+  Future<void> _initializeServices() async {
+    final firebaseReady = await FirebaseBootstrap.initialize();
+    debugPrint('Firebase ready: $firebaseReady');
+
+    if (firebaseReady) {
+      await RequestNotificationService.initialize();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_showSplash) {
-      return ProviderScope(
-        child: AppLocaleScope(
-          controller: widget.localeController,
-          child: const _LaunchSplash(),
-        ),
-      );
-    }
-
     return ProviderScope(
       child: AppLocaleScope(
         controller: widget.localeController,
-        child: LigueyProApp(localeController: widget.localeController),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          child: _showSplash
+              ? const _LaunchSplash(key: ValueKey('splash'))
+              : LigueyProApp(
+                  key: const ValueKey('app'),
+                  localeController: widget.localeController,
+                ),
+        ),
       ),
     );
   }
 }
 
 class _LaunchSplash extends StatelessWidget {
-  const _LaunchSplash();
+  const _LaunchSplash({super.key});
 
   static const Color navy = Color(0xFF031E3C);
   static const Color navyLight = Color(0xFF0B3157);
@@ -176,6 +202,16 @@ class _LaunchSplash extends StatelessWidget {
                           ),
                           const SizedBox(height: 38),
                           const _GoldProgressBar(),
+                          const SizedBox(height: 14),
+                          Text(
+                            'Démarrage sécurisé en cours…',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.72),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
                         ],
                       ),
                     ),
